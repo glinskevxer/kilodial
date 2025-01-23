@@ -8,6 +8,7 @@ gone through one rounding policy instead of whichever one the caller felt like.
 
 from __future__ import annotations
 
+from kilodial.units.money import Money
 from kilodial.units.registration import Registration
 
-__all__ = ["Registration"]
+__all__ = ["Money", "Registration"]
