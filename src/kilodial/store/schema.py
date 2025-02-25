@@ -1,0 +1,167 @@
+"""The schema, as numbered migrations rather than one create script.
+
+A shop book outlives the code that wrote it. The oldest one in this utility was
+opened in 2019 and it is still the book, so every schema change since has been a
+numbered step that runs forward on the file that is already there. The list
+below is the whole history and it is append only: a migration that has shipped
+is never edited, because somewhere there is a book that already ran it.
+
+Each migration is one or more complete statements. They are executed one at a
+time inside a single transaction with the ledger row, which matters more than it
+looks: sqlite's executescript issues a COMMIT before it starts, so a migration
+applied that way lands outside the transaction that records it, and a crash in
+the middle leaves a book whose ledger disagrees with its tables.
+"""
+
+from __future__ import annotations
+
+from dataclasses import dataclass
+
+APPLICATION_ID = 0x4B44_4C31
+
+
+@dataclass(frozen=True)
+class Migration:
+    """One numbered step, with the statements it runs."""
+
+    number: int
+    name: str
+    statements: tuple[str, ...]
+
+
+def _m(number: int, name: str, *statements: str) -> Migration:
+    return Migration(number, name, tuple(statements))
+
+
+MIGRATIONS: tuple[Migration, ...] = (
+    _m(
+        1,
+        "device types and meters",
+        """
+        CREATE TABLE device_type (
+            manufacturer    TEXT    NOT NULL,
+            model_code      TEXT    NOT NULL,
+            form_code       TEXT    NOT NULL,
+            class_code      TEXT    NOT NULL,
+            voltage         TEXT    NOT NULL,
+            kh              TEXT    NOT NULL,
+            technology      TEXT    NOT NULL,
+            register_ratio  TEXT,
+            demand_capable  INTEGER NOT NULL DEFAULT 0,
+            introduced      TEXT    NOT NULL,
+            retired         TEXT,
+            PRIMARY KEY (manufacturer, model_code)
+        )
+        """,
+        """
+        CREATE TABLE meter (
+            serial      TEXT PRIMARY KEY,
+            device_key  TEXT NOT NULL,
+            state       TEXT NOT NULL,
+            acquired    TEXT NOT NULL,
+            owner       TEXT NOT NULL,
+            seal        TEXT,
+            retired_on  TEXT
+        )
+        """,
+        "CREATE INDEX meter_by_device ON meter (device_key)",
+        "CREATE INDEX meter_by_state ON meter (state)",
+    ),
+    _m(
+        2,
+        "benches and reference standards",
+        """
+        CREATE TABLE reference_standard (
+            serial           TEXT PRIMARY KEY,
+            maker            TEXT NOT NULL,
+            model_code       TEXT NOT NULL,
+            certificate      TEXT NOT NULL,
+            certified_on     TEXT NOT NULL,
+            certificate_due  TEXT NOT NULL,
+            uncertainty      TEXT NOT NULL,
+            traceable_to     TEXT NOT NULL
+        )
+        """,
+        """
+        CREATE TABLE bench (
+            code             TEXT PRIMARY KEY,
+            name             TEXT NOT NULL,
+            positions        INTEGER NOT NULL,
+            standard_serial  TEXT NOT NULL,
+            max_amperes      TEXT NOT NULL,
+            max_volts        TEXT NOT NULL,
+            polyphase        INTEGER NOT NULL DEFAULT 0,
+            installed        TEXT NOT NULL,
+            removed          TEXT
+        )
+        """,
+        "CREATE INDEX bench_by_standard ON bench (standard_serial)",
+    ),
+    _m(
+        3,
+        "bench runs and their points",
+        """
+        CREATE TABLE bench_run (
+            reference        TEXT PRIMARY KEY,
+            meter_serial     TEXT NOT NULL,
+            bench_code       TEXT NOT NULL,
+            standard_serial  TEXT NOT NULL,
+            kind             TEXT NOT NULL,
+            tested_on        TEXT NOT NULL,
+            technician       TEXT NOT NULL,
+            note             TEXT
+        )
+        """,
+        """
+        CREATE TABLE bench_point (
+            run_reference  TEXT    NOT NULL,
+            position       INTEGER NOT NULL,
+            kind           TEXT    NOT NULL,
+            amperes        TEXT    NOT NULL,
+            volts          TEXT    NOT NULL,
+            pf_value       TEXT    NOT NULL,
+            pf_sense       TEXT    NOT NULL,
+            registration   TEXT,
+            crept          INTEGER,
+            PRIMARY KEY (run_reference, position),
+            FOREIGN KEY (run_reference) REFERENCES bench_run (reference) ON DELETE CASCADE
+        )
+        """,
+        "CREATE INDEX run_by_meter ON bench_run (meter_serial, tested_on)",
+        "CREATE INDEX run_by_day ON bench_run (tested_on)",
+        "CREATE UNIQUE INDEX point_by_kind ON bench_point (run_reference, kind)",
+    ),
+)
+
+
+def latest_number() -> int:
+    """The number the book is brought up to."""
+    return MIGRATIONS[-1].number
+
+
+def check_migrations() -> list[str]:
+    """Everything structurally wrong with the migration list."""
+    faults: list[str] = []
+    seen: set[int] = set()
+    for index, migration in enumerate(MIGRATIONS, start=1):
+        if migration.number != index:
+            faults.append(f"migration {migration.number} sits at position {index}")
+        if migration.number in seen:
+            faults.append(f"migration {migration.number} appears twice")
+        seen.add(migration.number)
+        if not migration.name.strip():
+            faults.append(f"migration {migration.number} has no name")
+        if not migration.statements:
+            faults.append(f"migration {migration.number} runs nothing")
+        for statement in migration.statements:
+            if not statement.strip():
+                faults.append(f"migration {migration.number} has a blank statement")
+            if ";" in statement.strip().rstrip(";"):
+                faults.append(
+                    f"migration {migration.number} packs more than one statement "
+                    "into a single string"
+                )
+    return faults
+
+
+__all__ = ["APPLICATION_ID", "MIGRATIONS", "Migration", "check_migrations", "latest_number"]
