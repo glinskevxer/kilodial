@@ -79,7 +79,7 @@ def insert_and_fail(book: Book) -> None:
     with book.transaction() as conn:
         conn.execute(
             "INSERT INTO meter (serial, device_key, state, acquired, owner) "
-            "VALUES ('X1', 'a/b', 'stock', '2025-01-01', 'utility')"
+            "VALUES ('X1099', 'a/b', 'stock', '2025-01-01', 'utility')"
         )
         raise RuntimeError("no")
 
@@ -94,7 +94,7 @@ def test_a_transaction_commits_on_the_way_out(book: Book) -> None:
     with book.transaction() as conn:
         conn.execute(
             "INSERT INTO meter (serial, device_key, state, acquired, owner) "
-            "VALUES ('X1', 'a/b', 'stock', '2025-01-01', 'utility')"
+            "VALUES ('X1099', 'a/b', 'stock', '2025-01-01', 'utility')"
         )
     assert book.connection.execute("SELECT COUNT(*) FROM meter").fetchone()[0] == 1
 
