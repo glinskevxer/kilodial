@@ -18,6 +18,9 @@ dev = [
   "mypy==1.15.0",
 ]
 
+[project.scripts]
+kilodial = "kilodial.cli.main:run"
+
 [tool.hatch.build.targets.wheel]
 packages = ["src/kilodial"]
 
