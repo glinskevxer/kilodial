@@ -161,6 +161,12 @@ class RunRepository:
             raise NotFoundError("bench run", key)
         self._conn.execute("DELETE FROM bench_run WHERE reference = ?", (key,))
 
+    def all(self) -> list[BenchRun]:
+        rows = self._conn.execute(
+            f"SELECT {RUN_COLUMNS} FROM bench_run ORDER BY tested_on, reference"
+        ).fetchall()
+        return self._hydrate(rows)
+
     def count(self) -> int:
         return int(self._conn.execute("SELECT COUNT(*) FROM bench_run").fetchone()[0])
 
