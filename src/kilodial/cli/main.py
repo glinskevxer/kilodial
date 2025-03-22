@@ -17,6 +17,7 @@ import click
 
 from kilodial import __version__
 from kilodial.cli.context import DEFAULT_BOOK, Context, pass_context
+from kilodial.cli.devices import devices
 from kilodial.errors import ShopError
 
 EXIT_SHOP_ERROR = 2
@@ -113,6 +114,9 @@ def book_summary(context: Context) -> None:
     shop = context.open()
     for name, count in shop.summary().items():
         click.echo(f"{name:<14}{count:>7}")
+
+
+cli.add_command(devices)
 
 
 def run() -> None:
