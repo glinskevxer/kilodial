@@ -18,6 +18,7 @@ import click
 from kilodial import __version__
 from kilodial.cli.context import DEFAULT_BOOK, Context, pass_context
 from kilodial.cli.devices import devices
+from kilodial.cli.meters import meters
 from kilodial.errors import ShopError
 
 EXIT_SHOP_ERROR = 2
@@ -117,6 +118,7 @@ def book_summary(context: Context) -> None:
 
 
 cli.add_command(devices)
+cli.add_command(meters)
 
 
 def run() -> None:
