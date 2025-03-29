@@ -16,6 +16,7 @@ from pathlib import Path
 import click
 
 from kilodial import __version__
+from kilodial.cli.benches import benches, standards
 from kilodial.cli.context import DEFAULT_BOOK, Context, pass_context
 from kilodial.cli.devices import devices
 from kilodial.cli.meters import meters
@@ -119,6 +120,8 @@ def book_summary(context: Context) -> None:
 
 cli.add_command(devices)
 cli.add_command(meters)
+cli.add_command(standards)
+cli.add_command(benches)
 
 
 def run() -> None:
