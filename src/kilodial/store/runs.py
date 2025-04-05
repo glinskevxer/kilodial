@@ -1,9 +1,11 @@
 """Storing bench runs and the points that belong to them.
 
-A run and its points go in together or not at all, which is why every write here
-takes a transaction. Half a run on the book is worse than no run: the sequence
-checks would read it as a meter that was never light load tested, and that is a
-finding rather than a gap.
+A run and its points go in together or not at all, which is why the write is
+wrapped in a savepoint rather than a transaction. Half a run on the book is
+worse than no run: the sequence checks would read it as a meter that was never
+light load tested, and that is a finding rather than a gap. A savepoint rather
+than BEGIN because the command layer already holds a transaction by the time it
+gets here, and sqlite will not nest one of those.
 
 Points keep their position column so that the order the technician ran them
 survives. Nothing computes off the order, and that is exactly why it would have
@@ -39,7 +41,7 @@ class RunRepository:
             raise DuplicateError("bench run", run.reference)
         if check_references:
             self._check_references(run)
-        self._conn.execute("BEGIN")
+        self._conn.execute("SAVEPOINT add_run")
         try:
             self._conn.execute(
                 f"INSERT INTO bench_run ({RUN_COLUMNS}) VALUES ({', '.join('?' * 8)})",
@@ -51,9 +53,10 @@ class RunRepository:
                     point_row(run.reference, position, point),
                 )
         except BaseException:
-            self._conn.rollback()
+            self._conn.execute("ROLLBACK TO add_run")
+            self._conn.execute("RELEASE add_run")
             raise
-        self._conn.commit()
+        self._conn.execute("RELEASE add_run")
         return run
 
     def _check_references(self, run: BenchRun) -> None:
