@@ -17,14 +17,21 @@ from decimal import Decimal
 from typing import Any
 
 from kilodial.errors import ConfigError
+from kilodial.install.point import MeterSet, ServicePoint
 from kilodial.model.bench import Bench, ReferenceStandard
 from kilodial.model.device import DeviceType
-from kilodial.model.form import Technology, form, meter_class
+from kilodial.model.form import Service, Technology, form, meter_class
 from kilodial.model.meter import Meter, MeterState
 from kilodial.model.run import BenchPoint, BenchRun, PointKind, RunKind
 from kilodial.units.electrical import Amperes, PowerFactor, Sense, Volts
 from kilodial.units.registration import Registration
 from kilodial.units.span import parse_date
+from kilodial.xfmr.transformer import (
+    AccuracyClass,
+    InstrumentTransformer,
+    TransformerKind,
+    accuracy_class,
+)
 
 Row = tuple[Any, ...]
 
@@ -208,6 +215,93 @@ def read_point(row: Row) -> BenchPoint:
     )
 
 
+def transformer_row(transformer: InstrumentTransformer) -> Row:
+    return (
+        transformer.serial,
+        transformer.kind.value,
+        transformer.maker,
+        str(transformer.marked_ratio),
+        transformer.accuracy.code,
+        str(transformer.rcf),
+        str(transformer.phase_minutes),
+        transformer.burden,
+        transformer.tested_on.isoformat(),
+    )
+
+
+def read_transformer(row: Row) -> InstrumentTransformer:
+    return InstrumentTransformer(
+        serial=str(row[0]),
+        kind=_enum(TransformerKind, row[1], "transformer kind"),
+        maker=str(row[2]),
+        marked_ratio=Decimal(str(row[3])),
+        accuracy=_accuracy(row[4]),
+        rcf=Decimal(str(row[5])),
+        phase_minutes=Decimal(str(row[6])),
+        burden=str(row[7]),
+        tested_on=parse_date(str(row[8])),
+    )
+
+
+def _accuracy(code: object) -> AccuracyClass:
+    try:
+        return accuracy_class(code)
+    except Exception:
+        raise ConfigError(f"the book holds {code!r}, which is not an accuracy class") from None
+
+
+def service_point_row(point: ServicePoint) -> Row:
+    return (
+        point.code,
+        point.account,
+        point.address,
+        point.service.value,
+        str(point.voltage.value),
+        point.rate_code,
+        point.energised.isoformat(),
+        _maybe_date(point.disconnected),
+    )
+
+
+def read_service_point(row: Row) -> ServicePoint:
+    return ServicePoint(
+        code=str(row[0]),
+        account=str(row[1]),
+        address=str(row[2]),
+        service=_enum(Service, row[3], "service"),
+        voltage=Volts(str(row[4])),
+        rate_code=str(row[5]),
+        energised=parse_date(str(row[6])),
+        disconnected=None if row[7] is None else parse_date(str(row[7])),
+    )
+
+
+def meter_set_row(meter_set: MeterSet) -> Row:
+    return (
+        meter_set.point_code,
+        meter_set.meter_serial,
+        meter_set.ct_serial,
+        meter_set.vt_serial,
+        str(meter_set.register_multiplier),
+        str(meter_set.programmed_multiplier),
+        meter_set.set_on.isoformat(),
+        _maybe_date(meter_set.removed_on),
+    )
+
+
+def read_meter_set(row: Row) -> MeterSet:
+    return MeterSet(
+        point_code=str(row[0]),
+        meter_serial=str(row[1]),
+        ct_serial=None if row[2] is None else str(row[2]),
+        vt_serial=None if row[3] is None else str(row[3]),
+        register_multiplier=Decimal(str(row[4])),
+        programmed_multiplier=Decimal(str(row[5])),
+        set_on=parse_date(str(row[6])),
+        removed_on=None if row[7] is None else parse_date(str(row[7])),
+    )
+
+
 def _point_kind(code: object) -> PointKind:
     for member in PointKind:
         if member.code == code:
@@ -217,6 +311,12 @@ def _point_kind(code: object) -> PointKind:
 
 __all__ = [
     "bench_row",
+    "meter_set_row",
+    "read_meter_set",
+    "read_service_point",
+    "read_transformer",
+    "service_point_row",
+    "transformer_row",
     "device_row",
     "meter_row",
     "point_row",

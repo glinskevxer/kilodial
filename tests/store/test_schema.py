@@ -35,3 +35,15 @@ def test_points_cascade_from_their_run() -> None:
     joined = " ".join(MIGRATIONS[2].statements)
     assert "ON DELETE CASCADE" in joined
     assert "CREATE UNIQUE INDEX point_by_kind" in joined
+
+
+def test_the_fourth_migration_adds_transformers_and_installations() -> None:
+    joined = " ".join(MIGRATIONS[3].statements)
+    assert "CREATE TABLE instrument_transformer" in joined
+    assert "CREATE TABLE service_point" in joined
+    assert "CREATE TABLE meter_set" in joined
+
+
+def test_a_meter_set_hangs_off_its_service_point() -> None:
+    joined = " ".join(MIGRATIONS[3].statements)
+    assert "REFERENCES service_point (code)" in joined

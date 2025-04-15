@@ -131,6 +131,52 @@ MIGRATIONS: tuple[Migration, ...] = (
         "CREATE INDEX run_by_day ON bench_run (tested_on)",
         "CREATE UNIQUE INDEX point_by_kind ON bench_point (run_reference, kind)",
     ),
+    _m(
+        4,
+        "instrument transformers and installations",
+        """
+        CREATE TABLE instrument_transformer (
+            serial         TEXT PRIMARY KEY,
+            kind           TEXT NOT NULL,
+            maker          TEXT NOT NULL,
+            marked_ratio   TEXT NOT NULL,
+            accuracy       TEXT NOT NULL,
+            rcf            TEXT NOT NULL,
+            phase_minutes  TEXT NOT NULL,
+            burden         TEXT NOT NULL,
+            tested_on      TEXT NOT NULL
+        )
+        """,
+        """
+        CREATE TABLE service_point (
+            code          TEXT PRIMARY KEY,
+            account       TEXT NOT NULL,
+            address       TEXT NOT NULL,
+            service       TEXT NOT NULL,
+            voltage       TEXT NOT NULL,
+            rate_code     TEXT NOT NULL,
+            energised     TEXT NOT NULL,
+            disconnected  TEXT
+        )
+        """,
+        """
+        CREATE TABLE meter_set (
+            point_code             TEXT NOT NULL,
+            meter_serial           TEXT NOT NULL,
+            ct_serial              TEXT,
+            vt_serial              TEXT,
+            register_multiplier    TEXT NOT NULL,
+            programmed_multiplier  TEXT NOT NULL,
+            set_on                 TEXT NOT NULL,
+            removed_on             TEXT,
+            PRIMARY KEY (point_code, meter_serial, set_on),
+            FOREIGN KEY (point_code) REFERENCES service_point (code)
+        )
+        """,
+        "CREATE INDEX transformer_by_kind ON instrument_transformer (kind)",
+        "CREATE INDEX set_by_meter ON meter_set (meter_serial, set_on)",
+        "CREATE INDEX point_by_account ON service_point (account)",
+    ),
 )
 
 

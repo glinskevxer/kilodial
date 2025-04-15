@@ -5,13 +5,15 @@ from decimal import Decimal
 import pytest
 
 from kilodial.errors import ConfigError
+from kilodial.install.point import MeterSet, ServicePoint
 from kilodial.model.bench import Bench, ReferenceStandard
 from kilodial.model.device import DeviceType
-from kilodial.model.form import Technology
+from kilodial.model.form import Service, Technology
 from kilodial.model.meter import Meter, MeterState
 from kilodial.model.run import BenchPoint, BenchRun, RunKind
 from kilodial.store import codec
 from kilodial.units.electrical import PowerFactor
+from kilodial.xfmr.transformer import InstrumentTransformer, TransformerKind
 
 
 def a_device() -> DeviceType:
@@ -171,3 +173,73 @@ def test_a_row_holding_a_technology_nobody_knows() -> None:
     row[6] = "clockwork"
     with pytest.raises(ConfigError, match="not a technology"):
         codec.read_device(tuple(row))
+
+
+def a_transformer() -> InstrumentTransformer:
+    return InstrumentTransformer.build(
+        "CT-8841",
+        kind=TransformerKind.CURRENT,
+        maker="Ferrand",
+        marked_ratio="40",
+        accuracy="0.3",
+        rcf="1.0020",
+        phase_minutes="12",
+        burden="B0.2",
+        tested_on="2024-05-01",
+    )
+
+
+def test_a_transformer_round_trips() -> None:
+    transformer = a_transformer()
+    assert codec.read_transformer(codec.transformer_row(transformer)) == transformer
+
+
+def test_a_transformer_row_holding_an_accuracy_nobody_knows() -> None:
+    row = list(codec.transformer_row(a_transformer()))
+    row[4] = "0.9"
+    with pytest.raises(ConfigError, match="not an accuracy class"):
+        codec.read_transformer(tuple(row))
+
+
+def test_a_transformer_row_holding_a_kind_nobody_knows() -> None:
+    row = list(codec.transformer_row(a_transformer()))
+    row[1] = "magnetic"
+    with pytest.raises(ConfigError, match="not a transformer kind"):
+        codec.read_transformer(tuple(row))
+
+
+def test_a_service_point_round_trips() -> None:
+    point = ServicePoint.build(
+        "SP-1042",
+        account="44-9021",
+        address="18 Fenwick Row",
+        service=Service.SINGLE_PHASE_3W,
+        voltage="240",
+        rate_code="R1",
+        energised="2011-06-14",
+        disconnected="2024-02-01",
+    )
+    assert codec.read_service_point(codec.service_point_row(point)) == point
+
+
+def test_a_meter_set_round_trips() -> None:
+    meter_set = MeterSet.build(
+        "SP-1042",
+        "84-119302",
+        ct_serial="CT-8841",
+        register_multiplier="10",
+        programmed_multiplier="400",
+        set_on="2019-05-02",
+        removed_on="2025-03-01",
+    )
+    assert codec.read_meter_set(codec.meter_set_row(meter_set)) == meter_set
+
+
+def test_a_self_contained_set_stores_nulls_for_its_transformers() -> None:
+    meter_set = MeterSet.build(
+        "SP-1042", "84-119302", programmed_multiplier="1", set_on="2019-05-02"
+    )
+    row = codec.meter_set_row(meter_set)
+    assert row[2] is None
+    assert row[3] is None
+    assert codec.read_meter_set(row) == meter_set
