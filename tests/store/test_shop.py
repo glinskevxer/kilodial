@@ -5,14 +5,17 @@ from pathlib import Path
 
 import pytest
 
-from kilodial.errors import NotFoundError
+from kilodial.errors import NotFoundError, RuleError
+from kilodial.install.point import MeterSet, ServicePoint
 from kilodial.model.bench import Bench, ReferenceStandard
 from kilodial.model.device import DeviceType
-from kilodial.model.form import Technology
+from kilodial.model.form import Service, Technology
 from kilodial.model.meter import Meter
 from kilodial.model.run import BenchPoint, BenchRun, RunKind
 from kilodial.store.shop import Shop, open_shop, require
 from kilodial.testing.verdict import Outcome
+from kilodial.units.registration import Registration
+from kilodial.xfmr.transformer import InstrumentTransformer, TransformerKind
 
 
 @pytest.fixture
@@ -148,6 +151,9 @@ def test_summary_counts_every_table(shop: Shop) -> None:
         "standards": 1,
         "benches": 1,
         "runs": 1,
+        "transformers": 0,
+        "service points": 0,
+        "meter sets": 0,
     }
 
 
@@ -196,3 +202,152 @@ def test_require_raises_on_nothing() -> None:
     require("something", "meter", "X")
     with pytest.raises(NotFoundError, match="meter"):
         require(None, "meter", "84-119302")
+
+
+def a_point(code: str = "SP-1042", **over: object) -> ServicePoint:
+    args: dict[str, object] = {
+        "account": "44-9021",
+        "address": "18 Fenwick Row",
+        "service": Service.SINGLE_PHASE_3W,
+        "voltage": "240",
+        "rate_code": "R1",
+        "energised": "2011-06-14",
+    }
+    args.update(over)
+    return ServicePoint.build(code, **args)  # type: ignore[arg-type]
+
+
+def a_ct(serial: str = "CT-8841", **over: object) -> InstrumentTransformer:
+    args: dict[str, object] = {
+        "kind": TransformerKind.CURRENT,
+        "maker": "Ferrand",
+        "marked_ratio": "40",
+        "accuracy": "0.3",
+        "rcf": "1.0000",
+        "phase_minutes": "0",
+        "tested_on": "2024-05-01",
+    }
+    args.update(over)
+    return InstrumentTransformer.build(serial, **args)  # type: ignore[arg-type]
+
+
+def test_the_summary_counts_the_new_tables(shop: Shop) -> None:
+    assert shop.summary()["transformers"] == 0
+    assert shop.summary()["service points"] == 0
+    assert shop.summary()["meter sets"] == 0
+
+
+def test_a_self_contained_installation(shop: Shop) -> None:
+    shop.points.add(a_point())
+    shop.installs.set_meter(
+        MeterSet.build("SP-1042", "84-119302", programmed_multiplier="1", set_on="2019-05-02")
+    )
+    shop.runs.add(
+        run(
+            points=[
+                BenchPoint.build("FL", amperes="30", volts="240", registration="100.30"),
+                BenchPoint.build("LL", amperes="3", volts="240", registration="100.30"),
+            ]
+        )
+    )
+    found = shop.installed_accuracy("SP-1042")
+    assert found.overall == Registration("100.30")
+    assert found.multiplier_is_right
+
+
+def test_a_transformer_rated_installation(shop: Shop) -> None:
+    shop.points.add(a_point())
+    shop.transformers.add(a_ct(rcf="1.0020"))
+    shop.installs.set_meter(
+        MeterSet.build(
+            "SP-1042",
+            "84-119302",
+            ct_serial="CT-8841",
+            programmed_multiplier="40",
+            set_on="2019-05-02",
+        )
+    )
+    shop.runs.add(run())
+    found = shop.installed_accuracy("SP-1042")
+    assert found.current_transformer is not None
+    assert found.overall < found.meter
+
+
+def test_an_installation_with_nothing_set(shop: Shop) -> None:
+    shop.points.add(a_point())
+    with pytest.raises(RuleError, match="nothing was set at SP-1042"):
+        shop.installed_accuracy("SP-1042")
+
+
+def test_an_installation_whose_meter_was_never_tested(shop: Shop) -> None:
+    shop.points.add(a_point())
+    shop.installs.set_meter(
+        MeterSet.build("SP-1042", "84-119302", programmed_multiplier="1", set_on="2019-05-02")
+    )
+    with pytest.raises(RuleError, match="no usable as found run"):
+        shop.installed_accuracy("SP-1042")
+
+
+def test_a_void_run_does_not_count_as_an_as_found_reading(shop: Shop) -> None:
+    shop.points.add(a_point())
+    shop.installs.set_meter(
+        MeterSet.build("SP-1042", "84-119302", programmed_multiplier="1", set_on="2019-05-02")
+    )
+    shop.runs.add(run("TR-1", tested_on="2025-12-01"))
+    with pytest.raises(RuleError, match="no usable as found run"):
+        shop.installed_accuracy("SP-1042")
+
+
+def test_the_latest_as_found_run_is_the_one_that_counts(shop: Shop) -> None:
+    shop.points.add(a_point())
+    shop.installs.set_meter(
+        MeterSet.build("SP-1042", "84-119302", programmed_multiplier="1", set_on="2019-05-02")
+    )
+    shop.runs.add(run("TR-1", tested_on="2025-01-06"))
+    shop.runs.add(
+        run(
+            "TR-2",
+            tested_on="2025-03-04",
+            points=[
+                BenchPoint.build("FL", amperes="30", volts="240", registration="101.00"),
+                BenchPoint.build("LL", amperes="3", volts="240", registration="101.00"),
+            ],
+        )
+    )
+    assert shop.as_found_registration("84-119302") == Registration("101.00")
+
+
+def test_an_as_left_run_is_not_an_as_found_reading(shop: Shop) -> None:
+    shop.runs.add(run("TR-1", kind=RunKind.AS_LEFT))
+    with pytest.raises(RuleError, match="no usable as found run"):
+        shop.as_found_registration("84-119302")
+
+
+def test_unusable_runs_are_listed(shop: Shop) -> None:
+    shop.runs.add(run("TR-1"))
+    shop.runs.add(run("TR-2", tested_on="2025-12-01"))
+    unusable = shop.unusable_runs()
+    assert [r.reference for r, _ in unusable] == ["TR-2"]
+
+
+def test_the_audit_finds_a_set_pointing_at_nothing(shop: Shop) -> None:
+    shop.points.add(a_point())
+    shop.installs.set_meter(
+        MeterSet.build(
+            "SP-1042",
+            "84-119302",
+            ct_serial="CT-0000",
+            programmed_multiplier="40",
+            set_on="2019-05-02",
+        )
+    )
+    assert any("names current transformer CT-0000" in f for f in shop.audit())
+
+
+def test_the_audit_finds_a_set_naming_a_meter_that_is_gone(shop: Shop) -> None:
+    shop.points.add(a_point())
+    shop.installs.set_meter(
+        MeterSet.build("SP-1042", "84-119302", programmed_multiplier="1", set_on="2019-05-02")
+    )
+    shop.book.connection.execute("DELETE FROM meter WHERE serial = '84-119302'")
+    assert any("names meter 84-119302" in f for f in shop.audit())

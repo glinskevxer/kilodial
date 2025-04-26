@@ -19,15 +19,21 @@ from contextlib import contextmanager
 from pathlib import Path
 from types import TracebackType
 
-from kilodial.errors import NotFoundError
+from kilodial.errors import NotFoundError, RuleError
+from kilodial.install.multiplier import InstalledAccuracy, accuracy_of
+from kilodial.install.point import MeterSet
 from kilodial.model.device import DeviceType
-from kilodial.model.run import BenchRun
+from kilodial.model.run import BenchRun, RunKind
 from kilodial.store.benches import BenchRepository, StandardRepository
 from kilodial.store.book import Book, open_migrated
 from kilodial.store.devices import DeviceRepository
+from kilodial.store.installs import InstallRepository, ServicePointRepository
 from kilodial.store.meters import MeterRepository
 from kilodial.store.runs import RunRepository
-from kilodial.testing.verdict import Verdict, judge
+from kilodial.store.transformers import TransformerRepository
+from kilodial.testing.verdict import Outcome, Verdict, judge
+from kilodial.units.electrical import PowerFactor
+from kilodial.units.registration import Registration
 
 
 class Shop:
@@ -41,6 +47,9 @@ class Shop:
         self.standards = StandardRepository(conn)
         self.benches = BenchRepository(conn)
         self.runs = RunRepository(conn)
+        self.transformers = TransformerRepository(conn)
+        self.points = ServicePointRepository(conn)
+        self.installs = InstallRepository(conn)
 
     @property
     def path(self) -> Path:
@@ -84,6 +93,64 @@ class Shop:
         """Every run on a meter with the verdict each one earns today."""
         return [(r, self.judge_run(r)) for r in self.runs.for_meter(serial)]
 
+    def installed_accuracy(
+        self,
+        point_code: str,
+        *,
+        on: object = None,
+        power_factor: PowerFactor | None = None,
+    ) -> InstalledAccuracy:
+        """What the installation at a point registers, transformers included.
+
+        The meter's share comes from its most recent usable as found run, which
+        is the only run kind that says anything about a meter as the customer
+        had it. A meter with no such run has no installed accuracy, and that is
+        an answer rather than a zero.
+        """
+        meter_set = (
+            self.installs.current(point_code)
+            if on is None
+            else self.installs.on_day(point_code, on)
+        )
+        if meter_set is None:
+            raise RuleError(f"nothing was set at {point_code.strip().upper()}")
+        return self.accuracy_of_set(meter_set, power_factor=power_factor)
+
+    def accuracy_of_set(
+        self, meter_set: MeterSet, *, power_factor: PowerFactor | None = None
+    ) -> InstalledAccuracy:
+        """The same question about a set already in hand."""
+        reading = self.as_found_registration(meter_set.meter_serial)
+        return accuracy_of(
+            meter_set,
+            reading,
+            current=self.transformers.find(meter_set.ct_serial),
+            voltage=self.transformers.find(meter_set.vt_serial),
+            power_factor=power_factor,
+        )
+
+    def as_found_registration(self, serial: str) -> Registration:
+        """The meter's own registration, from its latest usable as found run."""
+        for run in reversed(self.runs.for_meter(serial)):
+            if run.kind is not RunKind.AS_FOUND:
+                continue
+            verdict = self.judge_run(run)
+            if verdict.outcome.is_usable and verdict.registration is not None:
+                return verdict.registration
+        raise RuleError(f"meter {serial.strip().upper()} has no usable as found run")
+
+    def unusable_runs(self) -> list[tuple[BenchRun, Verdict]]:
+        """Every run the shop cannot rely on, with the reason it cannot."""
+        found = []
+        for run in self.runs.all():
+            try:
+                verdict = self.judge_run(run)
+            except NotFoundError:
+                continue
+            if verdict.outcome in (Outcome.VOID, Outcome.SUSPECT):
+                found.append((run, verdict))
+        return found
+
     def summary(self) -> dict[str, int]:
         """Row counts, for the doctor and for a smoke test."""
         return {
@@ -92,6 +159,9 @@ class Shop:
             "standards": self.standards.count(),
             "benches": self.benches.count(),
             "runs": self.runs.count(),
+            "transformers": self.transformers.count(),
+            "service points": self.points.count(),
+            "meter sets": self.installs.count(),
         }
 
     def audit(self) -> list[str]:
@@ -109,6 +179,21 @@ class Shop:
                     f"bench {bench.code} names standard {bench.standard_serial}, "
                     "which is not on the book"
                 )
+        for meter_set in self._all_sets():
+            for kind, key in (
+                ("current transformer", meter_set.ct_serial),
+                ("voltage transformer", meter_set.vt_serial),
+            ):
+                if key is not None and not self.transformers.exists(key):
+                    faults.append(
+                        f"set at {meter_set.point_code} names {kind} {key}, "
+                        "which is not on the book"
+                    )
+            if not self.meters.exists(meter_set.meter_serial):
+                faults.append(
+                    f"set at {meter_set.point_code} names meter {meter_set.meter_serial}, "
+                    "which is not on the book"
+                )
         for run in self.runs.all():
             for kind, key, exists in (
                 ("meter", run.meter_serial, self.meters.exists(run.meter_serial)),
@@ -124,6 +209,12 @@ class Shop:
                         f"run {run.reference} names {kind} {key}, which is not on the book"
                     )
         return faults
+
+    def _all_sets(self) -> list[MeterSet]:
+        sets: list[MeterSet] = []
+        for point in self.points.all():
+            sets.extend(self.installs.history(point.code))
+        return sets
 
     def __str__(self) -> str:
         return f"shop book at {self.path}"
