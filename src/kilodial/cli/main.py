@@ -21,6 +21,7 @@ from kilodial.cli.context import DEFAULT_BOOK, Context, pass_context
 from kilodial.cli.devices import devices
 from kilodial.cli.meters import meters
 from kilodial.cli.runs import runs
+from kilodial.cli.transformers import transformers
 from kilodial.errors import ShopError
 
 EXIT_SHOP_ERROR = 2
@@ -124,6 +125,7 @@ cli.add_command(meters)
 cli.add_command(standards)
 cli.add_command(benches)
 cli.add_command(runs)
+cli.add_command(transformers)
 
 
 def run() -> None:
