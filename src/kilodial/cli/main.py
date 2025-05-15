@@ -19,6 +19,7 @@ from kilodial import __version__
 from kilodial.cli.benches import benches, standards
 from kilodial.cli.context import DEFAULT_BOOK, Context, pass_context
 from kilodial.cli.devices import devices
+from kilodial.cli.installs import points
 from kilodial.cli.meters import meters
 from kilodial.cli.runs import runs
 from kilodial.cli.transformers import transformers
@@ -126,6 +127,7 @@ cli.add_command(standards)
 cli.add_command(benches)
 cli.add_command(runs)
 cli.add_command(transformers)
+cli.add_command(points)
 
 
 def run() -> None:
