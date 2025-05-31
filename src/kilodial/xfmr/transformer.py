@@ -37,6 +37,7 @@ from kilodial.errors import BadInputError, RuleError
 from kilodial.units.electrical import PowerFactor
 from kilodial.units.registration import Registration
 from kilodial.units.span import parse_date
+from kilodial.units.text import key, number, positive, tidy
 
 MINUTES_PER_RADIAN = Decimal("3438")
 PLACES = Decimal("0.000001")
@@ -136,24 +137,22 @@ class InstrumentTransformer:
     ) -> InstrumentTransformer:
         if not isinstance(kind, TransformerKind):
             raise BadInputError("the kind has to be a TransformerKind")
-        ratio = _decimal(marked_ratio, "marked ratio")
-        if ratio <= 0:
-            raise BadInputError("a marked ratio has to be above zero")
-        factor = _decimal(rcf, "ratio correction factor")
+        ratio = positive(marked_ratio, "marked ratio")
+        factor = number(rcf, "ratio correction factor")
         if factor < MIN_RCF or factor > MAX_RCF:
             raise RuleError(f"a ratio correction factor of {factor} is not a transformer")
-        minutes = _decimal(phase_minutes, "phase angle")
+        minutes = number(phase_minutes, "phase angle")
         if abs(minutes) > MAX_MINUTES:
             raise RuleError(f"a phase angle of {minutes} minutes is not a transformer")
         return cls(
-            serial=_text(serial, "transformer serial", 24).upper(),
+            serial=key(serial, "transformer serial", 24),
             kind=kind,
-            maker=_text(maker, "maker name", 40),
+            maker=tidy(maker, "maker name", 40),
             marked_ratio=ratio,
             accuracy=accuracy_class(accuracy),
             rcf=factor,
             phase_minutes=minutes,
-            burden=_text(burden, "burden", 12).upper(),
+            burden=key(burden, "burden", 12),
             tested_on=parse_date(tested_on),
         )
 
@@ -194,24 +193,6 @@ class InstrumentTransformer:
             f"{self.serial} {self.kind} {self.marked_ratio.normalize():f}:1 "
             f"class {self.accuracy} RCF {self.rcf}"
         )
-
-
-def _decimal(value: object, what: str) -> Decimal:
-    try:
-        return Decimal(str(value).strip())
-    except Exception:
-        raise BadInputError(f"{value!r} is not a {what}") from None
-
-
-def _text(value: object, what: str, limit: int) -> str:
-    if not isinstance(value, str):
-        raise BadInputError(f"cannot read a {what} from {type(value).__name__}")
-    text = " ".join(value.split())
-    if not text:
-        raise BadInputError(f"a {what} cannot be blank")
-    if len(text) > limit:
-        raise BadInputError(f"a {what} runs to {limit} characters at most")
-    return text
 
 
 __all__ = [

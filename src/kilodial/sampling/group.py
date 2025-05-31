@@ -26,6 +26,7 @@ from kilodial.model.device import DeviceType
 from kilodial.model.form import MeterClass, Technology, meter_class
 from kilodial.model.meter import Meter, MeterState
 from kilodial.units.span import DateSpan, parse_date
+from kilodial.units.text import key, tidy
 
 # A meter in one of these is not in service and does not belong in a population
 # whose whole purpose is to describe what the utility has out on customers.
@@ -65,8 +66,8 @@ class Group:
         if technology is not None and not isinstance(technology, Technology):
             raise BadInputError("the technology has to be a Technology")
         return cls(
-            code=_text(code, "group code", 16).upper(),
-            name=_text(name, "group name", 60),
+            code=key(code, "group code", 16),
+            name=tidy(name, "group name", 60),
             device_keys=tuple(sorted({k.strip() for k in device_keys or [] if k.strip()})),
             meter_class=None if class_code is None else meter_class(class_code),
             technology=technology,
@@ -141,17 +142,6 @@ class Group:
 
     def __str__(self) -> str:
         return f"{self.code} {self.name}"
-
-
-def _text(value: object, what: str, limit: int) -> str:
-    if not isinstance(value, str):
-        raise BadInputError(f"cannot read a {what} from {type(value).__name__}")
-    text = " ".join(value.split())
-    if not text:
-        raise BadInputError(f"a {what} cannot be blank")
-    if len(text) > limit:
-        raise BadInputError(f"a {what} runs to {limit} characters at most")
-    return text
 
 
 __all__ = ["OUT_OF_POPULATION", "Group"]

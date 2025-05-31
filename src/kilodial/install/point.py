@@ -26,6 +26,7 @@ from kilodial.errors import BadInputError, RuleError
 from kilodial.model.form import Service
 from kilodial.units.electrical import Volts
 from kilodial.units.span import DateSpan, parse_date
+from kilodial.units.text import key, positive, tidy
 
 MAX_MULTIPLIER = Decimal("100000")
 
@@ -63,12 +64,12 @@ class ServicePoint:
         if last is not None and last < first:
             raise RuleError("a service point cannot be disconnected before it was energised")
         return cls(
-            code=_text(code, "service point code", 16).upper(),
-            account=_text(account, "account number", 24).upper(),
-            address=_text(address, "address", 80),
+            code=key(code, "service point code", 16),
+            account=key(account, "account number", 24),
+            address=tidy(address, "address", 80),
             service=service,
             voltage=Volts(voltage),
-            rate_code=_text(rate_code, "rate code", 12).upper(),
+            rate_code=key(rate_code, "rate code", 12),
             energised=first,
             disconnected=last,
         )
@@ -115,10 +116,10 @@ class MeterSet:
         if last is not None and last < first:
             raise RuleError("a meter cannot be pulled before it was set")
         return cls(
-            point_code=_text(point_code, "service point code", 16).upper(),
-            meter_serial=_text(meter_serial, "meter serial", 24).upper(),
-            ct_serial=None if ct_serial is None else _text(ct_serial, "CT serial", 24).upper(),
-            vt_serial=None if vt_serial is None else _text(vt_serial, "VT serial", 24).upper(),
+            point_code=key(point_code, "service point code", 16),
+            meter_serial=key(meter_serial, "meter serial", 24),
+            ct_serial=None if ct_serial is None else key(ct_serial, "CT serial", 24),
+            vt_serial=None if vt_serial is None else key(vt_serial, "VT serial", 24),
             register_multiplier=_multiplier(register_multiplier, "register multiplier"),
             programmed_multiplier=_multiplier(programmed_multiplier, "programmed multiplier"),
             set_on=first,
@@ -169,26 +170,7 @@ class MeterSet:
 
 
 def _multiplier(value: object, what: str) -> Decimal:
-    try:
-        number = Decimal(str(value).strip())
-    except Exception:
-        raise BadInputError(f"{value!r} is not a {what}") from None
-    if number <= 0:
-        raise BadInputError(f"a {what} has to be above zero")
-    if number > MAX_MULTIPLIER:
-        raise BadInputError(f"a {what} of {number} is not a real installation")
-    return number
-
-
-def _text(value: object, what: str, limit: int) -> str:
-    if not isinstance(value, str):
-        raise BadInputError(f"cannot read a {what} from {type(value).__name__}")
-    text = " ".join(value.split())
-    if not text:
-        raise BadInputError(f"a {what} cannot be blank")
-    if len(text) > limit:
-        raise BadInputError(f"a {what} runs to {limit} characters at most")
-    return text
+    return positive(value, what, ceiling=MAX_MULTIPLIER)
 
 
 __all__ = ["MAX_MULTIPLIER", "MeterSet", "ServicePoint"]

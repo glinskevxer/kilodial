@@ -16,6 +16,7 @@ from datetime import date
 
 from kilodial.errors import BadInputError, StateError
 from kilodial.units.span import parse_date
+from kilodial.units.text import tidy
 
 SERIAL_PATTERN = re.compile(r"^[A-Z0-9][A-Z0-9-]{2,19}$")
 
@@ -90,7 +91,7 @@ class Meter:
             device_key=device_key,
             state=MeterState.RECEIVED,
             acquired=parse_date(acquired),
-            owner=_owner(owner),
+            owner=tidy(owner, "owner", 40),
             seal=_seal(seal),
             retired_on=None,
         )
@@ -132,17 +133,6 @@ class Meter:
 
     def __str__(self) -> str:
         return f"{self.serial} ({self.device_key}, {self.state})"
-
-
-def _owner(value: object) -> str:
-    if not isinstance(value, str):
-        raise BadInputError(f"cannot read an owner from {type(value).__name__}")
-    owner = " ".join(value.split())
-    if not owner:
-        raise BadInputError("an owner cannot be blank")
-    if len(owner) > 40:
-        raise BadInputError("an owner runs to 40 characters at most")
-    return owner
 
 
 def _seal(value: object) -> str | None:

@@ -22,6 +22,7 @@ from kilodial.model.device import DeviceType
 from kilodial.model.form import Service
 from kilodial.units.electrical import Amperes, Volts
 from kilodial.units.span import DateSpan, parse_date
+from kilodial.units.text import key, positive, tidy
 
 # A shop standard is an order of magnitude better than the meters it judges.
 # Anything looser than this is a working meter, not a standard.
@@ -68,14 +69,14 @@ class ReferenceStandard:
             raise RuleError("a certificate has to run out after it was issued, not before")
         band = _uncertainty(uncertainty)
         return cls(
-            serial=_text(serial, "standard serial", 24).upper(),
-            maker=_text(maker, "maker name", 40),
-            model_code=_text(model_code, "model code", 24),
-            certificate=_text(certificate, "certificate number", 32).upper(),
+            serial=key(serial, "standard serial", 24),
+            maker=tidy(maker, "maker name", 40),
+            model_code=tidy(model_code, "model code", 24),
+            certificate=key(certificate, "certificate number", 32),
             certified_on=first,
             certificate_due=last,
             uncertainty=band,
-            traceable_to=_text(traceable_to, "traceability", 40),
+            traceable_to=tidy(traceable_to, "traceability", 40),
         )
 
     @property
@@ -128,10 +129,10 @@ class Bench:
         if last is not None and last < first:
             raise RuleError("a bench cannot come out before it went in")
         return cls(
-            code=_text(code, "bench code", 12).upper(),
-            name=_text(name, "bench name", 60),
+            code=key(code, "bench code", 12),
+            name=tidy(name, "bench name", 60),
             positions=count,
-            standard_serial=_text(standard_serial, "standard serial", 24).upper(),
+            standard_serial=key(standard_serial, "standard serial", 24),
             max_amperes=Amperes(max_amperes),
             max_volts=Volts(max_volts),
             polyphase=bool(polyphase),
@@ -173,17 +174,6 @@ class Bench:
         return f"{self.code} {self.name} ({self.positions} positions)"
 
 
-def _text(value: object, what: str, limit: int) -> str:
-    if not isinstance(value, str):
-        raise BadInputError(f"cannot read a {what} from {type(value).__name__}")
-    text = " ".join(value.split())
-    if not text:
-        raise BadInputError(f"a {what} cannot be blank")
-    if len(text) > limit:
-        raise BadInputError(f"a {what} runs to {limit} characters at most")
-    return text
-
-
 def _positions(value: object) -> int:
     if not isinstance(value, int) or isinstance(value, bool):
         raise BadInputError("a bench position count has to be a whole number")
@@ -193,12 +183,7 @@ def _positions(value: object) -> int:
 
 
 def _uncertainty(value: object) -> Decimal:
-    try:
-        band = Decimal(str(value).strip())
-    except Exception:
-        raise BadInputError(f"{value!r} is not an uncertainty") from None
-    if band <= 0:
-        raise BadInputError("an uncertainty has to be above zero")
+    band = positive(value, "uncertainty")
     if band > WORST_UNCERTAINTY:
         raise RuleError(
             f"an uncertainty of {band} percent is looser than the {WORST_UNCERTAINTY} "

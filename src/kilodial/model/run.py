@@ -22,6 +22,7 @@ from kilodial.errors import BadInputError, RuleError
 from kilodial.units.electrical import Amperes, PowerFactor, Volts
 from kilodial.units.registration import Registration
 from kilodial.units.span import parse_date
+from kilodial.units.text import optional, tidy
 
 
 class PointKind(enum.Enum):
@@ -213,25 +214,11 @@ def _ref(value: object) -> str:
 
 
 def _tech(value: object) -> str:
-    if not isinstance(value, str):
-        raise BadInputError(f"cannot read a technician from {type(value).__name__}")
-    name = " ".join(value.split())
-    if not name or len(name) > 40:
-        raise BadInputError("a technician name runs to 40 characters and cannot be blank")
-    return name
+    return tidy(value, "technician name", 40)
 
 
 def _note(value: object) -> str | None:
-    if value is None:
-        return None
-    if not isinstance(value, str):
-        raise BadInputError(f"cannot read a note from {type(value).__name__}")
-    note = " ".join(value.split())
-    if not note:
-        return None
-    if len(note) > 240:
-        raise BadInputError("a run note runs to 240 characters at most")
-    return note
+    return optional(value, "run note", 240)
 
 
 __all__ = ["PointKind", "RunKind", "BenchPoint", "BenchRun", "point_kind"]

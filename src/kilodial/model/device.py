@@ -17,23 +17,13 @@ from kilodial.errors import BadInputError, RuleError
 from kilodial.model.form import Form, MeterClass, Technology, form, meter_class
 from kilodial.units.electrical import Amperes, Volts
 from kilodial.units.span import DateSpan, parse_date
+from kilodial.units.text import number, positive, tidy
 
 # A watthour constant outside this range means somebody read the nameplate
 # wrong. Real ones run from about 0.03 on a solid state pulse output to 14.4 on
 # an old polyphase disc.
 MIN_KH = Decimal("0.005")
 MAX_KH = Decimal("100")
-
-
-def _clean(text: object, what: str, limit: int = 40) -> str:
-    if not isinstance(text, str):
-        raise BadInputError(f"cannot read a {what} from {type(text).__name__}")
-    value = " ".join(text.split())
-    if not value:
-        raise BadInputError(f"a {what} cannot be blank")
-    if len(value) > limit:
-        raise BadInputError(f"a {what} runs to {limit} characters at most")
-    return value
 
 
 @dataclass(frozen=True)
@@ -75,8 +65,8 @@ class DeviceType:
         heavy enough to carry a service; and an induction meter has to have a
         register ratio, because without one nobody can read its dials.
         """
-        maker = _clean(manufacturer, "manufacturer name")
-        model = _clean(model_code, "model code", 24)
+        maker = tidy(manufacturer, "manufacturer name")
+        model = tidy(model_code, "model code", 24)
         the_form = form(form_code)
         the_class = meter_class(class_code)
         constant = _kh(kh)
@@ -151,15 +141,7 @@ class DeviceType:
 
 
 def _kh(value: object) -> Decimal:
-    if isinstance(value, Decimal):
-        constant = value
-    elif isinstance(value, int | float | str):
-        try:
-            constant = Decimal(str(value).strip())
-        except Exception:
-            raise BadInputError(f"{value!r} is not a watthour constant") from None
-    else:
-        raise BadInputError(f"cannot read a watthour constant from {type(value).__name__}")
+    constant = number(value, "watthour constant")
     if constant < MIN_KH or constant > MAX_KH:
         raise BadInputError(f"a watthour constant of {constant} is outside anything real")
     return constant
@@ -170,13 +152,7 @@ def _ratio(value: object, technology: Technology) -> Decimal | None:
         if technology is Technology.INDUCTION:
             raise RuleError("an induction meter has to carry a register ratio")
         return None
-    try:
-        ratio = Decimal(str(value).strip())
-    except Exception:
-        raise BadInputError(f"{value!r} is not a register ratio") from None
-    if ratio <= 0:
-        raise BadInputError("a register ratio has to be above zero")
-    return ratio
+    return positive(value, "register ratio")
 
 
 __all__ = ["MAX_KH", "MIN_KH", "DeviceType"]
