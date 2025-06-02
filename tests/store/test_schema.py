@@ -47,3 +47,10 @@ def test_the_fourth_migration_adds_transformers_and_installations() -> None:
 def test_a_meter_set_hangs_off_its_service_point() -> None:
     joined = " ".join(MIGRATIONS[3].statements)
     assert "REFERENCES service_point (code)" in joined
+
+
+def test_the_fifth_migration_adds_groups_and_plans() -> None:
+    joined = " ".join(MIGRATIONS[4].statements)
+    assert "CREATE TABLE sample_group" in joined
+    assert "CREATE TABLE test_plan" in joined
+    assert "ON DELETE CASCADE" in joined

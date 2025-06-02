@@ -177,6 +177,39 @@ MIGRATIONS: tuple[Migration, ...] = (
         "CREATE INDEX set_by_meter ON meter_set (meter_serial, set_on)",
         "CREATE INDEX point_by_account ON service_point (account)",
     ),
+    _m(
+        5,
+        "sampling groups and their test plans",
+        """
+        CREATE TABLE sample_group (
+            code           TEXT PRIMARY KEY,
+            name           TEXT NOT NULL,
+            device_keys    TEXT NOT NULL DEFAULT '',
+            class_code     TEXT,
+            technology     TEXT,
+            form_codes     TEXT NOT NULL DEFAULT '',
+            acquired_from  TEXT,
+            acquired_to    TEXT
+        )
+        """,
+        """
+        CREATE TABLE test_plan (
+            group_code       TEXT NOT NULL,
+            decided_on       TEXT NOT NULL,
+            interval_months  INTEGER NOT NULL,
+            population       INTEGER NOT NULL,
+            tested           INTEGER NOT NULL,
+            mean             TEXT NOT NULL,
+            deviation        TEXT NOT NULL,
+            failures         INTEGER NOT NULL,
+            passed           INTEGER NOT NULL,
+            note             TEXT,
+            PRIMARY KEY (group_code, decided_on),
+            FOREIGN KEY (group_code) REFERENCES sample_group (code) ON DELETE CASCADE
+        )
+        """,
+        "CREATE INDEX plan_by_group ON test_plan (group_code, decided_on)",
+    ),
 )
 
 
