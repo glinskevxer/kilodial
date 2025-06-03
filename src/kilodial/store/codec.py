@@ -23,6 +23,9 @@ from kilodial.model.device import DeviceType
 from kilodial.model.form import Service, Technology, form, meter_class
 from kilodial.model.meter import Meter, MeterState
 from kilodial.model.run import BenchPoint, BenchRun, PointKind, RunKind
+from kilodial.sampling.decision import Decision
+from kilodial.sampling.group import Group
+from kilodial.sampling.plan import DEFAULT_BAND, SampleOutcome, required
 from kilodial.units.electrical import Amperes, PowerFactor, Sense, Volts
 from kilodial.units.registration import Registration
 from kilodial.units.span import parse_date
@@ -302,6 +305,69 @@ def read_meter_set(row: Row) -> MeterSet:
     )
 
 
+def group_row(group: Group) -> Row:
+    return (
+        group.code,
+        group.name,
+        " ".join(group.device_keys),
+        None if group.meter_class is None else group.meter_class.code,
+        None if group.technology is None else group.technology.value,
+        " ".join(group.form_codes),
+        _maybe_date(group.acquired_from),
+        _maybe_date(group.acquired_to),
+    )
+
+
+def read_group(row: Row) -> Group:
+    return Group(
+        code=str(row[0]),
+        name=str(row[1]),
+        device_keys=tuple(str(row[2]).split()),
+        meter_class=None if row[3] is None else meter_class(row[3]),
+        technology=None if row[4] is None else _enum(Technology, row[4], "technology"),
+        form_codes=tuple(str(row[5]).split()),
+        acquired_from=None if row[6] is None else parse_date(str(row[6])),
+        acquired_to=None if row[7] is None else parse_date(str(row[7])),
+    )
+
+
+def plan_row(decision: Decision) -> Row:
+    return (
+        decision.group_code,
+        decision.decided_on.isoformat(),
+        0 if decision.interval_months is None else decision.interval_months,
+        decision.outcome.population,
+        decision.outcome.tested,
+        str(decision.outcome.mean),
+        str(decision.outcome.deviation),
+        decision.outcome.failures,
+        _bool(decision.passed),
+        decision.note,
+    )
+
+
+def read_plan(row: Row, previous_months: int) -> Decision:
+    months = int(row[2])
+    outcome = SampleOutcome(
+        population=int(row[3]),
+        required=required(int(row[3])),
+        tested=int(row[4]),
+        mean=Decimal(str(row[5])),
+        deviation=Decimal(str(row[6])),
+        failures=int(row[7]),
+        band=DEFAULT_BAND,
+        reasons=() if row[8] else ("recorded as a failure",),
+    )
+    return Decision(
+        group_code=str(row[0]),
+        decided_on=parse_date(str(row[1])),
+        previous_months=previous_months,
+        interval_months=None if months == 0 else months,
+        outcome=outcome,
+        note=None if row[9] is None else str(row[9]),
+    )
+
+
 def _point_kind(code: object) -> PointKind:
     for member in PointKind:
         if member.code == code:
@@ -311,6 +377,10 @@ def _point_kind(code: object) -> PointKind:
 
 __all__ = [
     "bench_row",
+    "group_row",
+    "plan_row",
+    "read_group",
+    "read_plan",
     "meter_set_row",
     "read_meter_set",
     "read_service_point",
