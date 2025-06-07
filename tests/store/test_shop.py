@@ -154,6 +154,8 @@ def test_summary_counts_every_table(shop: Shop) -> None:
         "transformers": 0,
         "service points": 0,
         "meter sets": 0,
+        "groups": 0,
+        "sample decisions": 0,
     }
 
 

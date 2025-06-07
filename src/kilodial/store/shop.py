@@ -27,6 +27,7 @@ from kilodial.model.run import BenchRun, RunKind
 from kilodial.store.benches import BenchRepository, StandardRepository
 from kilodial.store.book import Book, open_migrated
 from kilodial.store.devices import DeviceRepository
+from kilodial.store.groups import GroupRepository, PlanRepository
 from kilodial.store.installs import InstallRepository, ServicePointRepository
 from kilodial.store.meters import MeterRepository
 from kilodial.store.runs import RunRepository
@@ -50,6 +51,8 @@ class Shop:
         self.transformers = TransformerRepository(conn)
         self.points = ServicePointRepository(conn)
         self.installs = InstallRepository(conn)
+        self.groups = GroupRepository(conn)
+        self.plans = PlanRepository(conn)
 
     @property
     def path(self) -> Path:
@@ -162,6 +165,8 @@ class Shop:
             "transformers": self.transformers.count(),
             "service points": self.points.count(),
             "meter sets": self.installs.count(),
+            "groups": self.groups.count(),
+            "sample decisions": self.plans.count(),
         }
 
     def audit(self) -> list[str]:
