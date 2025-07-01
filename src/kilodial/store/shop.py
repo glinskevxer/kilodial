@@ -25,6 +25,7 @@ from kilodial.install.point import MeterSet
 from kilodial.model.device import DeviceType
 from kilodial.model.run import BenchRun, RunKind
 from kilodial.store.benches import BenchRepository, StandardRepository
+from kilodial.store.billing import BillingRepository
 from kilodial.store.book import Book, open_migrated
 from kilodial.store.devices import DeviceRepository
 from kilodial.store.groups import GroupRepository, PlanRepository
@@ -53,6 +54,7 @@ class Shop:
         self.installs = InstallRepository(conn)
         self.groups = GroupRepository(conn)
         self.plans = PlanRepository(conn)
+        self.billing = BillingRepository(conn)
 
     @property
     def path(self) -> Path:
@@ -167,6 +169,7 @@ class Shop:
             "meter sets": self.installs.count(),
             "groups": self.groups.count(),
             "sample decisions": self.plans.count(),
+            "billed months": self.billing.count(),
         }
 
     def audit(self) -> list[str]:
