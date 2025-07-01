@@ -54,3 +54,9 @@ def test_the_fifth_migration_adds_groups_and_plans() -> None:
     assert "CREATE TABLE sample_group" in joined
     assert "CREATE TABLE test_plan" in joined
     assert "ON DELETE CASCADE" in joined
+
+
+def test_the_sixth_migration_adds_the_billed_history() -> None:
+    joined = " ".join(MIGRATIONS[5].statements)
+    assert "CREATE TABLE billed_month" in joined
+    assert "amount      INTEGER NOT NULL" in joined

@@ -210,6 +210,22 @@ MIGRATIONS: tuple[Migration, ...] = (
         """,
         "CREATE INDEX plan_by_group ON test_plan (group_code, decided_on)",
     ),
+    _m(
+        6,
+        "billed history",
+        """
+        CREATE TABLE billed_month (
+            point_code  TEXT NOT NULL,
+            first_day   TEXT NOT NULL,
+            last_day    TEXT NOT NULL,
+            amount      INTEGER NOT NULL,
+            kwh         TEXT,
+            PRIMARY KEY (point_code, first_day),
+            FOREIGN KEY (point_code) REFERENCES service_point (code) ON DELETE CASCADE
+        )
+        """,
+        "CREATE INDEX billed_by_point ON billed_month (point_code, first_day)",
+    ),
 )
 
 
