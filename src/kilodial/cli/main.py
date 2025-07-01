@@ -16,6 +16,7 @@ from pathlib import Path
 import click
 
 from kilodial import __version__
+from kilodial.cli.adjust import adjustments, bills
 from kilodial.cli.benches import benches, standards
 from kilodial.cli.context import DEFAULT_BOOK, Context, pass_context
 from kilodial.cli.devices import devices
@@ -131,6 +132,8 @@ cli.add_command(transformers)
 cli.add_command(points)
 cli.add_command(groups)
 cli.add_command(due)
+cli.add_command(bills)
+cli.add_command(adjustments)
 
 
 def run() -> None:
