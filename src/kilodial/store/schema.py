@@ -226,6 +226,27 @@ MIGRATIONS: tuple[Migration, ...] = (
         """,
         "CREATE INDEX billed_by_point ON billed_month (point_code, first_day)",
     ),
+    _m(
+        7,
+        "customer requested tests",
+        """
+        CREATE TABLE complaint_request (
+            reference      TEXT PRIMARY KEY,
+            point_code     TEXT NOT NULL,
+            requested_on   TEXT NOT NULL,
+            requested_by   TEXT NOT NULL,
+            reason         TEXT NOT NULL,
+            note           TEXT,
+            run_reference  TEXT,
+            charge         TEXT,
+            fee            INTEGER,
+            closed_on      TEXT,
+            FOREIGN KEY (point_code) REFERENCES service_point (code)
+        )
+        """,
+        "CREATE INDEX complaint_by_point ON complaint_request (point_code, requested_on)",
+        "CREATE INDEX complaint_open ON complaint_request (closed_on)",
+    ),
 )
 
 

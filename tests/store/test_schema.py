@@ -60,3 +60,9 @@ def test_the_sixth_migration_adds_the_billed_history() -> None:
     joined = " ".join(MIGRATIONS[5].statements)
     assert "CREATE TABLE billed_month" in joined
     assert "amount      INTEGER NOT NULL" in joined
+
+
+def test_the_seventh_migration_adds_customer_requests() -> None:
+    joined = " ".join(MIGRATIONS[6].statements)
+    assert "CREATE TABLE complaint_request" in joined
+    assert "complaint_open" in joined
