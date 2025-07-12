@@ -94,6 +94,10 @@ def test_an_induction_meter_owes_a_creep_point_on_the_way_out() -> None:
     assert PointKind.CREEP in required_points(d, RunKind.ACCEPTANCE)
 
 
+def test_a_referee_run_does_not_owe_a_creep_point() -> None:
+    assert PointKind.CREEP not in required_points(device(), RunKind.REFEREE)
+
+
 def test_a_solid_state_meter_is_never_asked_to_creep() -> None:
     ss = device(technology=Technology.SOLID_STATE, register_ratio=None)
     for kind in RunKind:

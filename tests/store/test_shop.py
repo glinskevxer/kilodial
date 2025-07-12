@@ -157,6 +157,7 @@ def test_summary_counts_every_table(shop: Shop) -> None:
         "groups": 0,
         "sample decisions": 0,
         "billed months": 0,
+        "complaints": 0,
     }
 
 
@@ -317,13 +318,13 @@ def test_the_latest_as_found_run_is_the_one_that_counts(shop: Shop) -> None:
             ],
         )
     )
-    assert shop.as_found_registration("84-119302") == Registration("101.00")
+    assert shop.in_service_registration("84-119302") == Registration("101.00")
 
 
 def test_an_as_left_run_is_not_an_as_found_reading(shop: Shop) -> None:
     shop.runs.add(run("TR-1", kind=RunKind.AS_LEFT))
     with pytest.raises(RuleError, match="no usable as found run"):
-        shop.as_found_registration("84-119302")
+        shop.in_service_registration("84-119302")
 
 
 def test_unusable_runs_are_listed(shop: Shop) -> None:

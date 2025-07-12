@@ -27,6 +27,7 @@ from kilodial.model.run import BenchRun, RunKind
 from kilodial.store.benches import BenchRepository, StandardRepository
 from kilodial.store.billing import BillingRepository
 from kilodial.store.book import Book, open_migrated
+from kilodial.store.complaints import ComplaintRepository
 from kilodial.store.devices import DeviceRepository
 from kilodial.store.groups import GroupRepository, PlanRepository
 from kilodial.store.installs import InstallRepository, ServicePointRepository
@@ -36,6 +37,8 @@ from kilodial.store.transformers import TransformerRepository
 from kilodial.testing.verdict import Outcome, Verdict, judge
 from kilodial.units.electrical import PowerFactor
 from kilodial.units.registration import Registration
+
+IN_SERVICE = frozenset({RunKind.AS_FOUND, RunKind.REFEREE})
 
 
 class Shop:
@@ -55,6 +58,7 @@ class Shop:
         self.groups = GroupRepository(conn)
         self.plans = PlanRepository(conn)
         self.billing = BillingRepository(conn)
+        self.complaints = ComplaintRepository(conn)
 
     @property
     def path(self) -> Path:
@@ -122,10 +126,22 @@ class Shop:
         return self.accuracy_of_set(meter_set, power_factor=power_factor)
 
     def accuracy_of_set(
-        self, meter_set: MeterSet, *, power_factor: PowerFactor | None = None
+        self,
+        meter_set: MeterSet,
+        *,
+        reading: Registration | None = None,
+        power_factor: PowerFactor | None = None,
     ) -> InstalledAccuracy:
-        """The same question about a set already in hand."""
-        reading = self.as_found_registration(meter_set.meter_serial)
+        """The same question about a set already in hand.
+
+        ``reading`` names the meter's own registration when the caller already
+        has the run it wants used. A customer requested test has to be answered
+        on the run the customer asked for, not on whichever run happens to be
+        latest, so that path passes its reading in rather than letting this
+        method go looking.
+        """
+        if reading is None:
+            reading = self.in_service_registration(meter_set.meter_serial)
         return accuracy_of(
             meter_set,
             reading,
@@ -134,10 +150,16 @@ class Shop:
             power_factor=power_factor,
         )
 
-    def as_found_registration(self, serial: str) -> Registration:
-        """The meter's own registration, from its latest usable as found run."""
+    def in_service_registration(self, serial: str) -> Registration:
+        """The meter's own registration, from its latest usable in service run.
+
+        In service means as found or referee: both measure the meter as the
+        customer had it. An as left run is the shop's own certification and an
+        acceptance run happened before the meter went out, so neither says
+        anything about what the customer was billed.
+        """
         for run in reversed(self.runs.for_meter(serial)):
-            if run.kind is not RunKind.AS_FOUND:
+            if run.kind not in IN_SERVICE:
                 continue
             verdict = self.judge_run(run)
             if verdict.outcome.is_usable and verdict.registration is not None:
@@ -170,6 +192,7 @@ class Shop:
             "groups": self.groups.count(),
             "sample decisions": self.plans.count(),
             "billed months": self.billing.count(),
+            "complaints": self.complaints.count(),
         }
 
     def audit(self) -> list[str]:

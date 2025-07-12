@@ -5,6 +5,10 @@ thirty day clock the utility is running against. It is deliberately a query
 rather than a flag: a request is open when it has no closing date, and there is
 no second place for that fact to be recorded wrongly.
 
+``previous_request_on`` is not a column and comes back as None. It is derived
+from the other requests on the point when it is needed, so that entering an old
+request late corrects every later free window rather than none of them.
+
 A closed request keeps the run that answered it, the charge decision and the fee.
 It is a record of what the customer was told, so it is written once and not
 edited. Reopening is not supported and that is on purpose; a request answered

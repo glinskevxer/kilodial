@@ -8,9 +8,11 @@ at the right load, because a full load point recorded at three amperes is a
 light load point that somebody mislabelled, and averaging it as full load moves
 the answer a long way.
 
-Creep is worth one more line. A solid state meter has no disc and cannot creep,
-so demanding a creep point from one is asking a technician to invent a reading.
-The sequence follows the technology, not the form.
+Creep is worth two more lines. A solid state meter has no disc and cannot creep,
+so demanding a creep point from one is asking a technician to invent a reading:
+the sequence follows the technology, not the form. And creep is only owed on the
+runs where the shop is certifying a meter fit to go out, not on the runs that
+measure a meter as the customer had it.
 """
 
 from __future__ import annotations
@@ -31,6 +33,12 @@ VOLTAGE_SLACK = Decimal("0.05")
 
 CREEP_VOLTAGE_SHARE = Decimal("1.10")
 HEAVY_LOAD_SHARE = Decimal("2")
+
+# Runs where the shop is certifying a meter fit to go out. Only these owe a
+# creep point: an as found or a referee run measures a meter as the customer had
+# it, and demanding a creep check there would void a run that answered a
+# customer's complaint perfectly well.
+CERTIFYING = frozenset({RunKind.ACCEPTANCE, RunKind.AS_LEFT})
 
 
 @dataclass(frozen=True)
@@ -69,7 +77,7 @@ def required_points(device: DeviceType, kind: RunKind) -> frozenset[PointKind]:
     wanted = {PointKind.FULL_LOAD, PointKind.LIGHT_LOAD}
     if device.elements >= Decimal("2"):
         wanted.add(PointKind.POWER_FACTOR)
-    if device.technology is Technology.INDUCTION and kind is not RunKind.AS_FOUND:
+    if device.technology is Technology.INDUCTION and kind in CERTIFYING:
         wanted.add(PointKind.CREEP)
     if device.demand_capable and kind is RunKind.ACCEPTANCE:
         wanted.add(PointKind.DEMAND)
@@ -135,6 +143,7 @@ def check_conditions(run: BenchRun, device: DeviceType) -> None:
 
 
 __all__ = [
+    "CERTIFYING",
     "CURRENT_SLACK",
     "VOLTAGE_SLACK",
     "Condition",
