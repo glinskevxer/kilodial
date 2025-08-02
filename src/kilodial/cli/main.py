@@ -145,3 +145,6 @@ def run() -> None:
 
 if __name__ == "__main__":  # pragma: no cover
     run()
+
+
+__all__ = ["EXIT_SHOP_ERROR", "ShopGroup", "book", "cli", "run"]

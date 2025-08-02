@@ -245,4 +245,4 @@ def run_delete(context: Context, reference: str) -> None:
     context.say(f"{reference.upper()} deleted")
 
 
-__all__ = ["creep_word", "run_kind", "runs"]
+__all__ = ["CREEP_WORDS", "KINDS", "creep_word", "run_kind", "runs"]

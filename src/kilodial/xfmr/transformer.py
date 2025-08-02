@@ -200,6 +200,7 @@ __all__ = [
     "MAX_RCF",
     "MINUTES_PER_RADIAN",
     "MIN_RCF",
+    "PLACES",
     "AccuracyClass",
     "InstrumentTransformer",
     "TransformerKind",

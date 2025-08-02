@@ -224,4 +224,4 @@ def point_accuracy(context: Context, code: str, day: str | None, power_factor: s
         raise SystemExit(1)
 
 
-__all__ = ["points", "service_named"]
+__all__ = ["SERVICES", "points", "service_named"]

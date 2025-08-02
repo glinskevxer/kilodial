@@ -221,4 +221,4 @@ def _note(value: object) -> str | None:
     return optional(value, "run note", 240)
 
 
-__all__ = ["PointKind", "RunKind", "BenchPoint", "BenchRun", "point_kind"]
+__all__ = ["BenchPoint", "BenchRun", "PointKind", "RunKind", "point_kind"]

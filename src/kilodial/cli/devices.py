@@ -165,4 +165,4 @@ def device_retire(context: Context, key: str, day: str) -> None:
     context.say(f"{retired.key} retired on {day}")
 
 
-__all__ = ["MeterClass", "devices"]
+__all__ = ["TECHNOLOGIES", "MeterClass", "devices"]

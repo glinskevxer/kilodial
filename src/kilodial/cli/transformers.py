@@ -208,4 +208,4 @@ def transformer_where(context: Context, serial: str) -> None:
         click.echo(line)
 
 
-__all__ = ["load_factor", "transformer_kind", "transformers"]
+__all__ = ["KINDS", "load_factor", "transformer_kind", "transformers"]

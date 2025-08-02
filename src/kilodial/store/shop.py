@@ -262,4 +262,4 @@ def require(value: object, kind: str, key: str) -> None:
         raise NotFoundError(kind, key)
 
 
-__all__ = ["Shop", "open_shop", "require"]
+__all__ = ["IN_SERVICE", "Shop", "open_shop", "require"]

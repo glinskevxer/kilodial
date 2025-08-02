@@ -144,7 +144,9 @@ def check_conditions(run: BenchRun, device: DeviceType) -> None:
 
 __all__ = [
     "CERTIFYING",
+    "CREEP_VOLTAGE_SHARE",
     "CURRENT_SLACK",
+    "HEAVY_LOAD_SHARE",
     "VOLTAGE_SLACK",
     "Condition",
     "check_conditions",
