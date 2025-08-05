@@ -58,6 +58,7 @@ def pairs(items: Iterable[tuple[str, str]]) -> list[str]:
 
 
 def yes_no(value: object) -> str:
+    """A boolean as a word, because True in a shop report reads as noise."""
     return "yes" if value else "no"
 
 

@@ -23,6 +23,7 @@ SERVICES = {s.value: s for s in Service}
 
 
 def service_named(text: str) -> Service:
+    """Read a service code the way a crew writes it, refusing the rest."""
     key = text.strip().upper()
     if key not in SERVICES:
         raise BadInputError(f"{text!r} is not one of {', '.join(sorted(SERVICES))}")

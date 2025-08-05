@@ -48,6 +48,7 @@ EXPECTED_TABLES = frozenset(
 
 
 def tables_of(connection: sqlite3.Connection) -> set[str]:
+    """Every table on a book, leaving sqlite's own out of it."""
     rows = connection.execute(
         "SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%'"
     ).fetchall()
@@ -55,6 +56,7 @@ def tables_of(connection: sqlite3.Connection) -> set[str]:
 
 
 def indexes_of(connection: sqlite3.Connection) -> set[str]:
+    """Every index on a book, leaving sqlite's own out of it."""
     rows = connection.execute(
         "SELECT name FROM sqlite_master WHERE type = 'index' AND name NOT LIKE 'sqlite_%'"
     ).fetchall()

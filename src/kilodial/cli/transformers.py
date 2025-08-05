@@ -21,6 +21,7 @@ KINDS = {k.value: k for k in TransformerKind}
 
 
 def transformer_kind(text: str) -> TransformerKind:
+    """Read a transformer kind, which is current or voltage."""
     key = text.strip().lower()
     if key not in KINDS:
         raise BadInputError(f"{text!r} is not one of {', '.join(sorted(KINDS))}")

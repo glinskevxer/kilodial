@@ -79,6 +79,7 @@ def step_interval(months: int, *, passed: bool) -> int | None:
 
 
 def mean_of(readings: list[Registration]) -> Decimal:
+    """The arithmetic mean of a set of readings, to four places."""
     if not readings:
         raise RuleError("there is nothing to average")
     total = sum((r.percent for r in readings), Decimal(0))

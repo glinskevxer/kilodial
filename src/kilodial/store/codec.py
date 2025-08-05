@@ -55,6 +55,7 @@ def _enum(cls: type[Any], value: object, what: str) -> Any:
 
 
 def device_row(device: DeviceType) -> Row:
+    """The device as a row, in the column order the table is declared in."""
     return (
         device.manufacturer,
         device.model_code,
@@ -71,6 +72,7 @@ def device_row(device: DeviceType) -> Row:
 
 
 def read_device(row: Row) -> DeviceType:
+    """The device back off a row, refusing a value the book should not hold."""
     return DeviceType(
         manufacturer=str(row[0]),
         model_code=str(row[1]),
@@ -87,6 +89,7 @@ def read_device(row: Row) -> DeviceType:
 
 
 def meter_row(meter: Meter) -> Row:
+    """The meter as a row, in the column order the table is declared in."""
     return (
         meter.serial,
         meter.device_key,
@@ -99,6 +102,7 @@ def meter_row(meter: Meter) -> Row:
 
 
 def read_meter(row: Row) -> Meter:
+    """The meter back off a row, refusing a value the book should not hold."""
     return Meter(
         serial=str(row[0]),
         device_key=str(row[1]),
@@ -111,6 +115,7 @@ def read_meter(row: Row) -> Meter:
 
 
 def standard_row(standard: ReferenceStandard) -> Row:
+    """The standard as a row, in the column order the table is declared in."""
     return (
         standard.serial,
         standard.maker,
@@ -124,6 +129,7 @@ def standard_row(standard: ReferenceStandard) -> Row:
 
 
 def read_standard(row: Row) -> ReferenceStandard:
+    """The standard back off a row, refusing a value the book should not hold."""
     return ReferenceStandard(
         serial=str(row[0]),
         maker=str(row[1]),
@@ -137,6 +143,7 @@ def read_standard(row: Row) -> ReferenceStandard:
 
 
 def bench_row(bench: Bench) -> Row:
+    """The bench as a row, in the column order the table is declared in."""
     return (
         bench.code,
         bench.name,
@@ -151,6 +158,7 @@ def bench_row(bench: Bench) -> Row:
 
 
 def read_bench(row: Row) -> Bench:
+    """The bench back off a row, refusing a value the book should not hold."""
     return Bench(
         code=str(row[0]),
         name=str(row[1]),
@@ -165,6 +173,7 @@ def read_bench(row: Row) -> Bench:
 
 
 def run_row(run: BenchRun) -> Row:
+    """The run as a row, in the column order the table is declared in."""
     return (
         run.reference,
         run.meter_serial,
@@ -178,6 +187,7 @@ def run_row(run: BenchRun) -> Row:
 
 
 def read_run(row: Row, points: list[BenchPoint]) -> BenchRun:
+    """The run back off a row, refusing a value the book should not hold."""
     return BenchRun(
         reference=str(row[0]),
         meter_serial=str(row[1]),
@@ -192,6 +202,7 @@ def read_run(row: Row, points: list[BenchPoint]) -> BenchRun:
 
 
 def point_row(reference: str, position: int, point: BenchPoint) -> Row:
+    """The point as a row, in the column order the table is declared in."""
     return (
         reference,
         position,
@@ -206,6 +217,7 @@ def point_row(reference: str, position: int, point: BenchPoint) -> Row:
 
 
 def read_point(row: Row) -> BenchPoint:
+    """The point back off a row, refusing a value the book should not hold."""
     kind = _point_kind(row[2])
     sense = _enum(Sense, row[6], "power factor sense")
     return BenchPoint(
@@ -219,6 +231,7 @@ def read_point(row: Row) -> BenchPoint:
 
 
 def transformer_row(transformer: InstrumentTransformer) -> Row:
+    """The transformer as a row, in the column order the table is declared in."""
     return (
         transformer.serial,
         transformer.kind.value,
@@ -233,6 +246,7 @@ def transformer_row(transformer: InstrumentTransformer) -> Row:
 
 
 def read_transformer(row: Row) -> InstrumentTransformer:
+    """The transformer back off a row, refusing a value the book should not hold."""
     return InstrumentTransformer(
         serial=str(row[0]),
         kind=_enum(TransformerKind, row[1], "transformer kind"),
@@ -254,6 +268,7 @@ def _accuracy(code: object) -> AccuracyClass:
 
 
 def service_point_row(point: ServicePoint) -> Row:
+    """The service point as a row, in the column order the table is declared in."""
     return (
         point.code,
         point.account,
@@ -267,6 +282,7 @@ def service_point_row(point: ServicePoint) -> Row:
 
 
 def read_service_point(row: Row) -> ServicePoint:
+    """The service point back off a row, refusing a value the book should not hold."""
     return ServicePoint(
         code=str(row[0]),
         account=str(row[1]),
@@ -280,6 +296,7 @@ def read_service_point(row: Row) -> ServicePoint:
 
 
 def meter_set_row(meter_set: MeterSet) -> Row:
+    """The meter set as a row, in the column order the table is declared in."""
     return (
         meter_set.point_code,
         meter_set.meter_serial,
@@ -293,6 +310,7 @@ def meter_set_row(meter_set: MeterSet) -> Row:
 
 
 def read_meter_set(row: Row) -> MeterSet:
+    """The meter set back off a row, refusing a value the book should not hold."""
     return MeterSet(
         point_code=str(row[0]),
         meter_serial=str(row[1]),
@@ -306,6 +324,7 @@ def read_meter_set(row: Row) -> MeterSet:
 
 
 def group_row(group: Group) -> Row:
+    """The group as a row, in the column order the table is declared in."""
     return (
         group.code,
         group.name,
@@ -319,6 +338,7 @@ def group_row(group: Group) -> Row:
 
 
 def read_group(row: Row) -> Group:
+    """The group back off a row, refusing a value the book should not hold."""
     return Group(
         code=str(row[0]),
         name=str(row[1]),
@@ -332,6 +352,7 @@ def read_group(row: Row) -> Group:
 
 
 def plan_row(decision: Decision) -> Row:
+    """The plan as a row, in the column order the table is declared in."""
     return (
         decision.group_code,
         decision.decided_on.isoformat(),
@@ -347,6 +368,7 @@ def plan_row(decision: Decision) -> Row:
 
 
 def read_plan(row: Row, previous_months: int) -> Decision:
+    """The plan back off a row, refusing a value the book should not hold."""
     months = int(row[2])
     outcome = SampleOutcome(
         population=int(row[3]),

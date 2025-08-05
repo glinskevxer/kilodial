@@ -69,6 +69,7 @@ class Charge(enum.Enum):
 
 
 def reason_named(text: object) -> Reason:
+    """Read a complaint reason by name, taking either spelling of the enum."""
     if isinstance(text, Reason):
         return text
     if not isinstance(text, str):

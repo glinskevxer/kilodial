@@ -83,6 +83,7 @@ class AccuracyClass(enum.Enum):
 
 
 def accuracy_class(code: object) -> AccuracyClass:
+    """Read an accuracy class by its printed code, such as 0.3."""
     if isinstance(code, AccuracyClass):
         return code
     text = str(code).strip()

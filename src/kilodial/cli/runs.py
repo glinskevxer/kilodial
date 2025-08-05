@@ -27,6 +27,7 @@ CREEP_WORDS = {"held": False, "crept": True}
 
 
 def run_kind(text: str) -> RunKind:
+    """Read a run kind, tolerating the hyphen and the space people type."""
     key = text.strip().lower().replace("-", "_").replace(" ", "_")
     if key not in KINDS:
         raise BadInputError(f"{text!r} is not one of {', '.join(sorted(KINDS))}")
@@ -34,6 +35,7 @@ def run_kind(text: str) -> RunKind:
 
 
 def creep_word(text: str | None) -> bool | None:
+    """Read the creep result, which is written held or crept and nothing else."""
     if text is None:
         return None
     key = text.strip().lower()

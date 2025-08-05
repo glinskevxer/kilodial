@@ -95,6 +95,7 @@ def export_order(name: str) -> tuple[int, str]:
 
 
 def faults_for(name: str) -> list[str]:
+    """Everything wrong with one module's declared exports."""
     module = importlib.import_module(name)
     declared = getattr(module, "__all__", None)
     if declared is None:
@@ -127,6 +128,7 @@ def _is_leaf_command(module: ModuleType, name: str) -> bool:
 
 
 def faults() -> list[str]:
+    """Everything wrong with the whole package's declared exports."""
     found: list[str] = []
     for name in module_names():
         found.extend(faults_for(name))
@@ -134,6 +136,7 @@ def faults() -> list[str]:
 
 
 def main(argv: list[str] | None = None) -> int:
+    """Print the export problems and say so in the exit code."""
     problems = faults()
     for problem in problems:
         print(problem)

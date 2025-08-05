@@ -19,6 +19,7 @@ STATES = {s.value: s for s in MeterState}
 
 
 def state_named(text: str) -> MeterState:
+    """Read a meter state by name, naming the alternatives when it is wrong."""
     key = text.strip().lower()
     if key not in STATES:
         raise BadInputError(f"{text!r} is not one of {', '.join(sorted(STATES))}")

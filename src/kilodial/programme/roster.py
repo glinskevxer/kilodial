@@ -88,6 +88,7 @@ def clock_start(shop: Shop, serial: str) -> tuple[str, RunKind] | None:
 
 
 def group_of(shop: Shop, meter: Meter) -> str:
+    """The group a meter falls into, or the ungrouped marker."""
     found = shop.groups.group_for(meter.serial)
     return found[0].code if found else UNGROUPED
 
