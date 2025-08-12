@@ -66,3 +66,9 @@ def test_the_seventh_migration_adds_customer_requests() -> None:
     joined = " ".join(MIGRATIONS[6].statements)
     assert "CREATE TABLE complaint_request" in joined
     assert "complaint_open" in joined
+
+
+def test_the_eighth_migration_adds_work_orders() -> None:
+    joined = " ".join(MIGRATIONS[7].statements)
+    assert "CREATE TABLE work_order" in joined
+    assert "order_live" in joined

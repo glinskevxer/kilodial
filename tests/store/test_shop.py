@@ -158,6 +158,7 @@ def test_summary_counts_every_table(shop: Shop) -> None:
         "sample decisions": 0,
         "billed months": 0,
         "complaints": 0,
+        "work orders": 0,
     }
 
 

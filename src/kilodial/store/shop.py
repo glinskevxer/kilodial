@@ -32,6 +32,7 @@ from kilodial.store.devices import DeviceRepository
 from kilodial.store.groups import GroupRepository, PlanRepository
 from kilodial.store.installs import InstallRepository, ServicePointRepository
 from kilodial.store.meters import MeterRepository
+from kilodial.store.orders import OrderRepository
 from kilodial.store.runs import RunRepository
 from kilodial.store.transformers import TransformerRepository
 from kilodial.testing.verdict import Outcome, Verdict, judge
@@ -59,6 +60,7 @@ class Shop:
         self.plans = PlanRepository(conn)
         self.billing = BillingRepository(conn)
         self.complaints = ComplaintRepository(conn)
+        self.orders = OrderRepository(conn)
 
     @property
     def path(self) -> Path:
@@ -193,6 +195,7 @@ class Shop:
             "sample decisions": self.plans.count(),
             "billed months": self.billing.count(),
             "complaints": self.complaints.count(),
+            "work orders": self.orders.count(),
         }
 
     def audit(self) -> list[str]:

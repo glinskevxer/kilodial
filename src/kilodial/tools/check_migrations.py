@@ -43,6 +43,7 @@ EXPECTED_TABLES = frozenset(
         "test_plan",
         "billed_month",
         "complaint_request",
+        "work_order",
     }
 )
 

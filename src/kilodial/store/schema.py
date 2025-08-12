@@ -247,6 +247,28 @@ MIGRATIONS: tuple[Migration, ...] = (
         "CREATE INDEX complaint_by_point ON complaint_request (point_code, requested_on)",
         "CREATE INDEX complaint_open ON complaint_request (closed_on)",
     ),
+    _m(
+        8,
+        "shop work orders",
+        """
+        CREATE TABLE work_order (
+            reference      TEXT PRIMARY KEY,
+            kind           TEXT NOT NULL,
+            meter_serial   TEXT NOT NULL,
+            point_code     TEXT,
+            priority       TEXT NOT NULL,
+            raised_on      TEXT NOT NULL,
+            state          TEXT NOT NULL,
+            assigned_to    TEXT,
+            closed_on      TEXT,
+            run_reference  TEXT,
+            disposition    TEXT,
+            note           TEXT
+        )
+        """,
+        "CREATE INDEX order_by_meter ON work_order (meter_serial, raised_on)",
+        "CREATE INDEX order_live ON work_order (state, raised_on)",
+    ),
 )
 
 
