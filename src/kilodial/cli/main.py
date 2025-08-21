@@ -24,6 +24,7 @@ from kilodial.cli.devices import devices
 from kilodial.cli.groups import due, groups
 from kilodial.cli.installs import points
 from kilodial.cli.meters import meters
+from kilodial.cli.orders import orders
 from kilodial.cli.runs import runs
 from kilodial.cli.transformers import transformers
 from kilodial.errors import ShopError
@@ -136,6 +137,7 @@ cli.add_command(due)
 cli.add_command(bills)
 cli.add_command(adjustments)
 cli.add_command(complaints)
+cli.add_command(orders)
 
 
 def run() -> None:
