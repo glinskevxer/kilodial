@@ -22,6 +22,7 @@ from kilodial.cli.complaints import complaints
 from kilodial.cli.context import DEFAULT_BOOK, Context, pass_context
 from kilodial.cli.devices import devices
 from kilodial.cli.groups import due, groups
+from kilodial.cli.ingest import imports
 from kilodial.cli.installs import points
 from kilodial.cli.meters import meters
 from kilodial.cli.orders import orders
@@ -138,6 +139,7 @@ cli.add_command(bills)
 cli.add_command(adjustments)
 cli.add_command(complaints)
 cli.add_command(orders)
+cli.add_command(imports)
 
 
 def run() -> None:
