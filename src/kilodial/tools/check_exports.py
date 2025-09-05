@@ -45,6 +45,7 @@ NO_EXPORTS = frozenset(
         "kilodial.complaint",
         "kilodial.ingest",
         "kilodial.orders",
+        "kilodial.report",
         "kilodial.tools",
     }
 )
