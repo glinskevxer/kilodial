@@ -26,6 +26,7 @@ from kilodial.cli.ingest import imports
 from kilodial.cli.installs import points
 from kilodial.cli.meters import meters
 from kilodial.cli.orders import orders
+from kilodial.cli.reports import reports
 from kilodial.cli.runs import runs
 from kilodial.cli.transformers import transformers
 from kilodial.errors import ShopError
@@ -140,6 +141,7 @@ cli.add_command(adjustments)
 cli.add_command(complaints)
 cli.add_command(orders)
 cli.add_command(imports)
+cli.add_command(reports)
 
 
 def run() -> None:
