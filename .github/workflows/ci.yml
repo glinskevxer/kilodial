@@ -1,0 +1,149 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: pyproject.toml
+      - run: python -m pip install --upgrade pip
+      - run: python -m pip install -e ".[dev]"
+      - run: python -m ruff check .
+      - run: python -m ruff format --check .
+      - run: python -m mypy
+      - run: python -m kilodial.tools.check_migrations
+      - run: python -m kilodial.tools.check_exports
+      - run: python -m kilodial.tools.check_docstrings
+      - run: python -m kilodial.tools.check_workflow
+      - run: python -m kilodial.tools.schema_dump --check
+
+  tests:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+          cache-dependency-path: pyproject.toml
+      - run: python -m pip install --upgrade pip
+      - run: python -m pip install -e ".[dev]"
+      - run: python -m pytest -q
+
+  coverage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: pyproject.toml
+      - run: python -m pip install --upgrade pip
+      - run: python -m pip install -e ".[dev]"
+      - run: python -m pytest -q --cov --cov-report=json --cov-report=term-missing
+      - run: python -m kilodial.tools.coverage_gate --floor 90 --file-floor 70
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage
+          path: coverage.json
+
+  installed:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: pyproject.toml
+      - run: python -m pip install --upgrade pip
+      - run: python -m pip install .
+      - run: kilodial --version
+      - run: python -m kilodial.tools.smoke
+
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: pyproject.toml
+      - run: python -m pip install --upgrade pip build
+      - run: python -m build
+      - run: python -m pip install dist/*.whl
+      - run: python -c "import kilodial; print(kilodial.__version__)"
+      - run: python -m kilodial.tools.smoke --quiet
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist
+
+  walk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: pyproject.toml
+      - run: python -m pip install --upgrade pip
+      - run: python -m pip install .
+      - name: stand a shop up through the console script
+        run: |
+          set -euo pipefail
+          book=/tmp/walk.sqlite3
+          kilodial --book "$book" init
+          kilodial --book "$book" device add Halvern R4S \
+            --form 2S --class 200 --volts 240 --kh 7.2 --ratio 100 \
+            --introduced 2004-05-01
+          kilodial --book "$book" meter receive 84-119302 \
+            --type Halvern/R4S --acquired 2015-01-01
+          kilodial --book "$book" standard add RS-5511 \
+            --maker Radian --model RD-23 --certificate NVLAP-88214 \
+            --certified 2015-01-01 --due 2035-01-01 --uncertainty 0.02
+          kilodial --book "$book" bench add B2 "north wall" \
+            --positions 8 --standard RS-5511 --max-amps 100 --max-volts 480 \
+            --installed 2010-01-01
+          kilodial --book "$book" point add SP-1042 --account 44-9021 \
+            --address "18 Fenwick Row" --service 1P3W --volts 240 --rate R1 \
+            --energised 2011-06-14
+          kilodial --book "$book" point set SP-1042 84-119302 \
+            --multiplier 1 --on 2019-05-02
+          kilodial --book "$book" bill add SP-1042 \
+            --from 2025-01-01 --to 2025-01-31 --amount 100.00
+          kilodial --book "$book" run record TR-1 --meter 84-119302 --bench B2 \
+            --on 2025-06-30 --by "R Ellis" --fl 103.20 --ll 102.40
+          kilodial --book "$book" run show TR-1
+          kilodial --book "$book" point accuracy SP-1042
+          kilodial --book "$book" adjust show SP-1042 --on 2025-07-15
+          kilodial --book "$book" group add G1 "Halvern R4S" --type Halvern/R4S
+          kilodial --book "$book" group list
+          kilodial --book "$book" due list --on 2026-01-01
+          kilodial --book "$book" work plan --on 2026-01-01 --raise
+          kilodial --book "$book" work list
+          kilodial --book "$book" report shop --on 2026-01-01
+          kilodial --book "$book" report register --on 2026-01-01
+          kilodial --book "$book" book audit
+          kilodial --book "$book" book summary
