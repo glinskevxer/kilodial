@@ -269,6 +269,13 @@ MIGRATIONS: tuple[Migration, ...] = (
         "CREATE INDEX order_by_meter ON work_order (meter_serial, raised_on)",
         "CREATE INDEX order_live ON work_order (state, raised_on)",
     ),
+    _m(
+        9,
+        "demand programming and interval checks",
+        "ALTER TABLE device_type ADD COLUMN demand_interval TEXT",
+        "ALTER TABLE bench_run ADD COLUMN demand_seconds TEXT",
+        "CREATE INDEX device_by_demand ON device_type (demand_capable)",
+    ),
 )
 
 

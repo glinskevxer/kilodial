@@ -27,6 +27,7 @@ def a_device() -> DeviceType:
         technology=Technology.INDUCTION,
         register_ratio="100",
         demand_capable=True,
+        demand_interval=15,
         introduced="2004-05-01",
         retired="2016-12-31",
     )

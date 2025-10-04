@@ -14,6 +14,7 @@ from datetime import date
 from decimal import Decimal
 
 from kilodial.errors import BadInputError, RuleError
+from kilodial.model.demand import Interval, interval_of
 from kilodial.model.form import Form, MeterClass, Technology, form, meter_class
 from kilodial.units.electrical import Amperes, Volts
 from kilodial.units.span import DateSpan, parse_date
@@ -39,6 +40,7 @@ class DeviceType:
     technology: Technology
     register_ratio: Decimal | None
     demand_capable: bool
+    demand_interval: Interval | None
     introduced: date
     retired: date | None
 
@@ -55,6 +57,7 @@ class DeviceType:
         technology: Technology,
         register_ratio: object = None,
         demand_capable: bool = False,
+        demand_interval: object = None,
         introduced: object,
         retired: object = None,
     ) -> DeviceType:
@@ -78,6 +81,7 @@ class DeviceType:
                 f"{the_form} is self contained"
             )
         ratio = _ratio(register_ratio, technology)
+        window = _demand_interval(demand_interval, bool(demand_capable))
         first = parse_date(introduced)
         last = None if retired is None else parse_date(retired)
         if last is not None and last < first:
@@ -92,6 +96,7 @@ class DeviceType:
             technology=technology,
             register_ratio=ratio,
             demand_capable=bool(demand_capable),
+            demand_interval=window,
             introduced=first,
             retired=last,
         )
@@ -125,6 +130,11 @@ class DeviceType:
         return self.form.transformer_rated or self.meter_class.is_transformer_class
 
     @property
+    def registers_demand(self) -> bool:
+        """Whether a run on this type is expected to carry a demand point."""
+        return self.demand_capable and self.demand_interval is not None
+
+    @property
     def is_disc(self) -> bool:
         return self.technology is Technology.INDUCTION
 
@@ -145,6 +155,23 @@ def _kh(value: object) -> Decimal:
     if constant < MIN_KH or constant > MAX_KH:
         raise BadInputError(f"a watthour constant of {constant} is outside anything real")
     return constant
+
+
+def _demand_interval(value: object, demand_capable: bool) -> Interval | None:
+    """A demand meter has to say what window it is programmed for.
+
+    The nameplate does not carry it, because the same meter is programmed for
+    fifteen minutes on one service and thirty on the next. It is a property of
+    how the shop stocks the type, which is why it sits here rather than on the
+    installation.
+    """
+    if value is None:
+        if demand_capable:
+            raise RuleError("a demand meter has to say which interval it registers over")
+        return None
+    if not demand_capable:
+        raise RuleError("a type that does not register demand has no demand interval")
+    return interval_of(value)
 
 
 def _ratio(value: object, technology: Technology) -> Decimal | None:

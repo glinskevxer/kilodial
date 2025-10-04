@@ -1,6 +1,6 @@
 -- kilodial schema, built from the migrations. Do not edit by hand.
 -- Rebuild with: python -m kilodial.tools.schema_dump
--- Migrations applied: 8 (latest 8)
+-- Migrations applied: 9 (latest 9)
 
 CREATE TABLE bench (
             code             TEXT PRIMARY KEY,
@@ -37,7 +37,7 @@ CREATE TABLE bench_run (
             tested_on        TEXT NOT NULL,
             technician       TEXT NOT NULL,
             note             TEXT
-        );
+        , demand_seconds TEXT);
 
 CREATE TABLE billed_month (
             point_code  TEXT NOT NULL,
@@ -74,7 +74,7 @@ CREATE TABLE device_type (
             register_ratio  TEXT,
             demand_capable  INTEGER NOT NULL DEFAULT 0,
             introduced      TEXT    NOT NULL,
-            retired         TEXT,
+            retired         TEXT, demand_interval TEXT,
             PRIMARY KEY (manufacturer, model_code)
         );
 
@@ -189,6 +189,8 @@ CREATE INDEX billed_by_point ON billed_month (point_code, first_day);
 CREATE INDEX complaint_by_point ON complaint_request (point_code, requested_on);
 
 CREATE INDEX complaint_open ON complaint_request (closed_on);
+
+CREATE INDEX device_by_demand ON device_type (demand_capable);
 
 CREATE INDEX meter_by_device ON meter (device_key);
 

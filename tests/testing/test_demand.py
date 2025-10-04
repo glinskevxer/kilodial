@@ -20,6 +20,7 @@ def device(**over: object) -> DeviceType:
         "kh": "1.8",
         "technology": Technology.SOLID_STATE,
         "demand_capable": True,
+        "demand_interval": 15,
         "introduced": "2014-05-01",
     }
     args.update(over)
@@ -81,7 +82,7 @@ def test_a_run_with_no_demand_point_was_not_tested() -> None:
 
 
 def test_a_meter_that_does_not_register_demand() -> None:
-    plain = device(demand_capable=False)
+    plain = device(demand_capable=False, demand_interval=None)
     assert judge_demand(run(demand=None), plain).outcome is DemandOutcome.NOT_TESTED
     with pytest.raises(RuleError, match="does not register demand"):
         judge_demand(run(), plain)

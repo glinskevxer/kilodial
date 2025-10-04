@@ -41,6 +41,7 @@ def devices() -> None:
 @click.option("--tech", default="induction", show_default=True, help="induction or solid_state")
 @click.option("--ratio", default=None, help="register ratio, required on an induction meter")
 @click.option("--demand", is_flag=True, help="the type registers demand as well as energy")
+@click.option("--interval", "demand_interval", default=None, help="demand window in minutes")
 @click.option("--introduced", required=True, help="first day the shop bought this type")
 @click.option("--retired", default=None, help="last day the shop bought this type")
 @pass_context
@@ -55,6 +56,7 @@ def device_add(
     tech: str,
     ratio: str | None,
     demand: bool,
+    demand_interval: str | None,
     introduced: str,
     retired: str | None,
 ) -> None:
@@ -70,6 +72,7 @@ def device_add(
         technology=_technology(tech),
         register_ratio=ratio,
         demand_capable=demand,
+        demand_interval=demand_interval,
         introduced=introduced,
         retired=retired,
     )
@@ -130,6 +133,7 @@ def device_show(context: Context, key: str) -> None:
         ("technology", str(d.technology)),
         ("register ratio", or_dash(d.register_ratio)),
         ("demand", yes_no(d.demand_capable)),
+        ("demand interval", or_dash(d.demand_interval)),
         ("transformer rated", yes_no(d.is_transformer_rated)),
         ("introduced", d.introduced.isoformat()),
         ("retired", or_dash(None if d.retired is None else d.retired.isoformat())),
@@ -157,6 +161,7 @@ def device_retire(context: Context, key: str, day: str) -> None:
         technology=current.technology,
         register_ratio=current.register_ratio,
         demand_capable=current.demand_capable,
+        demand_interval=current.demand_interval,
         introduced=current.introduced,
         retired=parse_date(day),
     )

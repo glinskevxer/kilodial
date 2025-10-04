@@ -6,6 +6,7 @@ from decimal import Decimal
 import pytest
 
 from kilodial.errors import BadInputError, RuleError
+from kilodial.model.demand import Interval
 from kilodial.model.device import DeviceType
 from kilodial.model.form import MeterClass, Technology
 
@@ -107,9 +108,25 @@ def test_a_type_cannot_retire_before_it_arrived() -> None:
 
 def test_demand_capability_defaults_off() -> None:
     assert not a_type().demand_capable
-    assert a_type(demand_capable=True).demand_capable
+    assert a_type(demand_capable=True, demand_interval=15).demand_capable
 
 
 def test_elements_come_off_the_form() -> None:
     assert a_type().elements == Decimal("1")
     assert a_type(form_code="16S", class_code=MeterClass.CL320).elements == Decimal("3")
+
+
+def test_a_demand_meter_has_to_name_its_interval() -> None:
+    with pytest.raises(RuleError, match="which interval it registers over"):
+        a_type(demand_capable=True)
+
+
+def test_a_type_that_does_not_register_demand_has_no_interval() -> None:
+    with pytest.raises(RuleError, match="has no demand interval"):
+        a_type(demand_interval=15)
+
+
+def test_registers_demand_needs_both() -> None:
+    assert a_type(demand_capable=True, demand_interval=30).registers_demand
+    assert not a_type().registers_demand
+    assert a_type(demand_capable=True, demand_interval=30).demand_interval is Interval.MIN_30

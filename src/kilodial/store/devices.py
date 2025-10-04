@@ -18,7 +18,7 @@ from kilodial.store.codec import device_row, read_device
 
 COLUMNS = (
     "manufacturer, model_code, form_code, class_code, voltage, kh, technology, "
-    "register_ratio, demand_capable, introduced, retired"
+    "register_ratio, demand_capable, introduced, retired, demand_interval"
 )
 
 
@@ -43,7 +43,7 @@ class DeviceRepository:
         if self.exists(device.key):
             raise DuplicateError("device type", device.key)
         self._conn.execute(
-            f"INSERT INTO device_type ({COLUMNS}) VALUES ({', '.join('?' * 11)})",
+            f"INSERT INTO device_type ({COLUMNS}) VALUES ({', '.join('?' * 12)})",
             device_row(device),
         )
         return device
@@ -56,7 +56,7 @@ class DeviceRepository:
         self._conn.execute(
             "UPDATE device_type SET form_code = ?, class_code = ?, voltage = ?, kh = ?, "
             "technology = ?, register_ratio = ?, demand_capable = ?, introduced = ?, "
-            "retired = ? WHERE manufacturer = ? AND model_code = ?",
+            "retired = ?, demand_interval = ? WHERE manufacturer = ? AND model_code = ?",
             (*row[2:], row[0], row[1]),
         )
         return device

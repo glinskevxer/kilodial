@@ -72,3 +72,10 @@ def test_the_eighth_migration_adds_work_orders() -> None:
     joined = " ".join(MIGRATIONS[7].statements)
     assert "CREATE TABLE work_order" in joined
     assert "order_live" in joined
+
+
+def test_the_ninth_migration_alters_rather_than_creates() -> None:
+    joined = " ".join(MIGRATIONS[8].statements)
+    assert "ALTER TABLE device_type ADD COLUMN demand_interval" in joined
+    assert "ALTER TABLE bench_run ADD COLUMN demand_seconds" in joined
+    assert "CREATE TABLE" not in joined

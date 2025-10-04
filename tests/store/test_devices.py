@@ -6,6 +6,7 @@ from pathlib import Path
 import pytest
 
 from kilodial.errors import BadInputError, DuplicateError, NotFoundError
+from kilodial.model.demand import Interval
 from kilodial.model.device import DeviceType
 from kilodial.model.form import MeterClass, Technology
 from kilodial.store.book import Book, open_migrated
@@ -114,6 +115,14 @@ def test_types_current_on_a_day(repo: DeviceRepository) -> None:
 
 
 def test_a_round_trip_keeps_every_field(repo: DeviceRepository) -> None:
-    original = device(demand_capable=True, retired="2016-12-31", voltage="277")
+    original = device(demand_capable=True, demand_interval=30, retired="2016-12-31", voltage="277")
     repo.add(original)
     assert repo.get(original.key) == original
+
+
+def test_the_demand_interval_survives_a_round_trip(repo: DeviceRepository) -> None:
+    original = device(demand_capable=True, demand_interval=30)
+    repo.add(original)
+    assert repo.get(original.key).demand_interval is Interval.MIN_30
+    repo.replace(device(demand_capable=True, demand_interval=15))
+    assert repo.get(original.key).demand_interval is Interval.MIN_15

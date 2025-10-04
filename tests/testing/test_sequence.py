@@ -110,7 +110,7 @@ def test_acceptance_of_an_induction_meter_wants_a_register_check() -> None:
 
 
 def test_a_demand_meter_owes_a_demand_point_on_acceptance_only() -> None:
-    d = device(demand_capable=True)
+    d = device(demand_capable=True, demand_interval=15)
     assert PointKind.DEMAND in required_points(d, RunKind.ACCEPTANCE)
     assert PointKind.DEMAND not in required_points(d, RunKind.AS_LEFT)
 

@@ -19,6 +19,7 @@ from typing import Any
 from kilodial.errors import ConfigError
 from kilodial.install.point import MeterSet, ServicePoint
 from kilodial.model.bench import Bench, ReferenceStandard
+from kilodial.model.demand import interval_of
 from kilodial.model.device import DeviceType
 from kilodial.model.form import Service, Technology, form, meter_class
 from kilodial.model.meter import Meter, MeterState
@@ -68,6 +69,7 @@ def device_row(device: DeviceType) -> Row:
         _bool(device.demand_capable),
         device.introduced.isoformat(),
         _maybe_date(device.retired),
+        None if device.demand_interval is None else str(device.demand_interval.minutes),
     )
 
 
@@ -83,6 +85,7 @@ def read_device(row: Row) -> DeviceType:
         technology=_enum(Technology, row[6], "technology"),
         register_ratio=None if row[7] is None else Decimal(str(row[7])),
         demand_capable=bool(row[8]),
+        demand_interval=None if row[11] is None else interval_of(str(row[11])),
         introduced=parse_date(str(row[9])),
         retired=None if row[10] is None else parse_date(str(row[10])),
     )

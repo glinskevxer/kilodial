@@ -156,11 +156,12 @@ def test_listing_what_was_current_on_a_day(started: Invoke) -> None:
 
 
 def test_showing_a_type(started: Invoke) -> None:
-    add(started, "--demand")
+    add(started, "--demand", "--interval", "15")
     result = started("device", "show", "Halvern/R4S")
     assert "form                2S (1P3W, 1 element)" in result.output
     assert "class               CL200 at 30 A" in result.output
     assert "demand              yes" in result.output
+    assert "15 minute" in result.output
     assert "meters on the book  0" in result.output
 
 
