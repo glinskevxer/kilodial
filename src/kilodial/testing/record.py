@@ -147,6 +147,7 @@ def build_run(
     readings: Readings,
     note: object = None,
     volts: object = None,
+    demand_seconds: object = None,
 ) -> BenchRun:
     """Assemble a whole run from readings."""
     return BenchRun.build(
@@ -159,6 +160,7 @@ def build_run(
         technician=technician,
         points=points_from(readings, device, volts=volts),
         note=note,
+        demand_seconds=demand_seconds,
     )
 
 

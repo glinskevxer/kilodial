@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import date
+from decimal import Decimal
 
 import pytest
 
@@ -186,3 +187,21 @@ def test_a_run_kind_that_is_not_one() -> None:
 
 def test_str_of_a_run() -> None:
     assert str(a_run()) == "TR-2025-0441 84-119302 as found 2025-03-04"
+
+
+def test_a_demand_interval_belongs_on_a_demand_run() -> None:
+    demand = BenchPoint.build("DM", amperes="15", volts="240", registration="100.10")
+    run = a_run(points=[fl(), ll(), demand], demand_seconds="900")
+    assert run.demand_seconds == Decimal("900")
+    assert a_run().demand_seconds is None
+
+
+def test_a_demand_interval_on_a_run_with_no_demand_point() -> None:
+    with pytest.raises(RuleError, match="belongs on a run with a demand point"):
+        a_run(demand_seconds="900")
+
+
+def test_a_measured_interval_that_is_not_one() -> None:
+    demand = BenchPoint.build("DM", amperes="15", volts="240", registration="100.10")
+    with pytest.raises(BadInputError):
+        a_run(points=[fl(), ll(), demand], demand_seconds="0")

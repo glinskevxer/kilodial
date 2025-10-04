@@ -194,3 +194,24 @@ def test_deleting_a_run_takes_its_points(repo: RunRepository, book: Book) -> Non
     assert book.connection.execute("SELECT COUNT(*) FROM bench_point").fetchone()[0] == 0
     with pytest.raises(NotFoundError):
         repo.delete("TR-1")
+
+
+def test_the_measured_demand_interval_round_trips(repo: RunRepository) -> None:
+    demand = BenchPoint.build("DM", amperes="30", volts="240", registration="100.10")
+    repo.add(
+        run(
+            "TR-1",
+            points=[
+                BenchPoint.build("FL", amperes="30", volts="240", registration="100.12"),
+                demand,
+            ],
+            demand_seconds="900",
+        )
+    )
+    assert repo.get("TR-1").demand_seconds is not None
+    assert str(repo.get("TR-1").demand_seconds) == "900"
+
+
+def test_a_run_with_no_demand_interval_reads_back_as_none(repo: RunRepository) -> None:
+    repo.add(run())
+    assert repo.get("TR-1").demand_seconds is None

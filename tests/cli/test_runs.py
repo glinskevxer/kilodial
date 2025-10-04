@@ -246,3 +246,122 @@ def test_deleting_a_run(shop: Invoke) -> None:
 def test_showing_a_run_that_is_not_there(shop: Invoke) -> None:
     result = shop("run", "show", "TR-9", expect=2)
     assert "no bench run" in result.output
+
+
+@pytest.fixture
+def demand_shop(shop: Invoke) -> Invoke:
+    shop(
+        "device",
+        "add",
+        "Vantage",
+        "SM3",
+        "--form",
+        "16S",
+        "--class",
+        "320",
+        "--volts",
+        "277",
+        "--kh",
+        "1.8",
+        "--tech",
+        "solid_state",
+        "--demand",
+        "--interval",
+        "15",
+        "--introduced",
+        "2014-05-01",
+    )
+    shop("meter", "receive", "84-220001", "--type", "Vantage/SM3", "--acquired", "2019-04-02")
+    return shop
+
+
+def record_demand(invoke: Invoke, *extra: str, expect: int = 0) -> str:
+    return invoke(
+        "run",
+        "record",
+        "TR-D",
+        "--meter",
+        "84-220001",
+        "--bench",
+        "B2",
+        "--on",
+        "2025-03-04",
+        "--by",
+        "R Ellis",
+        "--fl",
+        "100.10",
+        "--ll",
+        "99.80",
+        "--pf",
+        "99.90",
+        "--demand",
+        "100.10",
+        *extra,
+        expect=expect,
+    ).output
+
+
+def test_a_demand_run_is_judged_on_its_own(demand_shop: Invoke) -> None:
+    record_demand(demand_shop)
+    result = demand_shop("run", "demand", "TR-D")
+    assert "passed" in result.output
+    assert "15 minute" in result.output
+
+
+def test_a_fast_demand_register_exits_non_zero(demand_shop: Invoke) -> None:
+    record_demand(demand_shop, "--demand", "104.00")
+    result = demand_shop("run", "demand", "TR-D", expect=1)
+    assert "failed on registration" in result.output
+
+
+def test_a_measured_interval_is_checked(demand_shop: Invoke) -> None:
+    record_demand(demand_shop, "--interval-seconds", "880")
+    result = demand_shop("run", "demand", "TR-D", expect=1)
+    assert "interval clock" in result.output
+    assert "percent off" in result.output
+
+
+def test_a_meter_that_does_not_register_demand_was_not_tested(shop: Invoke) -> None:
+    shop(
+        "run",
+        "record",
+        "TR-1",
+        "--meter",
+        "84-119302",
+        "--bench",
+        "B2",
+        "--on",
+        "2025-03-04",
+        "--by",
+        "R Ellis",
+        "--fl",
+        "100.10",
+        "--ll",
+        "99.60",
+    )
+    result = shop("run", "demand", "TR-1")
+    assert "not tested" in result.output
+
+
+def test_an_interval_on_a_run_with_no_demand_point(shop: Invoke) -> None:
+    result = shop(
+        "run",
+        "record",
+        "TR-1",
+        "--meter",
+        "84-119302",
+        "--bench",
+        "B2",
+        "--on",
+        "2025-03-04",
+        "--by",
+        "R Ellis",
+        "--fl",
+        "100.10",
+        "--ll",
+        "99.60",
+        "--interval-seconds",
+        "900",
+        expect=2,
+    )
+    assert "belongs on a run with a demand point" in result.output

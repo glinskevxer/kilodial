@@ -65,6 +65,7 @@ def runs() -> None:
 @click.option("--demand", default=None, help="demand registration")
 @click.option("--creep", default=None, help="held or crept")
 @click.option("--volts", default=None, help="service voltage if not the nameplate")
+@click.option("--interval-seconds", default=None, help="measured demand window")
 @click.option("--note", default=None)
 @pass_context
 def run_record(
@@ -84,6 +85,7 @@ def run_record(
     demand: str | None,
     creep: str | None,
     volts: str | None,
+    interval_seconds: str | None,
     note: str | None,
 ) -> None:
     """Write a bench run down."""
@@ -115,6 +117,7 @@ def run_record(
         ),
         note=note,
         volts=volts,
+        demand_seconds=interval_seconds,
     )
     with shop.transaction():
         shop.runs.add(run)
@@ -220,6 +223,29 @@ def run_list(
         )
     for line in table(["run", "meter", "tested", "kind", "outcome", "weighted"], rows):
         click.echo(line)
+
+
+@runs.command("demand")
+@click.argument("reference")
+@pass_context
+def run_demand(context: Context, reference: str) -> None:
+    """Judge the demand half of a run on its own."""
+    shop = context.open()
+    verdict = shop.judge_demand(reference)
+    detail = [
+        ("run", verdict.run_reference),
+        ("outcome", str(verdict.outcome)),
+        ("registration", "-" if verdict.registration is None else str(verdict.registration)),
+        ("band", f"+/-{verdict.band} percent"),
+        ("interval", or_dash(verdict.interval)),
+        ("timing error", or_dash(None if verdict.timing is None else f"{verdict.timing} percent")),
+    ]
+    for line in pairs(detail):
+        click.echo(line)
+    for reason in verdict.reasons:
+        click.echo(reason)
+    if verdict.outcome.was_tested and not verdict.outcome.passed:
+        raise SystemExit(1)
 
 
 @runs.command("judge")

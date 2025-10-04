@@ -35,6 +35,7 @@ from kilodial.store.meters import MeterRepository
 from kilodial.store.orders import OrderRepository
 from kilodial.store.runs import RunRepository
 from kilodial.store.transformers import TransformerRepository
+from kilodial.testing.demand import DemandVerdict, judge_demand
 from kilodial.testing.verdict import Outcome, Verdict, judge
 from kilodial.units.electrical import PowerFactor
 from kilodial.units.registration import Registration
@@ -99,6 +100,20 @@ class Shop:
         standard = self.standards.get(run.standard_serial)
         bench = self.benches.get(run.bench_code)
         return judge(run, device, standard=standard, bench=bench)
+
+    def judge_demand(self, reference: str) -> DemandVerdict:
+        """Judge a stored run's demand half against the type it was run on."""
+        return self.judge_demand_run(self.runs.get(reference))
+
+    def judge_demand_run(self, run: BenchRun) -> DemandVerdict:
+        """The same question about a run in hand."""
+        device = self.device_for(run.meter_serial)
+        return judge_demand(
+            run,
+            device,
+            interval=device.demand_interval,
+            measured_seconds=run.demand_seconds,
+        )
 
     def history(self, serial: str) -> list[tuple[BenchRun, Verdict]]:
         """Every run on a meter with the verdict each one earns today."""

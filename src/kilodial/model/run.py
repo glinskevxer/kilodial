@@ -17,12 +17,13 @@ from __future__ import annotations
 import enum
 from dataclasses import dataclass
 from datetime import date
+from decimal import Decimal
 
 from kilodial.errors import BadInputError, RuleError
 from kilodial.units.electrical import Amperes, PowerFactor, Volts
 from kilodial.units.registration import Registration
 from kilodial.units.span import parse_date
-from kilodial.units.text import optional, tidy
+from kilodial.units.text import optional, positive, tidy
 
 
 class PointKind(enum.Enum):
@@ -148,6 +149,7 @@ class BenchRun:
     technician: str
     points: tuple[BenchPoint, ...]
     note: str | None
+    demand_seconds: Decimal | None
 
     @classmethod
     def build(
@@ -162,6 +164,7 @@ class BenchRun:
         technician: object,
         points: list[BenchPoint],
         note: object = None,
+        demand_seconds: object = None,
     ) -> BenchRun:
         if not isinstance(kind, RunKind):
             raise BadInputError("the run kind has to be a RunKind")
@@ -184,6 +187,7 @@ class BenchRun:
             technician=_tech(technician),
             points=tuple(points),
             note=_note(note),
+            demand_seconds=_seconds(demand_seconds, seen),
         )
 
     @property
@@ -211,6 +215,20 @@ def _ref(value: object) -> str:
     if not ref or len(ref) > 24 or " " in ref:
         raise BadInputError(f"{value!r} is not a run reference")
     return ref
+
+
+def _seconds(value: object, kinds: set[PointKind]) -> Decimal | None:
+    """The measured demand interval, which only belongs on a demand run.
+
+    A number here says the technician timed the meter's own averaging window
+    with a stopwatch against the bench clock. Recording one on a run with no
+    demand point is a transcription error, because there was nothing to time.
+    """
+    if value is None:
+        return None
+    if PointKind.DEMAND not in kinds:
+        raise RuleError("a measured demand interval belongs on a run with a demand point")
+    return positive(value, "measured demand interval")
 
 
 def _tech(value: object) -> str:

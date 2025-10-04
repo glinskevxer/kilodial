@@ -186,6 +186,7 @@ def run_row(run: BenchRun) -> Row:
         run.tested_on.isoformat(),
         run.technician,
         run.note,
+        None if run.demand_seconds is None else str(run.demand_seconds),
     )
 
 
@@ -201,6 +202,7 @@ def read_run(row: Row, points: list[BenchPoint]) -> BenchRun:
         technician=str(row[6]),
         points=tuple(points),
         note=None if row[7] is None else str(row[7]),
+        demand_seconds=None if len(row) < 9 or row[8] is None else Decimal(str(row[8])),
     )
 
 
