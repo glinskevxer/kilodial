@@ -24,6 +24,7 @@ from kilodial.model.device import DeviceType
 from kilodial.model.form import Service, Technology, form, meter_class
 from kilodial.model.meter import Meter, MeterState
 from kilodial.model.run import BenchPoint, BenchRun, PointKind, RunKind
+from kilodial.model.technician import Grade, Technician
 from kilodial.sampling.decision import Decision
 from kilodial.sampling.group import Group
 from kilodial.sampling.plan import DEFAULT_BAND, SampleOutcome, required
@@ -187,6 +188,7 @@ def run_row(run: BenchRun) -> Row:
         run.technician,
         run.note,
         None if run.demand_seconds is None else str(run.demand_seconds),
+        run.badge,
     )
 
 
@@ -203,6 +205,7 @@ def read_run(row: Row, points: list[BenchPoint]) -> BenchRun:
         points=tuple(points),
         note=None if row[7] is None else str(row[7]),
         demand_seconds=None if len(row) < 9 or row[8] is None else Decimal(str(row[8])),
+        badge=None if len(row) < 10 or row[9] is None else str(row[9]),
     )
 
 
@@ -328,6 +331,30 @@ def read_meter_set(row: Row) -> MeterSet:
     )
 
 
+def technician_row(technician: Technician) -> Row:
+    """The technician as a row, in the column order the table is declared in."""
+    return (
+        technician.badge,
+        technician.name,
+        technician.grade.name,
+        technician.certified_on.isoformat(),
+        technician.certificate_due.isoformat(),
+        technician.note,
+    )
+
+
+def read_technician(row: Row) -> Technician:
+    """The technician back off a row, refusing a grade the book should not hold."""
+    return Technician(
+        badge=str(row[0]),
+        name=str(row[1]),
+        grade=_enum(Grade, row[2], "certification grade"),
+        certified_on=parse_date(str(row[3])),
+        certificate_due=parse_date(str(row[4])),
+        note=None if row[5] is None else str(row[5]),
+    )
+
+
 def group_row(group: Group) -> Row:
     """The group as a row, in the column order the table is declared in."""
     return (
@@ -421,9 +448,11 @@ __all__ = [
     "read_run",
     "read_service_point",
     "read_standard",
+    "read_technician",
     "read_transformer",
     "run_row",
     "service_point_row",
     "standard_row",
+    "technician_row",
     "transformer_row",
 ]

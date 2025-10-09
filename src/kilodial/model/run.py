@@ -23,7 +23,7 @@ from kilodial.errors import BadInputError, RuleError
 from kilodial.units.electrical import Amperes, PowerFactor, Volts
 from kilodial.units.registration import Registration
 from kilodial.units.span import parse_date
-from kilodial.units.text import optional, positive, tidy
+from kilodial.units.text import key, optional, positive, tidy
 
 
 class PointKind(enum.Enum):
@@ -150,6 +150,7 @@ class BenchRun:
     points: tuple[BenchPoint, ...]
     note: str | None
     demand_seconds: Decimal | None
+    badge: str | None
 
     @classmethod
     def build(
@@ -165,6 +166,7 @@ class BenchRun:
         points: list[BenchPoint],
         note: object = None,
         demand_seconds: object = None,
+        badge: object = None,
     ) -> BenchRun:
         if not isinstance(kind, RunKind):
             raise BadInputError("the run kind has to be a RunKind")
@@ -188,6 +190,7 @@ class BenchRun:
             points=tuple(points),
             note=_note(note),
             demand_seconds=_seconds(demand_seconds, seen),
+            badge=None if badge is None else key(badge, "badge number", 12),
         )
 
     @property

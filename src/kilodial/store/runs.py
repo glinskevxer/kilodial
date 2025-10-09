@@ -23,7 +23,7 @@ from kilodial.units.span import parse_date
 
 RUN_COLUMNS = (
     "reference, meter_serial, bench_code, standard_serial, kind, tested_on, technician, "
-    "note, demand_seconds"
+    "note, demand_seconds, badge"
 )
 POINT_COLUMNS = (
     "run_reference, position, kind, amperes, volts, pf_value, pf_sense, registration, crept"
@@ -45,7 +45,7 @@ class RunRepository:
         self._conn.execute("SAVEPOINT add_run")
         try:
             self._conn.execute(
-                f"INSERT INTO bench_run ({RUN_COLUMNS}) VALUES ({', '.join('?' * 9)})",
+                f"INSERT INTO bench_run ({RUN_COLUMNS}) VALUES ({', '.join('?' * 10)})",
                 run_row(run),
             )
             for position, point in enumerate(run.points, start=1):

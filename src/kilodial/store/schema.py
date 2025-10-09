@@ -276,6 +276,23 @@ MIGRATIONS: tuple[Migration, ...] = (
         "ALTER TABLE bench_run ADD COLUMN demand_seconds TEXT",
         "CREATE INDEX device_by_demand ON device_type (demand_capable)",
     ),
+    _m(
+        10,
+        "technicians and who signed a run",
+        """
+        CREATE TABLE technician (
+            badge            TEXT PRIMARY KEY,
+            name             TEXT NOT NULL,
+            grade            TEXT NOT NULL,
+            certified_on     TEXT NOT NULL,
+            certificate_due  TEXT NOT NULL,
+            note             TEXT
+        )
+        """,
+        "ALTER TABLE bench_run ADD COLUMN badge TEXT",
+        "CREATE INDEX run_by_badge ON bench_run (badge)",
+        "CREATE INDEX technician_by_grade ON technician (grade)",
+    ),
 )
 
 

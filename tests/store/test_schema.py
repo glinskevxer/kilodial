@@ -79,3 +79,9 @@ def test_the_ninth_migration_alters_rather_than_creates() -> None:
     assert "ALTER TABLE device_type ADD COLUMN demand_interval" in joined
     assert "ALTER TABLE bench_run ADD COLUMN demand_seconds" in joined
     assert "CREATE TABLE" not in joined
+
+
+def test_the_tenth_migration_adds_technicians() -> None:
+    joined = " ".join(MIGRATIONS[9].statements)
+    assert "CREATE TABLE technician" in joined
+    assert "ALTER TABLE bench_run ADD COLUMN badge" in joined
