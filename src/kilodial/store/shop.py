@@ -101,7 +101,13 @@ class Shop:
         device = self.device_for(run.meter_serial)
         standard = self.standards.get(run.standard_serial)
         bench = self.benches.get(run.bench_code)
-        return judge(run, device, standard=standard, bench=bench)
+        return judge(
+            run,
+            device,
+            standard=standard,
+            bench=bench,
+            signer=self.technicians.find(run.badge),
+        )
 
     def judge_demand(self, reference: str) -> DemandVerdict:
         """Judge a stored run's demand half against the type it was run on."""

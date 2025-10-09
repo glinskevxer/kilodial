@@ -8,6 +8,7 @@ from kilodial.model.bench import Bench, ReferenceStandard
 from kilodial.model.device import DeviceType
 from kilodial.model.form import Technology
 from kilodial.model.run import BenchPoint, BenchRun, RunKind
+from kilodial.model.technician import Grade, Technician
 from kilodial.testing.verdict import Outcome, judge
 from kilodial.units.electrical import PowerFactor
 
@@ -266,3 +267,103 @@ def test_the_band_narrows_for_a_transformer_class_meter() -> None:
 def test_which_outcomes_can_be_relied_on(outcome: Outcome, usable: bool) -> None:
     assert outcome.is_usable is usable
     assert str(outcome) == outcome.value
+
+
+def technician(**over: object) -> Technician:
+    args: dict[str, object] = {
+        "grade": Grade.BENCH,
+        "certified_on": "2023-01-01",
+        "certificate_due": "2026-01-01",
+    }
+    args.update(over)
+    return Technician.build(str(args.pop("badge", "T-441")), "R Ellis", **args)
+
+
+def test_an_unsigned_run_is_judged_as_before() -> None:
+    v = judge(run(), device(), standard=standard(), bench=bench())
+    assert v.outcome is Outcome.PASSED
+
+
+def test_a_signed_run_is_judged_against_its_signer() -> None:
+    v = judge(
+        run(badge="T-441"),
+        device(),
+        standard=standard(),
+        bench=bench(),
+        signer=technician(),
+    )
+    assert v.outcome is Outcome.PASSED
+
+
+def test_a_badge_nobody_has_voids_the_run() -> None:
+    v = judge(run(badge="T-999"), device(), standard=standard(), bench=bench())
+    assert v.outcome is Outcome.VOID
+    assert "not on the register" in v.why()
+
+
+def test_a_run_judged_against_the_wrong_technician() -> None:
+    v = judge(
+        run(badge="T-441"),
+        device(),
+        standard=standard(),
+        bench=bench(),
+        signer=technician(badge="T-902"),
+    )
+    assert v.outcome is Outcome.VOID
+    assert "was judged against T-902" in v.why()
+
+
+def test_a_lapsed_certification_voids_the_run() -> None:
+    v = judge(
+        run(badge="T-441", tested_on="2025-06-30"),
+        device(),
+        standard=standard(),
+        bench=bench(),
+        signer=technician(certified_on="2019-01-01", certificate_due="2022-01-01"),
+    )
+    assert v.outcome is Outcome.VOID
+    assert "was not certified on 2025-06-30" in v.why()
+
+
+def test_a_bench_technician_cannot_sign_polyphase() -> None:
+    poly = device(form_code="16S", class_code="320")
+    points = [
+        fl(),
+        ll(),
+        BenchPoint.build(
+            "PF",
+            amperes="15",
+            volts="240",
+            registration="99.90",
+            power_factor=PowerFactor.lagging("0.5"),
+        ),
+    ]
+    v = judge(
+        run(badge="T-441", points=points),
+        poly,
+        standard=standard(),
+        bench=bench(),
+        signer=technician(),
+    )
+    assert v.outcome is Outcome.VOID
+    assert "is polyphase" in v.why()
+
+
+def test_only_a_supervisor_signs_a_referee_run() -> None:
+    v = judge(
+        run(badge="T-441", kind=RunKind.REFEREE),
+        device(),
+        standard=standard(),
+        bench=bench(),
+        signer=technician(grade=Grade.POLYPHASE),
+    )
+    assert v.outcome is Outcome.VOID
+    assert "signed by a supervisor" in v.why()
+    good = judge(
+        run(badge="T-441", kind=RunKind.REFEREE),
+        device(),
+        standard=standard(),
+        bench=bench(),
+        signer=technician(grade=Grade.SUPERVISOR),
+    )
+    assert good.outcome is Outcome.PASSED

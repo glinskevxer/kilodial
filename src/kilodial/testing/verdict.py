@@ -29,6 +29,7 @@ from kilodial.errors import RuleError
 from kilodial.model.bench import Bench, ReferenceStandard
 from kilodial.model.device import DeviceType
 from kilodial.model.run import BenchRun, PointKind
+from kilodial.model.technician import Technician
 from kilodial.testing.sequence import check_conditions, check_sequence
 from kilodial.testing.tolerance import Band, band_for
 from kilodial.testing.weighted import WeightedAverage, weighted_average
@@ -87,14 +88,33 @@ def _void(run: BenchRun, band: Band, reasons: list[str]) -> Verdict:
     return Verdict(run.reference, Outcome.VOID, None, band, tuple(reasons))
 
 
+def _signature_faults(run: BenchRun, device: DeviceType, signer: Technician | None) -> list[str]:
+    """Everything wrong with who signed the run, or nothing when it is unsigned."""
+    if run.badge is None:
+        return []
+    if signer is None:
+        return [f"run {run.reference} is signed {run.badge}, who is not on the register"]
+    if signer.badge != run.badge:
+        return [f"run {run.reference} is signed {run.badge} and was judged against {signer.badge}"]
+    return signer.refusals(run.kind, device, on=run.tested_on)
+
+
 def judge(
     run: BenchRun,
     device: DeviceType,
     *,
     standard: ReferenceStandard,
     bench: Bench,
+    signer: Technician | None = None,
 ) -> Verdict:
-    """Decide a run against the device type, the standard and the bench."""
+    """Decide a run against the device type, the standard, the bench and the signer.
+
+    ``signer`` is the technician the run names. It is optional because the book
+    carries runs from before the certification register existed and voiding all
+    of them would be a rewriting of history rather than a finding. A run that
+    names a badge and cannot be matched to one is a different matter and is
+    void: a signature nobody can trace is not a signature.
+    """
     band = band_for(run.kind, device.meter_class)
     reasons: list[str] = []
 
@@ -112,6 +132,7 @@ def judge(
         reasons.append(f"bench {bench.code} was out of service on {run.tested_on.isoformat()}")
     elif not bench.can_hold(device):
         reasons.append(f"bench {bench.code} cannot hold a {device.key}")
+    reasons.extend(_signature_faults(run, device, signer))
     for check in (check_sequence, check_conditions):
         try:
             check(run, device)

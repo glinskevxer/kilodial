@@ -12,6 +12,7 @@ from kilodial.model.device import DeviceType
 from kilodial.model.form import Service, Technology
 from kilodial.model.meter import Meter
 from kilodial.model.run import BenchPoint, BenchRun, RunKind
+from kilodial.model.technician import Grade, Technician
 from kilodial.store.shop import Shop, open_shop, require
 from kilodial.testing.verdict import Outcome
 from kilodial.units.registration import Registration
@@ -357,3 +358,36 @@ def test_the_audit_finds_a_set_naming_a_meter_that_is_gone(shop: Shop) -> None:
     )
     shop.book.connection.execute("DELETE FROM meter WHERE serial = '84-119302'")
     assert any("names meter 84-119302" in f for f in shop.audit())
+
+
+def test_a_run_signed_by_a_lapsed_technician_is_void(shop: Shop) -> None:
+    shop.technicians.add(
+        Technician.build(
+            "T-441",
+            "R Ellis",
+            grade=Grade.BENCH,
+            certified_on="2019-01-01",
+            certificate_due="2022-01-01",
+        )
+    )
+    shop.runs.add(run(badge="T-441"))
+    assert shop.judge("TR-1").outcome is Outcome.VOID
+
+
+def test_a_run_signed_by_a_certified_technician_stands(shop: Shop) -> None:
+    shop.technicians.add(
+        Technician.build(
+            "T-441",
+            "R Ellis",
+            grade=Grade.BENCH,
+            certified_on="2019-01-01",
+            certificate_due="2029-01-01",
+        )
+    )
+    shop.runs.add(run(badge="T-441"))
+    assert shop.judge("TR-1").outcome is Outcome.PASSED
+
+
+def test_a_run_naming_a_badge_nobody_has_is_void(shop: Shop) -> None:
+    shop.runs.add(run(badge="T-999"))
+    assert "not on the register" in shop.judge("TR-1").why()
