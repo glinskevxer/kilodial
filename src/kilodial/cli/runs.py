@@ -57,6 +57,7 @@ def runs() -> None:
 @click.option("--kind", default="as_found", show_default=True)
 @click.option("--on", "tested_on", required=True, help="the day it was run")
 @click.option("--by", "technician", required=True)
+@click.option("--badge", default=None, help="the signing technician's badge")
 @click.option("--fl", default=None, help="full load registration")
 @click.option("--ll", default=None, help="light load registration")
 @click.option("--pf", default=None, help="lagging power factor registration")
@@ -77,6 +78,7 @@ def run_record(
     kind: str,
     tested_on: str,
     technician: str,
+    badge: str | None,
     fl: str | None,
     ll: str | None,
     pf: str | None,
@@ -118,6 +120,7 @@ def run_record(
         note=note,
         volts=volts,
         demand_seconds=interval_seconds,
+        badge=badge,
     )
     with shop.transaction():
         shop.runs.add(run)
@@ -171,6 +174,7 @@ def _header(run: BenchRun, verdict: Verdict) -> list[tuple[str, str]]:
         ("kind", str(run.kind)),
         ("tested", run.tested_on.isoformat()),
         ("by", run.technician),
+        ("badge", or_dash(run.badge)),
         ("note", or_dash(run.note)),
         ("outcome", str(verdict.outcome)),
         ("weighted", _shown(verdict)),
