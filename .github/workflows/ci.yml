@@ -28,6 +28,7 @@ jobs:
       - run: python -m kilodial.tools.check_exports
       - run: python -m kilodial.tools.check_docstrings
       - run: python -m kilodial.tools.check_workflow
+      - run: python -m kilodial.tools.release_check
       - run: python -m kilodial.tools.schema_dump --check
 
   tests:
