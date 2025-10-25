@@ -22,7 +22,8 @@ from dataclasses import dataclass
 from datetime import date
 
 from kilodial.complaint.request import Charge, Reason, Request
-from kilodial.errors import ConfigError, DuplicateError, NotFoundError, RuleError, StateError
+from kilodial.errors import DuplicateError, NotFoundError, RuleError, StateError
+from kilodial.store.base import member_of
 from kilodial.units.money import Money
 from kilodial.units.span import parse_date
 
@@ -172,31 +173,19 @@ class ComplaintRepository:
             point_code=str(row[1]),
             requested_on=parse_date(str(row[2])),
             requested_by=str(row[3]),
-            reason=_reason(row[4]),
+            reason=member_of(Reason, row[4], "complaint reason"),
             note=None if row[5] is None else str(row[5]),
             previous_request_on=None,
         )
         return Complaint(
             request=request,
             run_reference=None if row[6] is None else str(row[6]),
-            charge=None if row[7] is None else _charge(row[7]),
+            charge=None
+            if row[7] is None
+            else member_of(Charge, row[7], "charge decision", field="name"),
             fee=None if row[8] is None else Money.from_cents(int(str(row[8]))),
             closed_on=None if row[9] is None else parse_date(str(row[9])),
         )
-
-
-def _reason(value: object) -> Reason:
-    for member in Reason:
-        if member.value == value:
-            return member
-    raise ConfigError(f"the book holds {value!r}, which is not a complaint reason")
-
-
-def _charge(value: object) -> Charge:
-    for member in Charge:
-        if member.name == value:
-            return member
-    raise ConfigError(f"the book holds {value!r}, which is not a charge decision")
 
 
 __all__ = ["COLUMNS", "Complaint", "ComplaintRepository"]

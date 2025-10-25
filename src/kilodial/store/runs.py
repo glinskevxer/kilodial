@@ -18,6 +18,7 @@ import sqlite3
 
 from kilodial.errors import DuplicateError, NotFoundError, RuleError
 from kilodial.model.run import BenchPoint, BenchRun, RunKind
+from kilodial.store.base import or_none
 from kilodial.store.codec import point_row, read_point, read_run, run_row
 from kilodial.units.span import parse_date
 
@@ -92,12 +93,6 @@ class RunRepository:
             raise NotFoundError("bench run", key)
         return read_run(row, self._points(key))
 
-    def find(self, reference: str) -> BenchRun | None:
-        try:
-            return self.get(reference)
-        except NotFoundError:
-            return None
-
     def _points(self, reference: str) -> list[BenchPoint]:
         rows = self._conn.execute(
             f"SELECT {POINT_COLUMNS} FROM bench_point WHERE run_reference = ? ORDER BY position",
@@ -164,6 +159,10 @@ class RunRepository:
         if not self.exists(key):
             raise NotFoundError("bench run", key)
         self._conn.execute("DELETE FROM bench_run WHERE reference = ?", (key,))
+
+    def find(self, reference: str) -> BenchRun | None:
+        """The same lookup, handing back nothing rather than raising."""
+        return or_none(self.get, str(reference))
 
     def all(self) -> list[BenchRun]:
         rows = self._conn.execute(

@@ -14,6 +14,7 @@ import sqlite3
 from kilodial.errors import BadInputError, DuplicateError, NotFoundError
 from kilodial.model.device import DeviceType
 from kilodial.model.form import MeterClass, Technology
+from kilodial.store.base import or_none
 from kilodial.store.codec import device_row, read_device
 
 COLUMNS = (
@@ -81,10 +82,7 @@ class DeviceRepository:
 
     def find(self, key: object) -> DeviceType | None:
         """The same lookup, handing back nothing rather than raising."""
-        try:
-            return self.get(key)
-        except NotFoundError:
-            return None
+        return or_none(self.get, str(key))
 
     def all(self) -> list[DeviceType]:
         rows = self._conn.execute(

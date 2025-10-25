@@ -12,6 +12,7 @@ from __future__ import annotations
 import sqlite3
 
 from kilodial.errors import DuplicateError, NotFoundError
+from kilodial.store.base import or_none
 from kilodial.store.codec import read_transformer, transformer_row
 from kilodial.units.span import parse_date
 from kilodial.xfmr.transformer import AccuracyClass, InstrumentTransformer, TransformerKind
@@ -64,12 +65,7 @@ class TransformerRepository:
 
     def find(self, serial: str | None) -> InstrumentTransformer | None:
         """Look one up, taking None for the set that does not have one."""
-        if serial is None:
-            return None
-        try:
-            return self.get(serial)
-        except NotFoundError:
-            return None
+        return or_none(self.get, serial)
 
     def all(self) -> list[InstrumentTransformer]:
         rows = self._conn.execute(

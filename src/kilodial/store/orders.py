@@ -12,11 +12,9 @@ checked.
 
 from __future__ import annotations
 
-import enum
 import sqlite3
-from typing import TypeVar
 
-from kilodial.errors import ConfigError, DuplicateError, NotFoundError, RuleError
+from kilodial.errors import DuplicateError, NotFoundError, RuleError
 from kilodial.orders.order import (
     Disposition,
     OrderKind,
@@ -24,10 +22,9 @@ from kilodial.orders.order import (
     Priority,
     WorkOrder,
 )
+from kilodial.store.base import member_of
 from kilodial.store.meters import MeterRepository
 from kilodial.units.span import parse_date
-
-_E = TypeVar("_E", bound=enum.Enum)
 
 COLUMNS = (
     "reference, kind, meter_serial, point_code, priority, raised_on, state, "
@@ -158,27 +155,20 @@ def _row(order: WorkOrder) -> tuple[object, ...]:
 def _read(row: tuple[object, ...]) -> WorkOrder:
     return WorkOrder(
         reference=str(row[0]),
-        kind=_member(OrderKind, row[1], "work order kind"),
+        kind=member_of(OrderKind, row[1], "work order kind", field="name"),
         meter_serial=str(row[2]),
         point_code=None if row[3] is None else str(row[3]),
-        priority=_member(Priority, row[4], "work order priority"),
+        priority=member_of(Priority, row[4], "work order priority", field="name"),
         raised_on=parse_date(str(row[5])),
-        state=_member(OrderState, row[6], "work order state"),
+        state=member_of(OrderState, row[6], "work order state", field="name"),
         assigned_to=None if row[7] is None else str(row[7]),
         closed_on=None if row[8] is None else parse_date(str(row[8])),
         run_reference=None if row[9] is None else str(row[9]),
         disposition=None
         if row[10] is None
-        else _member(Disposition, row[10], "repair disposition"),
+        else member_of(Disposition, row[10], "repair disposition", field="name"),
         note=None if row[11] is None else str(row[11]),
     )
-
-
-def _member(cls: type[_E], value: object, what: str) -> _E:
-    for member in cls:
-        if member.name == value:
-            return member
-    raise ConfigError(f"the book holds {value!r}, which is not a {what}")
 
 
 __all__ = ["COLUMNS", "OrderRepository"]

@@ -16,7 +16,6 @@ from __future__ import annotations
 from decimal import Decimal
 from typing import Any
 
-from kilodial.errors import ConfigError
 from kilodial.install.point import MeterSet, ServicePoint
 from kilodial.model.bench import Bench, ReferenceStandard
 from kilodial.model.demand import interval_of
@@ -28,6 +27,7 @@ from kilodial.model.technician import Grade, Technician
 from kilodial.sampling.decision import Decision
 from kilodial.sampling.group import Group
 from kilodial.sampling.plan import DEFAULT_BAND, SampleOutcome, required
+from kilodial.store.base import member_of
 from kilodial.units.electrical import Amperes, PowerFactor, Sense, Volts
 from kilodial.units.registration import Registration
 from kilodial.units.span import parse_date
@@ -35,7 +35,6 @@ from kilodial.xfmr.transformer import (
     AccuracyClass,
     InstrumentTransformer,
     TransformerKind,
-    accuracy_class,
 )
 
 Row = tuple[Any, ...]
@@ -47,13 +46,6 @@ def _bool(value: object) -> int:
 
 def _maybe_date(value: object) -> str | None:
     return None if value is None else parse_date(value).isoformat()
-
-
-def _enum(cls: type[Any], value: object, what: str) -> Any:
-    for member in cls:
-        if member.value == value or member.name == value:
-            return member
-    raise ConfigError(f"the book holds {value!r}, which is not a {what}")
 
 
 def device_row(device: DeviceType) -> Row:
@@ -83,7 +75,7 @@ def read_device(row: Row) -> DeviceType:
         meter_class=meter_class(row[3]),
         voltage=Volts(str(row[4])),
         kh=Decimal(str(row[5])),
-        technology=_enum(Technology, row[6], "technology"),
+        technology=member_of(Technology, row[6], "technology"),
         register_ratio=None if row[7] is None else Decimal(str(row[7])),
         demand_capable=bool(row[8]),
         demand_interval=None if row[11] is None else interval_of(str(row[11])),
@@ -110,7 +102,7 @@ def read_meter(row: Row) -> Meter:
     return Meter(
         serial=str(row[0]),
         device_key=str(row[1]),
-        state=_enum(MeterState, row[2], "meter state"),
+        state=member_of(MeterState, row[2], "meter state"),
         acquired=parse_date(str(row[3])),
         owner=str(row[4]),
         seal=None if row[5] is None else str(row[5]),
@@ -199,7 +191,7 @@ def read_run(row: Row, points: list[BenchPoint]) -> BenchRun:
         meter_serial=str(row[1]),
         bench_code=str(row[2]),
         standard_serial=str(row[3]),
-        kind=_enum(RunKind, row[4], "run kind"),
+        kind=member_of(RunKind, row[4], "run kind"),
         tested_on=parse_date(str(row[5])),
         technician=str(row[6]),
         points=tuple(points),
@@ -226,8 +218,8 @@ def point_row(reference: str, position: int, point: BenchPoint) -> Row:
 
 def read_point(row: Row) -> BenchPoint:
     """The point back off a row, refusing a value the book should not hold."""
-    kind = _point_kind(row[2])
-    sense = _enum(Sense, row[6], "power factor sense")
+    kind = member_of(PointKind, row[2], "test point kind", field="code")
+    sense = member_of(Sense, row[6], "power factor sense")
     return BenchPoint(
         kind=kind,
         amperes=Amperes(str(row[3])),
@@ -257,22 +249,15 @@ def read_transformer(row: Row) -> InstrumentTransformer:
     """The transformer back off a row, refusing a value the book should not hold."""
     return InstrumentTransformer(
         serial=str(row[0]),
-        kind=_enum(TransformerKind, row[1], "transformer kind"),
+        kind=member_of(TransformerKind, row[1], "transformer kind"),
         maker=str(row[2]),
         marked_ratio=Decimal(str(row[3])),
-        accuracy=_accuracy(row[4]),
+        accuracy=member_of(AccuracyClass, row[4], "accuracy class", field="code"),
         rcf=Decimal(str(row[5])),
         phase_minutes=Decimal(str(row[6])),
         burden=str(row[7]),
         tested_on=parse_date(str(row[8])),
     )
-
-
-def _accuracy(code: object) -> AccuracyClass:
-    try:
-        return accuracy_class(code)
-    except Exception:
-        raise ConfigError(f"the book holds {code!r}, which is not an accuracy class") from None
 
 
 def service_point_row(point: ServicePoint) -> Row:
@@ -295,7 +280,7 @@ def read_service_point(row: Row) -> ServicePoint:
         code=str(row[0]),
         account=str(row[1]),
         address=str(row[2]),
-        service=_enum(Service, row[3], "service"),
+        service=member_of(Service, row[3], "service"),
         voltage=Volts(str(row[4])),
         rate_code=str(row[5]),
         energised=parse_date(str(row[6])),
@@ -348,7 +333,7 @@ def read_technician(row: Row) -> Technician:
     return Technician(
         badge=str(row[0]),
         name=str(row[1]),
-        grade=_enum(Grade, row[2], "certification grade"),
+        grade=member_of(Grade, row[2], "certification grade", field="name"),
         certified_on=parse_date(str(row[3])),
         certificate_due=parse_date(str(row[4])),
         note=None if row[5] is None else str(row[5]),
@@ -376,7 +361,7 @@ def read_group(row: Row) -> Group:
         name=str(row[1]),
         device_keys=tuple(str(row[2]).split()),
         meter_class=None if row[3] is None else meter_class(row[3]),
-        technology=None if row[4] is None else _enum(Technology, row[4], "technology"),
+        technology=None if row[4] is None else member_of(Technology, row[4], "technology"),
         form_codes=tuple(str(row[5]).split()),
         acquired_from=None if row[6] is None else parse_date(str(row[6])),
         acquired_to=None if row[7] is None else parse_date(str(row[7])),
@@ -420,13 +405,6 @@ def read_plan(row: Row, previous_months: int) -> Decision:
         outcome=outcome,
         note=None if row[9] is None else str(row[9]),
     )
-
-
-def _point_kind(code: object) -> PointKind:
-    for member in PointKind:
-        if member.code == code:
-            return member
-    raise ConfigError(f"the book holds {code!r}, which is not a test point kind")
 
 
 __all__ = [

@@ -17,6 +17,7 @@ import sqlite3
 
 from kilodial.errors import DuplicateError, NotFoundError, RuleError
 from kilodial.model.meter import BENCHABLE, Meter, MeterState, normalise_serial
+from kilodial.store.base import or_none
 from kilodial.store.codec import meter_row, read_meter
 from kilodial.store.devices import DeviceRepository
 
@@ -75,12 +76,6 @@ class MeterRepository:
             raise NotFoundError("meter", key)
         return read_meter(row)
 
-    def find(self, serial: object) -> Meter | None:
-        try:
-            return self.get(serial)
-        except NotFoundError:
-            return None
-
     def move(self, serial: object, state: MeterState, *, on: object = None) -> Meter:
         """Move a meter and write the move down, or refuse it."""
         moved = self.get(serial).moved_to(state, on=on)
@@ -88,6 +83,10 @@ class MeterRepository:
 
     def reseal(self, serial: object, seal: object) -> Meter:
         return self.save(self.get(serial).resealed(seal))
+
+    def find(self, serial: object) -> Meter | None:
+        """The same lookup, handing back nothing rather than raising."""
+        return or_none(self.get, str(serial))
 
     def all(self) -> list[Meter]:
         rows = self._conn.execute(f"SELECT {COLUMNS} FROM meter ORDER BY serial").fetchall()

@@ -198,7 +198,7 @@ def test_a_transformer_round_trips() -> None:
 def test_a_transformer_row_holding_an_accuracy_nobody_knows() -> None:
     row = list(codec.transformer_row(a_transformer()))
     row[4] = "0.9"
-    with pytest.raises(ConfigError, match="not an accuracy class"):
+    with pytest.raises(ConfigError, match="not a accuracy class"):
         codec.read_transformer(tuple(row))
 
 
