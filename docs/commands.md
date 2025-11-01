@@ -198,6 +198,15 @@ Close a catalogue entry off.
 
 Everything on one catalogue entry.
 
+## `doctor`
+
+    kilodial doctor
+
+Ask every question the shop should be able to answer.
+
+- `--on` the day to examine the book as at (required)
+- `--quiet` leave the notes out
+
 ## `due counts`
 
     kilodial due counts

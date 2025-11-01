@@ -21,6 +21,7 @@ from kilodial.cli.benches import benches, standards
 from kilodial.cli.complaints import complaints
 from kilodial.cli.context import DEFAULT_BOOK, Context, pass_context
 from kilodial.cli.devices import devices
+from kilodial.cli.doctor import doctor
 from kilodial.cli.groups import due, groups
 from kilodial.cli.ingest import imports
 from kilodial.cli.installs import points
@@ -144,6 +145,7 @@ cli.add_command(orders)
 cli.add_command(imports)
 cli.add_command(reports)
 cli.add_command(technicians)
+cli.add_command(doctor)
 
 
 def run() -> None:
