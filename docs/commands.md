@@ -1,0 +1,724 @@
+# kilodial commands
+
+Generated from the command tree. Do not edit by hand.
+Rebuild with: python -m kilodial.tools.build_docs
+
+Groups: adjust, bench, bill, book, complaint, device, due, group, import, meter, point, report, run, standard, tech, work, xfmr
+
+## `adjust period`
+
+    kilodial adjust period POINT_CODE
+
+The period an adjustment would cover, and what bounds it.
+
+- `--pf`
+
+## `adjust show`
+
+    kilodial adjust show POINT_CODE
+
+Work out an adjustment and print the month by month sheet.
+
+- `--on` the day the adjustment is worked out (required)
+- `--pf`
+
+## `adjust tariff`
+
+    kilodial adjust tariff
+
+The rules adjustments are worked out under.
+
+## `bench add`
+
+    kilodial bench add CODE NAME
+
+Put a bench on the book.
+
+- `--positions` (required)
+- `--standard` (required)
+- `--max-amps` (required)
+- `--max-volts` (required)
+- `--polyphase`
+- `--installed` (required)
+
+## `bench list`
+
+    kilodial bench list
+
+List benches.
+
+- `--on` only benches in service on this day
+
+## `bench restandard`
+
+    kilodial bench restandard CODE STANDARD_SERIAL
+
+Put a different standard on a bench.
+
+## `bench show`
+
+    kilodial bench show CODE
+
+One bench, and the standard behind it.
+
+## `bill add`
+
+    kilodial bill add POINT_CODE
+
+Record one billing period.
+
+- `--from` first day of the billing period (required)
+- `--to` last day of the billing period (required)
+- `--amount` what was charged (required)
+- `--kwh` energy billed, if it is known
+
+## `bill list`
+
+    kilodial bill list POINT_CODE
+
+List a point's billed history.
+
+- `--from`
+- `--to`
+
+## `bill remove`
+
+    kilodial bill remove POINT_CODE FIRST_DAY
+
+Take one billing period back off the book.
+
+## `book audit`
+
+    kilodial book audit
+
+Report every record that points at something that is not there.
+
+## `book check`
+
+    kilodial book check
+
+Report anything structurally wrong with the book.
+
+## `book summary`
+
+    kilodial book summary
+
+Count what is on the book.
+
+## `complaint answer`
+
+    kilodial complaint answer REFERENCE
+
+Close a request with the referee run that answered it.
+
+- `--run` the referee run (required)
+- `--on` the day the request is closed (required)
+- `--fee` override the standard fee
+- `--pf`
+
+## `complaint clock`
+
+    kilodial complaint clock
+
+How many days are left on each open request.
+
+- `--on` (required)
+
+## `complaint list`
+
+    kilodial complaint list
+
+List customer requests, open by default.
+
+- `--all` closed ones too
+- `--point`
+- `--overdue` only ones past due on this day
+
+## `complaint open`
+
+    kilodial complaint open REFERENCE POINT_CODE
+
+Log a customer request against a service point.
+
+- `--on` the day the customer asked (required)
+- `--by` who asked (required)
+- `--reason`
+- `--note`
+
+## `complaint reasons`
+
+    kilodial complaint reasons
+
+The reasons a request can be filed under.
+
+## `complaint show`
+
+    kilodial complaint show REFERENCE
+
+One request and everything decided about it.
+
+## `device add`
+
+    kilodial device add MANUFACTURER MODEL_CODE
+
+Put a meter model on the catalogue.
+
+- `--form` ANSI form, such as 2S or 16S (required)
+- `--class` meter class, such as CL200 (required)
+- `--volts` nameplate voltage (required)
+- `--kh` watthour constant per revolution or pulse (required)
+- `--tech` induction or solid_state
+- `--ratio` register ratio, required on an induction meter
+- `--demand` the type registers demand as well as energy
+- `--interval` demand window in minutes
+- `--introduced` first day the shop bought this type (required)
+- `--retired` last day the shop bought this type
+
+## `device list`
+
+    kilodial device list
+
+List the catalogue.
+
+- `--class` only this meter class
+- `--tech` only this technology
+- `--on` only types the shop bought on this day
+
+## `device retire`
+
+    kilodial device retire KEY
+
+Close a catalogue entry off.
+
+- `--on` last day the shop bought this type (required)
+
+## `device show`
+
+    kilodial device show KEY
+
+Everything on one catalogue entry.
+
+## `due counts`
+
+    kilodial due counts
+
+How many meters are current, due and overdue.
+
+- `--on` (required)
+
+## `due list`
+
+    kilodial due list
+
+Who is due, and how far past it.
+
+- `--on` the day to judge against (required)
+- `--group`
+- `--overdue` only meters past their grace period
+- `--grace` grace period in days
+
+## `group add`
+
+    kilodial group add CODE NAME
+
+Put a sampling group on the book.
+
+- `--type` catalogue key, repeatable
+- `--class`
+- `--tech`
+- `--form` ANSI form, repeatable
+- `--acquired-from`
+- `--acquired-to`
+
+## `group list`
+
+    kilodial group list
+
+List groups with their population and interval.
+
+## `group members`
+
+    kilodial group members CODE
+
+The meters in a group right now.
+
+## `group sample`
+
+    kilodial group sample CODE
+
+Judge a season's bench work and set the group's next interval.
+
+- `--from` start of the season (required)
+- `--to` end of the season (required)
+- `--on` the day the decision is taken (required)
+- `--note`
+
+## `group show`
+
+    kilodial group show CODE
+
+One group, its criteria, and its decision history.
+
+## `import bills`
+
+    kilodial import bills PATH
+
+Load a billing extract into the billed history.
+
+## `import columns`
+
+    kilodial import columns
+
+The columns each import needs.
+
+## `import runs`
+
+    kilodial import runs PATH
+
+Load a bench export into runs.
+
+- `--dry-run` read and check without writing
+
+## `init`
+
+    kilodial init
+
+Create the book, or bring an existing one up to date.
+
+- `--force` migrate a book that is already there
+
+## `meter counts`
+
+    kilodial meter counts
+
+How many meters are in each state.
+
+## `meter list`
+
+    kilodial meter list
+
+List meters.
+
+- `--state` only meters in this state
+- `--type` only meters of this type
+- `--in-shop` only meters a bench could take today
+
+## `meter move`
+
+    kilodial meter move SERIAL STATE
+
+Move a meter to another state.
+
+- `--on` the day it happened, needed for scrap
+
+## `meter receive`
+
+    kilodial meter receive SERIAL
+
+Book a meter in for the first time.
+
+- `--type` catalogue key, maker/model (required)
+- `--acquired` the day the shop took delivery (required)
+- `--owner` who owns the asset
+- `--seal` seal number if one is on it
+- `--uncatalogued` take delivery of a type that is not on the catalogue yet
+
+## `meter seal`
+
+    kilodial meter seal SERIAL SEAL
+
+Put a seal on a meter, or cut the old one off by leaving it out.
+
+## `meter show`
+
+    kilodial meter show SERIAL
+
+Everything on one meter, including its run history.
+
+## `point accuracy`
+
+    kilodial point accuracy CODE
+
+What the installation at a point registers, and why.
+
+- `--on` the day the set was standing
+- `--pf`
+
+## `point add`
+
+    kilodial point add CODE
+
+Put a service point on the book.
+
+- `--account` (required)
+- `--address` (required)
+- `--service` 1P2W, 1P3W, 3P3W, 3P4WY, 3P4WD or NET3W (required)
+- `--volts` (required)
+- `--rate` (required)
+- `--energised` (required)
+
+## `point disconnect`
+
+    kilodial point disconnect CODE
+
+Close a service point off.
+
+- `--on` (required)
+
+## `point history`
+
+    kilodial point history CODE
+
+Every meter that has ever stood at a service point.
+
+## `point list`
+
+    kilodial point list
+
+List service points.
+
+- `--account`
+- `--on` only points live on this day
+
+## `point pull`
+
+    kilodial point pull CODE
+
+Pull whatever meter is standing at a service point.
+
+- `--on` (required)
+
+## `point set`
+
+    kilodial point set CODE METER_SERIAL
+
+Set a meter at a service point.
+
+- `--ct`
+- `--vt`
+- `--register-multiplier`
+- `--multiplier` as programmed (required)
+- `--on` (required)
+
+## `report commission`
+
+    kilodial report commission
+
+The annual filing for the commission.
+
+- `--from` start of the reporting period (required)
+- `--to` end of the reporting period (required)
+- `--format`
+- `--out`
+
+## `report formats`
+
+    kilodial report formats
+
+The shapes a report can be written in.
+
+## `report register`
+
+    kilodial report register
+
+Every point that owes money or is owed it.
+
+- `--on` the day to price the register at (required)
+- `--format`
+- `--out`
+
+## `report shop`
+
+    kilodial report shop
+
+What the shop looks like on a day.
+
+- `--on` the day to report as at (required)
+- `--format`
+- `--out`
+
+## `run delete`
+
+    kilodial run delete REFERENCE
+
+Remove a run that should not have been entered.
+
+- `--yes` Confirm the action without prompting.
+
+## `run demand`
+
+    kilodial run demand REFERENCE
+
+Judge the demand half of a run on its own.
+
+## `run judge`
+
+    kilodial run judge REFERENCE
+
+Judge one run and say why.
+
+## `run list`
+
+    kilodial run list
+
+List runs.
+
+- `--meter`
+- `--bench`
+- `--kind`
+- `--from`
+- `--to`
+
+## `run record`
+
+    kilodial run record REFERENCE
+
+Write a bench run down.
+
+- `--meter` (required)
+- `--bench` (required)
+- `--standard` override the bench standard
+- `--kind`
+- `--on` the day it was run (required)
+- `--by` (required)
+- `--badge` the signing technician's badge
+- `--fl` full load registration
+- `--ll` light load registration
+- `--pf` lagging power factor registration
+- `--hl` heavy load registration
+- `--register` register or dial test registration
+- `--demand` demand registration
+- `--creep` held or crept
+- `--volts` service voltage if not the nameplate
+- `--interval-seconds` measured demand window
+- `--note`
+
+## `run show`
+
+    kilodial run show REFERENCE
+
+One run, its points and the verdict it earns today.
+
+## `standard add`
+
+    kilodial standard add SERIAL
+
+Put a reference standard on the book.
+
+- `--maker` (required)
+- `--model` (required)
+- `--certificate` the certificate number (required)
+- `--certified` the day the certificate was issued (required)
+- `--due` the day the certificate runs out (required)
+- `--uncertainty` stated uncertainty in percent (required)
+- `--traceable`
+
+## `standard expired`
+
+    kilodial standard expired
+
+List standards whose certificate had run out on a day.
+
+- `--on` the day to judge against (required)
+
+## `standard list`
+
+    kilodial standard list
+
+List reference standards.
+
+- `--on` only standards valid on this day
+- `--due-within` days ahead to look
+
+## `standard recertify`
+
+    kilodial standard recertify SERIAL
+
+Record a new certificate against a standard already on the book.
+
+- `--certificate` the new certificate number (required)
+- `--certified` the day it was issued (required)
+- `--due` the day it runs out (required)
+- `--uncertainty` stated uncertainty, if it changed
+
+## `tech add`
+
+    kilodial tech add BADGE NAME
+
+Put a technician on the register.
+
+- `--grade` bench, polyphase or supervisor (required)
+- `--certified` the day the certification was issued (required)
+- `--due` the day it runs out (required)
+- `--note`
+
+## `tech grades`
+
+    kilodial tech grades
+
+The grades and what each one signs.
+
+## `tech lapsed`
+
+    kilodial tech lapsed
+
+Certifications that had run out on a day.
+
+- `--on` (required)
+
+## `tech list`
+
+    kilodial tech list
+
+List the register.
+
+- `--on` only those certified on this day
+- `--grade`
+- `--due-within` days ahead to look
+
+## `tech may`
+
+    kilodial tech may BADGE METER_SERIAL
+
+Say whether somebody may sign that run on that day, before it is run.
+
+- `--kind`
+- `--on` (required)
+
+## `tech recertify`
+
+    kilodial tech recertify BADGE
+
+Record a new certification against somebody already on the register.
+
+- `--certified` (required)
+- `--due` (required)
+- `--grade` promote at the same time
+
+## `work assign`
+
+    kilodial work assign REFERENCE TECHNICIAN
+
+Put a technician's name on an order.
+
+## `work cancel`
+
+    kilodial work cancel REFERENCE
+
+Close an order without doing it.
+
+- `--on` (required)
+- `--why` cancelling needs a reason (required)
+
+## `work counts`
+
+    kilodial work counts
+
+How many orders are in each state.
+
+## `work done`
+
+    kilodial work done REFERENCE
+
+Close an order with whatever evidence its kind wants.
+
+- `--on` (required)
+- `--run` for a test order
+- `--disposition` for a repair order
+
+## `work kinds`
+
+    kilodial work kinds
+
+The kinds of order the shop raises, and what closes each.
+
+## `work list`
+
+    kilodial work list
+
+List work orders, live ones by default.
+
+- `--all` closed ones too
+- `--meter`
+- `--kind`
+- `--to` assigned to this technician
+- `--late` only ones late on this day
+
+## `work plan`
+
+    kilodial work plan
+
+Work out the test orders the due list calls for.
+
+- `--on` the day to plan from (required)
+- `--limit` cap the number raised
+- `--raise` actually put them on the book
+
+## `work raise`
+
+    kilodial work raise REFERENCE KIND METER_SERIAL
+
+Open one work order by hand.
+
+- `--on` the day it was raised (required)
+- `--priority`
+- `--point`
+- `--note`
+
+## `work show`
+
+    kilodial work show REFERENCE
+
+One order and everything on it.
+
+## `xfmr add`
+
+    kilodial xfmr add SERIAL
+
+Put an instrument transformer on the book.
+
+- `--kind` current or voltage (required)
+- `--maker` (required)
+- `--ratio` marked ratio as a number (required)
+- `--accuracy` 0.3, 0.6 or 1.2 (required)
+- `--rcf` ratio correction factor (required)
+- `--minutes`
+- `--burden`
+- `--tested` the day it was last tested (required)
+
+## `xfmr check`
+
+    kilodial xfmr check SERIAL
+
+Say whether a transformer holds its class at a given load.
+
+- `--pf` the load angle
+
+## `xfmr list`
+
+    kilodial xfmr list
+
+List instrument transformers.
+
+- `--kind` current or voltage
+- `--accuracy` 0.3, 0.6 or 1.2
+- `--tested-before` only ones older than this day
+
+## `xfmr retest`
+
+    kilodial xfmr retest SERIAL
+
+Record a new test against a transformer already on the book.
+
+- `--rcf` (required)
+- `--minutes` (required)
+- `--tested` (required)
+- `--burden`
+
+## `xfmr where`
+
+    kilodial xfmr where SERIAL
+
+Which service points a transformer has been installed at.
+
+Generated for kilodial 0.2.0.
