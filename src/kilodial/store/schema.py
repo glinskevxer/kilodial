@@ -293,6 +293,26 @@ MIGRATIONS: tuple[Migration, ...] = (
         "CREATE INDEX run_by_badge ON bench_run (badge)",
         "CREATE INDEX technician_by_grade ON technician (grade)",
     ),
+    _m(
+        11,
+        "tamper findings",
+        """
+        CREATE TABLE tamper_finding (
+            reference   TEXT PRIMARY KEY,
+            point_code  TEXT NOT NULL,
+            kind        TEXT NOT NULL,
+            standing    TEXT NOT NULL,
+            found_on    TEXT NOT NULL,
+            found_by    TEXT NOT NULL,
+            settled_on  TEXT,
+            since       TEXT,
+            evidence    TEXT,
+            FOREIGN KEY (point_code) REFERENCES service_point (code)
+        )
+        """,
+        "CREATE INDEX tamper_by_point ON tamper_finding (point_code, found_on)",
+        "CREATE INDEX tamper_open ON tamper_finding (standing)",
+    ),
 )
 
 

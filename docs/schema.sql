@@ -1,6 +1,6 @@
 -- kilodial schema, built from the migrations. Do not edit by hand.
 -- Rebuild with: python -m kilodial.tools.schema_dump
--- Migrations applied: 10 (latest 10)
+-- Migrations applied: 11 (latest 11)
 
 CREATE TABLE bench (
             code             TEXT PRIMARY KEY,
@@ -152,6 +152,19 @@ CREATE TABLE service_point (
             disconnected  TEXT
         );
 
+CREATE TABLE tamper_finding (
+            reference   TEXT PRIMARY KEY,
+            point_code  TEXT NOT NULL,
+            kind        TEXT NOT NULL,
+            standing    TEXT NOT NULL,
+            found_on    TEXT NOT NULL,
+            found_by    TEXT NOT NULL,
+            settled_on  TEXT,
+            since       TEXT,
+            evidence    TEXT,
+            FOREIGN KEY (point_code) REFERENCES service_point (code)
+        );
+
 CREATE TABLE technician (
             badge            TEXT PRIMARY KEY,
             name             TEXT NOT NULL,
@@ -222,6 +235,10 @@ CREATE INDEX run_by_day ON bench_run (tested_on);
 CREATE INDEX run_by_meter ON bench_run (meter_serial, tested_on);
 
 CREATE INDEX set_by_meter ON meter_set (meter_serial, set_on);
+
+CREATE INDEX tamper_by_point ON tamper_finding (point_code, found_on);
+
+CREATE INDEX tamper_open ON tamper_finding (standing);
 
 CREATE INDEX technician_by_grade ON technician (grade);
 

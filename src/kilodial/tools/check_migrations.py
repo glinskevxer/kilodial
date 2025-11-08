@@ -45,6 +45,7 @@ EXPECTED_TABLES = frozenset(
         "complaint_request",
         "work_order",
         "technician",
+        "tamper_finding",
     }
 )
 

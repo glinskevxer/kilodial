@@ -85,3 +85,9 @@ def test_the_tenth_migration_adds_technicians() -> None:
     joined = " ".join(MIGRATIONS[9].statements)
     assert "CREATE TABLE technician" in joined
     assert "ALTER TABLE bench_run ADD COLUMN badge" in joined
+
+
+def test_the_eleventh_migration_adds_tamper_findings() -> None:
+    joined = " ".join(MIGRATIONS[10].statements)
+    assert "CREATE TABLE tamper_finding" in joined
+    assert "tamper_open" in joined
