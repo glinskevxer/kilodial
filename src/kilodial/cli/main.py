@@ -29,6 +29,7 @@ from kilodial.cli.meters import meters
 from kilodial.cli.orders import orders
 from kilodial.cli.reports import reports
 from kilodial.cli.runs import runs
+from kilodial.cli.tamper import tamper
 from kilodial.cli.technicians import technicians
 from kilodial.cli.transformers import transformers
 from kilodial.errors import ShopError
@@ -146,6 +147,7 @@ cli.add_command(imports)
 cli.add_command(reports)
 cli.add_command(technicians)
 cli.add_command(doctor)
+cli.add_command(tamper)
 
 
 def run() -> None:

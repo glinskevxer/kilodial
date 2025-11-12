@@ -3,7 +3,7 @@
 Generated from the command tree. Do not edit by hand.
 Rebuild with: python -m kilodial.tools.build_docs
 
-Groups: adjust, bench, bill, book, complaint, device, due, group, import, meter, point, report, run, standard, tech, work, xfmr
+Groups: adjust, bench, bill, book, complaint, device, due, group, import, meter, point, report, run, standard, tamper, tech, work, xfmr
 
 ## `adjust period`
 
@@ -549,6 +549,58 @@ Record a new certificate against a standard already on the book.
 - `--certified` the day it was issued (required)
 - `--due` the day it runs out (required)
 - `--uncertainty` stated uncertainty, if it changed
+
+## `tamper clear`
+
+    kilodial tamper clear REFERENCE
+
+Close a suspicion without confirming it.
+
+- `--on` (required)
+- `--why` clearing needs a reason (required)
+
+## `tamper confirm`
+
+    kilodial tamper confirm REFERENCE
+
+Confirm a suspicion, which changes what the customer can be billed.
+
+- `--on` the day it was confirmed (required)
+- `--since` the day the interference started (required)
+- `--evidence` what was seen (required)
+
+## `tamper kinds`
+
+    kilodial tamper kinds
+
+The findings the shop records, and which stop the meter measuring.
+
+## `tamper list`
+
+    kilodial tamper list
+
+List tamper findings, open suspicions by default.
+
+- `--all` settled ones too
+- `--point`
+- `--from`
+- `--to`
+
+## `tamper log`
+
+    kilodial tamper log REFERENCE POINT_CODE KIND
+
+Log a suspicion against a service point.
+
+- `--on` the day it was found (required)
+- `--by` who found it (required)
+- `--evidence` what was seen
+
+## `tamper show`
+
+    kilodial tamper show REFERENCE
+
+One finding and everything decided about it.
 
 ## `tech add`
 
