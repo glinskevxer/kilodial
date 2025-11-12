@@ -13,6 +13,11 @@ same meter. A meter that passed a test in the shop before it was set here says
 nothing about this installation, whose current transformer might be the thing
 that is wrong.
 
+A confirmed tamper finding changes the lookback and, when what was found
+stopped the meter measuring at all, stops the calculation entirely. A meter that
+was bypassed did not under register; it registered nothing for whatever went
+round it, and no percentage applied to what it did register recovers that.
+
 The billed history has to be clipped to the period after the period has been
 worked out, not before. Clipping first hides the case where nothing was billed
 over the period at all, which is a real situation and needs its own answer.
@@ -108,12 +113,20 @@ def raise_adjustment(
     run = finding_run(shop, standing.meter_serial)
     meter_set = shop.installs.on_day(code, run.tested_on) or standing
     accuracy = shop.accuracy_of_set(meter_set, power_factor=power_factor)
+    if shop.tamper.unmetered_at(code, run.tested_on):
+        return Refusal(
+            code,
+            "there is a confirmed finding that stopped the meter measuring, so the "
+            "usage has to be estimated rather than corrected from a registration",
+            accuracy,
+        )
+    tampered = bool(shop.tamper.confirmed_at(code, run.tested_on))
     if not is_adjustable(accuracy, tariff):
         return Refusal(code, str(why_not(accuracy, tariff)), accuracy)
     period = period_for(
         found_on=run.tested_on,
         set_on=meter_set.set_on,
-        cap_months=lookback_months(accuracy, tariff),
+        cap_months=lookback_months(accuracy, tariff, tamper=tampered),
         pulled_on=meter_set.removed_on,
         last_clean_on=last_clean_test(
             shop,

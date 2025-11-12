@@ -15,6 +15,10 @@ for up to five years. A meter that underbilled them is back billed for one. The
 utility owns the meter, the utility tests it, and the customer had no way to
 know, so the tariff puts the cost of a long undetected error on the utility.
 
+Confirmed interference reaches furthest of all, three years on a back bill,
+and it only applies to a back bill: a customer who tampered with their meter is
+not owed a longer refund window for the trouble.
+
 A multiplier that was typed in wrong is not a meter error and is not covered by
 the tolerance at all. It gets corrected in full in both directions, up to the
 same five years, because there is no sense in which a customer billed at half
@@ -55,19 +59,34 @@ class Tariff:
     refund_months: int
     back_bill_months: int
     multiplier_months: int
+    tamper_months: int
     refund_interest: Decimal
 
     def __post_init__(self) -> None:
         if self.tolerance < 0:
             raise BadInputError("a tariff tolerance cannot be negative")
-        for months in (self.refund_months, self.back_bill_months, self.multiplier_months):
+        for months in (
+            self.refund_months,
+            self.back_bill_months,
+            self.multiplier_months,
+            self.tamper_months,
+        ):
             if months <= 0:
                 raise BadInputError("a tariff lookback has to be a positive month count")
         if self.refund_interest < 0:
             raise BadInputError("a refund interest rate cannot be negative")
 
-    def cap_for(self, direction: Direction, *, multiplier: bool) -> int:
-        """How many months back the tariff lets an adjustment reach."""
+    def cap_for(self, direction: Direction, *, multiplier: bool, tamper: bool = False) -> int:
+        """How many months back the tariff lets an adjustment reach.
+
+        The order is longest first and it is a tariff decision rather than an
+        arithmetic one. Confirmed interference reaches furthest, because the
+        customer knew; a multiplier error reaches almost as far, because nobody
+        knew; and the ordinary meter error reaches five years one way and one
+        year the other.
+        """
+        if tamper and direction is Direction.BACK_BILL:
+            return self.tamper_months
         if multiplier:
             return self.multiplier_months
         if direction is Direction.REFUND:
@@ -89,6 +108,7 @@ STATE_TARIFF = Tariff(
     refund_months=60,
     back_bill_months=12,
     multiplier_months=60,
+    tamper_months=36,
     refund_interest=Decimal("0.06"),
 )
 
@@ -126,9 +146,18 @@ def why_not(accuracy: InstalledAccuracy, tariff: Tariff = STATE_TARIFF) -> str |
     )
 
 
-def lookback_months(accuracy: InstalledAccuracy, tariff: Tariff = STATE_TARIFF) -> int:
+def lookback_months(
+    accuracy: InstalledAccuracy,
+    tariff: Tariff = STATE_TARIFF,
+    *,
+    tamper: bool = False,
+) -> int:
     """How far back this particular installation's adjustment may reach."""
-    return tariff.cap_for(direction_of(accuracy), multiplier=not accuracy.multiplier_is_right)
+    return tariff.cap_for(
+        direction_of(accuracy),
+        multiplier=not accuracy.multiplier_is_right,
+        tamper=tamper,
+    )
 
 
 def error_share(accuracy: InstalledAccuracy) -> Decimal:

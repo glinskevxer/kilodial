@@ -14,7 +14,7 @@ from kilodial.units.money import Money
 from kilodial.units.registration import Registration
 from kilodial.xfmr.transformer import InstrumentTransformer, TransformerKind
 
-NO_INTEREST = Tariff("flat", Decimal("2.0"), 60, 12, 60, Decimal("0"))
+NO_INTEREST = Tariff("flat", Decimal("2.0"), 60, 12, 60, 36, Decimal("0"))
 
 
 def a_set(**over: object) -> MeterSet:

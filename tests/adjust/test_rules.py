@@ -53,11 +53,11 @@ def test_the_state_tariff_is_asymmetric() -> None:
 
 def test_a_tariff_has_to_make_sense() -> None:
     with pytest.raises(BadInputError, match="tolerance cannot be negative"):
-        Tariff("bad", Decimal("-1"), 60, 12, 60, Decimal("0"))
+        Tariff("bad", Decimal("-1"), 60, 12, 60, 36, Decimal("0"))
     with pytest.raises(BadInputError, match="positive month count"):
-        Tariff("bad", Decimal("2"), 0, 12, 60, Decimal("0"))
+        Tariff("bad", Decimal("2"), 0, 12, 60, 36, Decimal("0"))
     with pytest.raises(BadInputError, match="interest rate"):
-        Tariff("bad", Decimal("2"), 60, 12, 60, Decimal("-0.01"))
+        Tariff("bad", Decimal("2"), 60, 12, 60, 36, Decimal("-0.01"))
 
 
 def test_a_meter_inside_tolerance_is_not_adjusted() -> None:
@@ -130,3 +130,30 @@ def test_a_slow_meter_has_a_negative_share() -> None:
 def test_an_installation_registering_nothing() -> None:
     with pytest.raises(BadInputError, match="registering nothing"):
         error_share(accuracy("0"))
+
+
+def test_confirmed_interference_reaches_furthest_on_a_back_bill() -> None:
+    slow = accuracy("96.00")
+    assert lookback_months(slow) == 12
+    assert lookback_months(slow, tamper=True) == 36
+
+
+def test_interference_does_not_lengthen_a_refund() -> None:
+    fast = accuracy("104.00")
+    assert lookback_months(fast) == 60
+    assert lookback_months(fast, tamper=True) == 60
+
+
+def test_interference_beats_a_multiplier_error_on_a_back_bill() -> None:
+    slow = accuracy_of(
+        a_set(ct_serial="CT-8841", programmed_multiplier="20"),
+        Registration("100.00"),
+        current=ct(),
+    )
+    assert lookback_months(slow) == 60
+    assert lookback_months(slow, tamper=True) == 36
+
+
+def test_the_tamper_lookback_has_to_be_positive() -> None:
+    with pytest.raises(BadInputError, match="positive month count"):
+        Tariff("bad", Decimal("2"), 60, 12, 60, 0, Decimal("0"))

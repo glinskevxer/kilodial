@@ -17,6 +17,7 @@ from kilodial.model.form import Service, Technology
 from kilodial.model.meter import Meter
 from kilodial.model.run import BenchPoint, BenchRun, RunKind
 from kilodial.store.shop import Shop, open_shop
+from kilodial.tamper.event import Finding as TamperFinding
 from kilodial.units.money import Money
 from kilodial.xfmr.transformer import InstrumentTransformer, TransformerKind
 
@@ -235,3 +236,63 @@ def test_a_pulled_meter_ends_the_period_at_the_pull(shop: Shop) -> None:
     assert isinstance(found, Adjustment)
     assert found.period.span.end is not None
     assert found.period.span.end.isoformat() == "2025-05-14"
+
+
+def confirm_tamper(shop: Shop, kind: str, since: str = "2022-01-01") -> None:
+    shop.tamper.add(
+        TamperFinding.raise_finding(
+            "TF-1", "SP-1042", kind, found_on="2025-06-30", found_by="R Ellis"
+        )
+    )
+    shop.tamper.save(
+        shop.tamper.get("TF-1").confirmed(
+            on="2025-07-01", since=since, evidence="found on the pull"
+        )
+    )
+
+
+def test_a_confirmed_seal_cut_lengthens_a_back_bill(shop: Shop) -> None:
+    set_meter(shop, set_on="2015-01-01")
+    bench(shop, "TR-1", "2025-06-30", "96.00")
+    bill(shop, 2023)
+    bill(shop, 2024)
+    bill(shop, 2025, 6)
+    confirm_tamper(shop, "seal cut")
+    found = raise_adjustment(shop, "SP-1042", on="2025-07-15")
+    assert isinstance(found, Adjustment)
+    assert found.period.span.start.isoformat() == "2022-06-30"
+
+
+def test_a_suspicion_does_not_lengthen_anything(shop: Shop) -> None:
+    set_meter(shop, set_on="2015-01-01")
+    bench(shop, "TR-1", "2025-06-30", "96.00")
+    bill(shop, 2024)
+    bill(shop, 2025, 6)
+    shop.tamper.add(
+        TamperFinding.raise_finding(
+            "TF-1", "SP-1042", "seal cut", found_on="2025-06-30", found_by="R Ellis"
+        )
+    )
+    found = raise_adjustment(shop, "SP-1042", on="2025-07-15")
+    assert isinstance(found, Adjustment)
+    assert found.period.span.start.isoformat() == "2024-06-30"
+
+
+def test_a_confirmed_bypass_cannot_be_priced_from_a_registration(shop: Shop) -> None:
+    set_meter(shop, set_on="2015-01-01")
+    bench(shop, "TR-1", "2025-06-30", "96.00")
+    bill(shop, 2025, 6)
+    confirm_tamper(shop, "bypass")
+    found = raise_adjustment(shop, "SP-1042", on="2025-07-15")
+    assert isinstance(found, Refusal)
+    assert "has to be estimated" in found.reason
+
+
+def test_a_confirmed_bypass_stops_even_a_meter_inside_tolerance(shop: Shop) -> None:
+    set_meter(shop, set_on="2015-01-01")
+    bench(shop, "TR-1", "2025-06-30", "100.10")
+    bill(shop, 2025, 6)
+    confirm_tamper(shop, "reversed")
+    found = raise_adjustment(shop, "SP-1042", on="2025-07-15")
+    assert isinstance(found, Refusal)
+    assert "stopped the meter measuring" in found.reason
