@@ -3,7 +3,7 @@
 Generated from the command tree. Do not edit by hand.
 Rebuild with: python -m kilodial.tools.build_docs
 
-Groups: adjust, bench, bill, book, complaint, device, due, group, import, meter, point, report, run, standard, tamper, tech, work, xfmr
+Groups: adjust, bench, bill, book, complaint, device, due, estimate, group, import, meter, point, report, run, standard, tamper, tech, work, xfmr
 
 ## `adjust period`
 
@@ -225,6 +225,44 @@ Who is due, and how far past it.
 - `--group`
 - `--overdue` only meters past their grace period
 - `--grace` grace period in days
+
+## `estimate bases`
+
+    kilodial estimate bases
+
+The bases an estimate can rest on, strongest first.
+
+## `estimate gap`
+
+    kilodial estimate gap POINT_CODE
+
+The period confirmed interference covered, clipped to a meter set.
+
+- `--on` the day to judge the findings as at (required)
+
+## `estimate list`
+
+    kilodial estimate list POINT_CODE
+
+Every basis the book supports for a gap, strongest first.
+
+- `--on` find the gap from the findings
+- `--from` or give the period yourself
+- `--to`
+- `--note`
+
+## `estimate load`
+
+    kilodial estimate load POINT_CODE
+
+Estimate from nameplate load when there is no history to work from.
+
+- `--from` (required)
+- `--to` (required)
+- `--kw` connected load in kilowatts (required)
+- `--duty` share of the day the load ran (required)
+- `--rate` energy rate (required)
+- `--note`
 
 ## `group add`
 
