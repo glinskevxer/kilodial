@@ -313,6 +313,25 @@ MIGRATIONS: tuple[Migration, ...] = (
         "CREATE INDEX tamper_by_point ON tamper_finding (point_code, found_on)",
         "CREATE INDEX tamper_open ON tamper_finding (standing)",
     ),
+    _m(
+        12,
+        "repair records",
+        """
+        CREATE TABLE repair (
+            reference         TEXT PRIMARY KEY,
+            meter_serial      TEXT NOT NULL,
+            fault             TEXT NOT NULL,
+            repaired_on       TEXT NOT NULL,
+            by_whom           TEXT NOT NULL,
+            hours             TEXT NOT NULL,
+            parts             INTEGER NOT NULL,
+            replacement_cost  INTEGER NOT NULL,
+            note              TEXT
+        )
+        """,
+        "CREATE INDEX repair_by_meter ON repair (meter_serial, repaired_on)",
+        "CREATE INDEX repair_by_fault ON repair (fault)",
+    ),
 )
 
 

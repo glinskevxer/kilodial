@@ -1,6 +1,6 @@
 -- kilodial schema, built from the migrations. Do not edit by hand.
 -- Rebuild with: python -m kilodial.tools.schema_dump
--- Migrations applied: 11 (latest 11)
+-- Migrations applied: 12 (latest 12)
 
 CREATE TABLE bench (
             code             TEXT PRIMARY KEY,
@@ -124,6 +124,18 @@ CREATE TABLE reference_standard (
             traceable_to     TEXT NOT NULL
         );
 
+CREATE TABLE repair (
+            reference         TEXT PRIMARY KEY,
+            meter_serial      TEXT NOT NULL,
+            fault             TEXT NOT NULL,
+            repaired_on       TEXT NOT NULL,
+            by_whom           TEXT NOT NULL,
+            hours             TEXT NOT NULL,
+            parts             INTEGER NOT NULL,
+            replacement_cost  INTEGER NOT NULL,
+            note              TEXT
+        );
+
 CREATE TABLE sample_group (
             code           TEXT PRIMARY KEY,
             name           TEXT NOT NULL,
@@ -227,6 +239,10 @@ CREATE INDEX plan_by_group ON test_plan (group_code, decided_on);
 CREATE INDEX point_by_account ON service_point (account);
 
 CREATE UNIQUE INDEX point_by_kind ON bench_point (run_reference, kind);
+
+CREATE INDEX repair_by_fault ON repair (fault);
+
+CREATE INDEX repair_by_meter ON repair (meter_serial, repaired_on);
 
 CREATE INDEX run_by_badge ON bench_run (badge);
 

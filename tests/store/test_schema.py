@@ -91,3 +91,9 @@ def test_the_eleventh_migration_adds_tamper_findings() -> None:
     joined = " ".join(MIGRATIONS[10].statements)
     assert "CREATE TABLE tamper_finding" in joined
     assert "tamper_open" in joined
+
+
+def test_the_twelfth_migration_adds_repairs() -> None:
+    joined = " ".join(MIGRATIONS[11].statements)
+    assert "CREATE TABLE repair" in joined
+    assert "repair_by_fault" in joined

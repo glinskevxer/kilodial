@@ -162,6 +162,7 @@ def test_summary_counts_every_table(shop: Shop) -> None:
         "work orders": 0,
         "technicians": 0,
         "tamper findings": 0,
+        "repairs": 0,
     }
 
 
