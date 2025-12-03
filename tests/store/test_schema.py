@@ -97,3 +97,8 @@ def test_the_twelfth_migration_adds_repairs() -> None:
     joined = " ".join(MIGRATIONS[11].statements)
     assert "CREATE TABLE repair" in joined
     assert "repair_by_fault" in joined
+
+
+def test_the_thirteenth_migration_links_orders_to_repairs() -> None:
+    joined = " ".join(MIGRATIONS[12].statements)
+    assert "ALTER TABLE work_order ADD COLUMN repair_reference" in joined

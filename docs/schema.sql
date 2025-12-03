@@ -1,6 +1,6 @@
 -- kilodial schema, built from the migrations. Do not edit by hand.
 -- Rebuild with: python -m kilodial.tools.schema_dump
--- Migrations applied: 12 (latest 12)
+-- Migrations applied: 13 (latest 13)
 
 CREATE TABLE bench (
             code             TEXT PRIMARY KEY,
@@ -214,7 +214,7 @@ CREATE TABLE work_order (
             run_reference  TEXT,
             disposition    TEXT,
             note           TEXT
-        );
+        , repair_reference TEXT);
 
 CREATE INDEX bench_by_standard ON bench (standard_serial);
 
@@ -231,6 +231,8 @@ CREATE INDEX meter_by_device ON meter (device_key);
 CREATE INDEX meter_by_state ON meter (state);
 
 CREATE INDEX order_by_meter ON work_order (meter_serial, raised_on);
+
+CREATE INDEX order_by_repair ON work_order (repair_reference);
 
 CREATE INDEX order_live ON work_order (state, raised_on);
 

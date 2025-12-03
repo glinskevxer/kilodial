@@ -28,7 +28,7 @@ from kilodial.units.span import parse_date
 
 COLUMNS = (
     "reference, kind, meter_serial, point_code, priority, raised_on, state, "
-    "assigned_to, closed_on, run_reference, disposition, note"
+    "assigned_to, closed_on, run_reference, disposition, note, repair_reference"
 )
 
 
@@ -49,7 +49,7 @@ class OrderRepository:
                 "which is not on the book"
             )
         self._conn.execute(
-            f"INSERT INTO work_order ({COLUMNS}) VALUES ({', '.join('?' * 12)})",
+            f"INSERT INTO work_order ({COLUMNS}) VALUES ({', '.join('?' * 13)})",
             _row(order),
         )
         return order
@@ -62,7 +62,8 @@ class OrderRepository:
         self._conn.execute(
             "UPDATE work_order SET kind = ?, meter_serial = ?, point_code = ?, "
             "priority = ?, raised_on = ?, state = ?, assigned_to = ?, closed_on = ?, "
-            "run_reference = ?, disposition = ?, note = ? WHERE reference = ?",
+            "run_reference = ?, disposition = ?, note = ?, repair_reference = ? "
+            "WHERE reference = ?",
             (*row[1:], row[0]),
         )
         return order
@@ -149,6 +150,7 @@ def _row(order: WorkOrder) -> tuple[object, ...]:
         order.run_reference,
         None if order.disposition is None else order.disposition.name,
         order.note,
+        order.repair_reference,
     )
 
 
@@ -168,6 +170,7 @@ def _read(row: tuple[object, ...]) -> WorkOrder:
         if row[10] is None
         else member_of(Disposition, row[10], "repair disposition", field="name"),
         note=None if row[11] is None else str(row[11]),
+        repair_reference=None if len(row) < 13 or row[12] is None else str(row[12]),
     )
 
 

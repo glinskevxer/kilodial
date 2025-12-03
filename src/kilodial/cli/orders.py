@@ -12,6 +12,7 @@ import click
 
 from kilodial.cli.context import Context, pass_context
 from kilodial.cli.render import or_dash, pairs, table
+from kilodial.errors import RuleError
 from kilodial.orders.order import (
     OrderKind,
     OrderState,
@@ -80,6 +81,7 @@ def order_assign(context: Context, reference: str, technician: str) -> None:
 @click.option("--on", "day", required=True)
 @click.option("--run", "run_reference", default=None, help="for a test order")
 @click.option("--disposition", default=None, help="for a repair order")
+@click.option("--repair", "repair_reference", default=None, help="the repair record")
 @pass_context
 def order_done(
     context: Context,
@@ -87,18 +89,27 @@ def order_done(
     day: str,
     run_reference: str | None,
     disposition: str | None,
+    repair_reference: str | None,
 ) -> None:
     """Close an order with whatever evidence its kind wants."""
     shop = context.open()
     order = shop.orders.get(reference)
     if run_reference is not None:
         shop.runs.get(run_reference)
+    if repair_reference is not None:
+        repair = shop.repairs.get(repair_reference)
+        if repair.meter_serial != order.meter_serial:
+            raise RuleError(
+                f"repair {repair.reference} is on meter {repair.meter_serial} and "
+                f"order {order.reference} is on {order.meter_serial}"
+            )
     with shop.transaction():
         closed = shop.orders.save(
             order.done(
                 on=day,
                 run_reference=run_reference,
                 disposition=None if disposition is None else disposition_named(disposition),
+                repair_reference=repair_reference,
             )
         )
     context.say(f"{closed.reference} done after {closed.days_open(day)} days")
@@ -184,6 +195,7 @@ def order_show(context: Context, reference: str) -> None:
         ("closed", or_dash(None if order.closed_on is None else order.closed_on.isoformat())),
         ("run", or_dash(order.run_reference)),
         ("disposition", or_dash(None if order.disposition is None else str(order.disposition))),
+        ("repair", or_dash(order.repair_reference)),
         ("note", or_dash(order.note)),
     ]
     for line in pairs(detail):

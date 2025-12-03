@@ -772,6 +772,7 @@ Close an order with whatever evidence its kind wants.
 - `--on` (required)
 - `--run` for a test order
 - `--disposition` for a repair order
+- `--repair` the repair record
 
 ## `work kinds`
 

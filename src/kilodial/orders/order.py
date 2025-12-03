@@ -4,6 +4,12 @@ Everything else in this package describes what is true about a meter. A work
 order is the only thing that says what somebody is going to do about it, which
 makes it the record the shop supervisor actually looks at.
 
+One rule is worth spelling out twice because it is the one that keeps the
+repair register honest: a repair order closing with the meter returned to stock
+has to name the repair record. A meter that went back out with nothing written
+down about what was done to it is a hole in the fault counts, and the fault
+counts are what decide which types the utility buys next.
+
 The rule worth spelling out is that different kinds of order close differently.
 A test order is not done because a technician says so; it is done when there is
 a run on the book, and the order carries that run's reference. A repair order
@@ -137,6 +143,7 @@ class WorkOrder:
     closed_on: date | None
     run_reference: str | None
     disposition: Disposition | None
+    repair_reference: str | None
     note: str | None
 
     @classmethod
@@ -164,6 +171,7 @@ class WorkOrder:
             closed_on=None,
             run_reference=None,
             disposition=None,
+            repair_reference=None,
             note=optional(note, "order note", 240),
         )
 
@@ -192,6 +200,7 @@ class WorkOrder:
         on: object,
         run_reference: object = None,
         disposition: object = None,
+        repair_reference: object = None,
     ) -> WorkOrder:
         """Close the order, refusing to close one without its evidence."""
         if not self.is_live:
@@ -207,12 +216,25 @@ class WorkOrder:
             raise RuleError(f"a {self.kind} order does not carry a run")
         if disposition is not None and not self.kind.needs_disposition:
             raise RuleError(f"a {self.kind} order does not carry a disposition")
+        if repair_reference is not None and not self.kind.needs_disposition:
+            raise RuleError(f"a {self.kind} order does not carry a repair")
+        if (
+            repair_reference is None
+            and disposition is not None
+            and disposition_named(disposition) is Disposition.RETURNED
+        ):
+            raise RuleError(
+                "a meter cannot be returned to stock off a repair order with no repair record on it"
+            )
         return replace(
             self,
             state=OrderState.DONE,
             closed_on=when,
             run_reference=None if run_reference is None else key(run_reference, "run", 24),
             disposition=None if disposition is None else disposition_named(disposition),
+            repair_reference=(
+                None if repair_reference is None else key(repair_reference, "repair", 24)
+            ),
         )
 
     def cancelled(self, *, on: object, why: object) -> WorkOrder:

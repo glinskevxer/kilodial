@@ -155,3 +155,21 @@ def test_which_kinds_want_what() -> None:
     assert str(Priority.HIGH) == "high"
     assert str(OrderState.DONE) == "done"
     assert str(Disposition.UNREPAIRABLE) == "unrepairable, held"
+
+
+def test_a_repair_order_returning_a_meter_has_to_name_the_repair() -> None:
+    with pytest.raises(RuleError, match="no repair record on it"):
+        order("repair").done(on="2025-03-14", disposition="returned")
+    closed = order("repair").done(on="2025-03-14", disposition="returned", repair_reference="rp-1")
+    assert closed.repair_reference == "RP-1"
+
+
+def test_a_scrapped_meter_needs_no_repair_record() -> None:
+    closed = order("repair").done(on="2025-03-14", disposition="scrapped")
+    assert closed.repair_reference is None
+    assert closed.disposition is Disposition.SCRAPPED
+
+
+def test_a_repair_record_on_an_order_that_is_not_a_repair() -> None:
+    with pytest.raises(RuleError, match="does not carry a repair"):
+        order("test").done(on="2025-03-14", run_reference="TR-1", repair_reference="RP-1")

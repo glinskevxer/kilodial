@@ -140,3 +140,16 @@ def test_a_row_holding_a_state_nobody_uses(repo: OrderRepository) -> None:
     repo._conn.execute("UPDATE work_order SET state = 'MAYBE'")
     with pytest.raises(ConfigError, match="not a work order state"):
         repo.get("WO-1")
+
+
+def test_a_repair_reference_survives_a_round_trip(repo: OrderRepository) -> None:
+    repo.add(order("WO-2", "repair"))
+    repo.save(
+        repo.get("WO-2").done(on="2025-03-14", disposition="returned", repair_reference="RP-1")
+    )
+    assert repo.get("WO-2").repair_reference == "RP-1"
+
+
+def test_an_order_with_no_repair_reads_back_as_none(repo: OrderRepository) -> None:
+    repo.add(order())
+    assert repo.get("WO-1").repair_reference is None

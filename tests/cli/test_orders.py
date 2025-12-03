@@ -179,3 +179,99 @@ def test_counts_and_kinds(wired: Invoke) -> None:
 def test_showing_an_order_that_is_not_there(wired: Invoke) -> None:
     result = wired("work", "show", "WO-9", expect=2)
     assert "no work order" in result.output
+
+
+def test_closing_a_repair_order_with_its_record(wired: Invoke) -> None:
+    wired("work", "raise", "WO-2", "repair", "84-119302", "--on", "2025-03-04")
+    wired(
+        "repair",
+        "record",
+        "RP-1",
+        "84-119302",
+        "bearing",
+        "--on",
+        "2025-03-14",
+        "--by",
+        "R Ellis",
+        "--hours",
+        "1",
+        "--replacement",
+        "184.00",
+    )
+    wired(
+        "work",
+        "done",
+        "WO-2",
+        "--on",
+        "2025-03-14",
+        "--disposition",
+        "returned",
+        "--repair",
+        "RP-1",
+    )
+    assert "RP-1" in wired("work", "show", "WO-2").output
+
+
+def test_returning_a_meter_with_nothing_written_down(wired: Invoke) -> None:
+    wired("work", "raise", "WO-2", "repair", "84-119302", "--on", "2025-03-04")
+    result = wired(
+        "work",
+        "done",
+        "WO-2",
+        "--on",
+        "2025-03-14",
+        "--disposition",
+        "returned",
+        expect=2,
+    )
+    assert "no repair record on it" in result.output
+
+
+def test_a_repair_on_the_wrong_meter(wired: Invoke) -> None:
+    wired("meter", "receive", "84-119303", "--type", "Halvern/R4S", "--acquired", "2015-01-01")
+    wired("work", "raise", "WO-2", "repair", "84-119302", "--on", "2025-03-04")
+    wired(
+        "repair",
+        "record",
+        "RP-1",
+        "84-119303",
+        "bearing",
+        "--on",
+        "2025-03-14",
+        "--by",
+        "R Ellis",
+        "--hours",
+        "1",
+        "--replacement",
+        "184.00",
+    )
+    result = wired(
+        "work",
+        "done",
+        "WO-2",
+        "--on",
+        "2025-03-14",
+        "--disposition",
+        "returned",
+        "--repair",
+        "RP-1",
+        expect=2,
+    )
+    assert "is on meter 84-119303" in result.output
+
+
+def test_a_repair_reference_nobody_has(wired: Invoke) -> None:
+    wired("work", "raise", "WO-2", "repair", "84-119302", "--on", "2025-03-04")
+    result = wired(
+        "work",
+        "done",
+        "WO-2",
+        "--on",
+        "2025-03-14",
+        "--disposition",
+        "returned",
+        "--repair",
+        "RP-9",
+        expect=2,
+    )
+    assert "no repair on the book" in result.output

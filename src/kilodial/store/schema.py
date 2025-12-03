@@ -332,6 +332,12 @@ MIGRATIONS: tuple[Migration, ...] = (
         "CREATE INDEX repair_by_meter ON repair (meter_serial, repaired_on)",
         "CREATE INDEX repair_by_fault ON repair (fault)",
     ),
+    _m(
+        13,
+        "link a repair order to its repair record",
+        "ALTER TABLE work_order ADD COLUMN repair_reference TEXT",
+        "CREATE INDEX order_by_repair ON work_order (repair_reference)",
+    ),
 )
 
 
