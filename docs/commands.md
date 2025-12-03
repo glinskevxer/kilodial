@@ -3,7 +3,7 @@
 Generated from the command tree. Do not edit by hand.
 Rebuild with: python -m kilodial.tools.build_docs
 
-Groups: adjust, bench, bill, book, complaint, device, due, estimate, group, import, meter, point, report, run, standard, tamper, tech, work, xfmr
+Groups: adjust, bench, bill, book, complaint, device, due, estimate, group, import, meter, point, repair, report, run, standard, tamper, tech, work, xfmr
 
 ## `adjust period`
 
@@ -446,6 +446,54 @@ Set a meter at a service point.
 - `--register-multiplier`
 - `--multiplier` as programmed (required)
 - `--on` (required)
+
+## `repair faults`
+
+    kilodial repair faults
+
+Count what went wrong, which is the question a purchase order asks.
+
+- `--type` only this device type
+
+## `repair list`
+
+    kilodial repair list
+
+List repairs.
+
+- `--meter`
+- `--fault`
+- `--from`
+- `--to`
+- `--wasteful` only ones that cost more than a meter
+
+## `repair record`
+
+    kilodial repair record REFERENCE METER_SERIAL FAULT
+
+Write a repair down.
+
+- `--on` the day it was repaired (required)
+- `--by` (required)
+- `--hours` time on the bench (required)
+- `--parts` what the parts cost
+- `--replacement` what a new meter would cost (required)
+- `--note`
+
+## `repair show`
+
+    kilodial repair show REFERENCE
+
+One repair and what it came to.
+
+## `repair spend`
+
+    kilodial repair spend
+
+What the shop spent on repairs over a window.
+
+- `--from` (required)
+- `--to` (required)
 
 ## `report commission`
 

@@ -28,6 +28,7 @@ from kilodial.cli.ingest import imports
 from kilodial.cli.installs import points
 from kilodial.cli.meters import meters
 from kilodial.cli.orders import orders
+from kilodial.cli.repairs import repairs
 from kilodial.cli.reports import reports
 from kilodial.cli.runs import runs
 from kilodial.cli.tamper import tamper
@@ -150,6 +151,7 @@ cli.add_command(technicians)
 cli.add_command(doctor)
 cli.add_command(tamper)
 cli.add_command(estimates)
+cli.add_command(repairs)
 
 
 def run() -> None:
