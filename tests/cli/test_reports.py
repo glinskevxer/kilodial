@@ -109,3 +109,21 @@ def test_the_formats_command(stocked: Invoke) -> None:
     result = stocked("report", "formats")
     assert "text" in result.output
     assert "csv" in result.output
+
+
+def test_the_certificate_report(stocked: Invoke) -> None:
+    result = stocked("report", "certificates", "--on", "2025-06-30")
+    assert "Certification report as at 2025-06-30" in result.output
+    assert "standard" in result.output
+    assert "Transformer policy" in result.output
+
+
+def test_the_certificate_report_warning_window(stocked: Invoke) -> None:
+    narrow = stocked("report", "certificates", "--on", "2034-11-01").output
+    wide = stocked("report", "certificates", "--on", "2034-11-01", "--warning", "120").output
+    assert narrow.count("due") <= wide.count("due")
+
+
+def test_the_certificate_report_as_csv(stocked: Invoke) -> None:
+    result = stocked("report", "certificates", "--on", "2025-06-30", "--format", "csv")
+    assert result.output.startswith("kind,reference,detail")

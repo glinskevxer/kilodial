@@ -495,6 +495,17 @@ What the shop spent on repairs over a window.
 - `--from` (required)
 - `--to` (required)
 
+## `report certificates`
+
+    kilodial report certificates
+
+Standards, technicians and transformers on one clock.
+
+- `--on` the day to report as at (required)
+- `--warning` days ahead to warn on
+- `--format`
+- `--out`
+
 ## `report commission`
 
     kilodial report commission
