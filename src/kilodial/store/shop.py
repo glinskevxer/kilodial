@@ -29,6 +29,7 @@ from kilodial.store.billing import BillingRepository
 from kilodial.store.book import Book, open_migrated
 from kilodial.store.complaints import ComplaintRepository
 from kilodial.store.devices import DeviceRepository
+from kilodial.store.events import EventRepository
 from kilodial.store.groups import GroupRepository, PlanRepository
 from kilodial.store.installs import InstallRepository, ServicePointRepository
 from kilodial.store.meters import MeterRepository
@@ -68,6 +69,7 @@ class Shop:
         self.technicians = TechnicianRepository(conn)
         self.tamper = TamperRepository(conn)
         self.repairs = RepairRepository(conn)
+        self.events = EventRepository(conn)
 
     @property
     def path(self) -> Path:
@@ -226,6 +228,7 @@ class Shop:
             "technicians": self.technicians.count(),
             "tamper findings": self.tamper.count(),
             "repairs": self.repairs.count(),
+            "events": self.events.count(),
         }
 
     def audit(self) -> list[str]:

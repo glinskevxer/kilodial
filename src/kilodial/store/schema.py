@@ -338,6 +338,22 @@ MIGRATIONS: tuple[Migration, ...] = (
         "ALTER TABLE work_order ADD COLUMN repair_reference TEXT",
         "CREATE INDEX order_by_repair ON work_order (repair_reference)",
     ),
+    _m(
+        14,
+        "the event log",
+        """
+        CREATE TABLE event (
+            sequence  INTEGER PRIMARY KEY AUTOINCREMENT,
+            at        TEXT NOT NULL,
+            actor     TEXT NOT NULL,
+            action    TEXT NOT NULL,
+            subject   TEXT NOT NULL,
+            detail    TEXT
+        )
+        """,
+        "CREATE INDEX event_by_subject ON event (subject, sequence)",
+        "CREATE INDEX event_by_action ON event (action, sequence)",
+    ),
 )
 
 

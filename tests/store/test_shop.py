@@ -163,6 +163,7 @@ def test_summary_counts_every_table(shop: Shop) -> None:
         "technicians": 0,
         "tamper findings": 0,
         "repairs": 0,
+        "events": 0,
     }
 
 

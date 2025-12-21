@@ -102,3 +102,9 @@ def test_the_twelfth_migration_adds_repairs() -> None:
 def test_the_thirteenth_migration_links_orders_to_repairs() -> None:
     joined = " ".join(MIGRATIONS[12].statements)
     assert "ALTER TABLE work_order ADD COLUMN repair_reference" in joined
+
+
+def test_the_fourteenth_migration_adds_the_event_log() -> None:
+    joined = " ".join(MIGRATIONS[13].statements)
+    assert "CREATE TABLE event" in joined
+    assert "AUTOINCREMENT" in joined

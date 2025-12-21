@@ -47,6 +47,7 @@ EXPECTED_TABLES = frozenset(
         "technician",
         "tamper_finding",
         "repair",
+        "event",
     }
 )
 
