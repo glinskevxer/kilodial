@@ -129,6 +129,7 @@ def point_set(
     )
     with shop.transaction():
         shop.installs.set_meter(meter_set)
+        context.log("set", f"point {meter_set.point_code}", meter_set.meter_serial)
     context.say(f"set {meter_set}")
 
 
@@ -141,6 +142,7 @@ def point_pull(context: Context, code: str, day: str) -> None:
     shop = context.open()
     with shop.transaction():
         pulled = shop.installs.pull(code, day)
+        context.log("pulled", f"point {pulled.point_code}", pulled.meter_serial)
     context.say(f"pulled {pulled.meter_serial} off {pulled.point_code} on {day}")
 
 

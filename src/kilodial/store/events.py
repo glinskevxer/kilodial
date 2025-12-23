@@ -132,12 +132,17 @@ class EventRepository:
         return {str(r[0]): int(r[1]) for r in rows}
 
     def gaps(self) -> list[int]:
-        """Sequence numbers that are missing, which means somebody deleted a line."""
+        """Sequence numbers that are missing, which means somebody deleted a line.
+
+        Counted from one rather than from the lowest number present. Starting at
+        the lowest present would miss the case that matters most, which is
+        somebody deleting the first line and leaving a log that looks whole.
+        """
         rows = self._conn.execute("SELECT sequence FROM event ORDER BY sequence").fetchall()
         numbers = [int(r[0]) for r in rows]
         if not numbers:
             return []
-        return [n for n in range(numbers[0], numbers[-1] + 1) if n not in set(numbers)]
+        return [n for n in range(1, numbers[-1] + 1) if n not in set(numbers)]
 
     def count(self) -> int:
         return int(self._conn.execute("SELECT COUNT(*) FROM event").fetchone()[0])

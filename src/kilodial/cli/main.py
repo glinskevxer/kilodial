@@ -28,6 +28,7 @@ from kilodial.cli.ingest import imports
 from kilodial.cli.installs import points
 from kilodial.cli.meters import meters
 from kilodial.cli.orders import orders
+from kilodial.cli.render import table
 from kilodial.cli.repairs import repairs
 from kilodial.cli.reports import reports
 from kilodial.cli.runs import runs
@@ -35,6 +36,7 @@ from kilodial.cli.tamper import tamper
 from kilodial.cli.technicians import technicians
 from kilodial.cli.transformers import transformers
 from kilodial.errors import ShopError
+from kilodial.store.events import DEFAULT_ACTOR
 
 EXIT_SHOP_ERROR = 2
 
@@ -65,11 +67,21 @@ class ShopGroup(click.Group):
     help="the sqlite book to work on",
 )
 @click.option("--quiet", is_flag=True, help="say nothing that is not asked for")
+@click.option(
+    "--actor",
+    default=None,
+    envvar="KILODIAL_ACTOR",
+    help="who is at the keyboard, for the event log",
+)
 @click.version_option(__version__, prog_name="kilodial")
 @click.pass_context
-def cli(ctx: click.Context, book_path: Path, quiet: bool) -> None:
+def cli(ctx: click.Context, book_path: Path, quiet: bool, actor: str | None) -> None:
     """Meter shop register, accuracy testing and billing adjustment."""
-    ctx.obj = Context(book_path=book_path, quiet=quiet)
+    ctx.obj = Context(
+        book_path=book_path,
+        quiet=quiet,
+        actor=DEFAULT_ACTOR if actor is None else actor,
+    )
     ctx.call_on_close(ctx.obj.close)
 
 
@@ -121,6 +133,42 @@ def book_audit(context: Context) -> None:
     for fault in faults:
         click.echo(fault)
     raise SystemExit(1)
+
+
+@book.command("history")
+@click.option("--subject", default=None, help="only lines about this subject")
+@click.option("--action", default=None, help="only lines with this action")
+@click.option("--by", "actor", default=None, help="only lines by this actor")
+@click.option("--on", "day", default=None, help="only lines from this day")
+@click.option("--last", type=int, default=None, help="only the last so many lines")
+@pass_context
+def book_history(
+    context: Context,
+    subject: str | None,
+    action: str | None,
+    actor: str | None,
+    day: str | None,
+    last: int | None,
+) -> None:
+    """What has been done to the book, oldest first."""
+    shop = context.open()
+    if subject is not None:
+        found = shop.events.about(subject)
+    elif action is not None:
+        found = shop.events.by_action(action)
+    elif actor is not None:
+        found = shop.events.by_actor(actor)
+    elif day is not None:
+        found = shop.events.on_day(day)
+    else:
+        found = shop.events.all(limit=last)
+    rows = [[str(e.sequence), e.at, e.actor, e.action, e.subject, e.detail or "-"] for e in found]
+    for line in table(["seq", "at", "actor", "action", "subject", "detail"], rows):
+        click.echo(line)
+    gaps = shop.events.gaps()
+    if gaps:
+        click.echo(f"the log is missing {len(gaps)} lines: {gaps[:10]}")
+        raise SystemExit(1)
 
 
 @book.command("summary")

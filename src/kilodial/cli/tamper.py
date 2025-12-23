@@ -66,6 +66,7 @@ def tamper_confirm(context: Context, reference: str, day: str, since: str, evide
         confirmed = shop.tamper.save(
             shop.tamper.get(reference).confirmed(on=day, since=since, evidence=evidence)
         )
+        context.log("confirmed", f"tamper {confirmed.reference}", f"since {since}")
     context.say(f"{confirmed.reference} confirmed over {confirmed.span()}")
     if confirmed.unmeters:
         context.say(
@@ -84,6 +85,7 @@ def tamper_clear(context: Context, reference: str, day: str, why: str) -> None:
     shop = context.open()
     with shop.transaction():
         cleared = shop.tamper.save(shop.tamper.get(reference).cleared(on=day, why=why))
+        context.log("cleared", f"tamper {cleared.reference}", why)
     context.say(f"{cleared.reference} cleared")
 
 

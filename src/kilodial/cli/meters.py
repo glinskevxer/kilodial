@@ -57,6 +57,7 @@ def meter_receive(
     meter = Meter.receive(serial, device_key, acquired=acquired, owner=owner, seal=seal)
     with shop.transaction():
         shop.meters.add(meter, require_device=not uncatalogued)
+        context.log("received", f"meter {meter.serial}", meter.device_key)
     context.say(f"received {meter}")
 
 
@@ -70,6 +71,7 @@ def meter_move(context: Context, serial: str, state: str, day: str | None) -> No
     shop = context.open()
     with shop.transaction():
         moved = shop.meters.move(serial, state_named(state), on=day)
+        context.log("moved", f"meter {moved.serial}", f"to {moved.state}")
     context.say(f"{moved.serial} is now {moved.state}")
 
 

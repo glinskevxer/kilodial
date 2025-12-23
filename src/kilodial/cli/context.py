@@ -15,6 +15,7 @@ import click
 
 from kilodial.errors import ConfigError
 from kilodial.store.book import open_book
+from kilodial.store.events import DEFAULT_ACTOR
 from kilodial.store.shop import Shop, open_shop
 
 DEFAULT_BOOK = "shop.sqlite3"
@@ -26,6 +27,7 @@ class Context:
 
     book_path: Path
     quiet: bool = False
+    actor: str = DEFAULT_ACTOR
     _shop: Shop | None = field(default=None, repr=False)
 
     def open(self, *, create: bool = False, migrate: bool = True) -> Shop:
@@ -49,6 +51,17 @@ class Context:
         if self._shop is not None:
             self._shop.close()
             self._shop = None
+
+    def log(self, action: str, subject: str, detail: object = None) -> None:
+        """Append a line to the book's event log under this invocation's actor.
+
+        Called from inside the command's transaction, so a command that fails
+        halfway leaves no line saying it happened. That is the whole reason the
+        log lives on the book rather than in a file beside it.
+        """
+        if self._shop is None:
+            raise ConfigError("nothing can be logged before the book is open")
+        self._shop.events.record(action, subject, detail=detail, actor=self.actor)
 
     def say(self, message: str) -> None:
         if not self.quiet:

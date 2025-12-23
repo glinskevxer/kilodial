@@ -78,6 +78,7 @@ def device_add(
     )
     with shop.transaction():
         shop.devices.add(device)
+        context.log("catalogued", f"device {device.key}", str(device))
     context.say(f"catalogued {device}")
 
 
@@ -167,6 +168,7 @@ def device_retire(context: Context, key: str, day: str) -> None:
     )
     with shop.transaction():
         shop.devices.replace(retired)
+        context.log("retired", f"device {retired.key}", f"on {day}")
     context.say(f"{retired.key} retired on {day}")
 
 

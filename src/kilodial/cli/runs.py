@@ -124,6 +124,7 @@ def run_record(
     )
     with shop.transaction():
         shop.runs.add(run)
+        context.log("recorded", f"run {run.reference}", run.meter_serial)
     verdict = shop.judge_run(run)
     context.say(f"recorded {run.reference}, {verdict.outcome} at {_shown(verdict)}")
 
@@ -274,6 +275,7 @@ def run_delete(context: Context, reference: str) -> None:
     shop = context.open()
     with shop.transaction():
         shop.runs.delete(reference)
+        context.log("deleted", f"run {reference.upper()}")
     context.say(f"{reference.upper()} deleted")
 
 

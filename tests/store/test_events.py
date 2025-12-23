@@ -96,6 +96,13 @@ def test_a_deleted_line_leaves_a_gap(repo: EventRepository) -> None:
     assert repo.gaps() == [2]
 
 
+def test_deleting_the_first_line_is_a_gap_too(repo: EventRepository) -> None:
+    for index in range(3):
+        repo.record("received", f"meter {index}")
+    repo._conn.execute("DELETE FROM event WHERE sequence = 1")
+    assert repo.gaps() == [1]
+
+
 def test_an_empty_log_has_no_gaps(repo: EventRepository) -> None:
     assert repo.gaps() == []
     assert repo.all() == []

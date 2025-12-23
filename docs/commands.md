@@ -99,6 +99,18 @@ Report every record that points at something that is not there.
 
 Report anything structurally wrong with the book.
 
+## `book history`
+
+    kilodial book history
+
+What has been done to the book, oldest first.
+
+- `--subject` only lines about this subject
+- `--action` only lines with this action
+- `--by` only lines by this actor
+- `--on` only lines from this day
+- `--last` only the last so many lines
+
 ## `book summary`
 
     kilodial book summary
