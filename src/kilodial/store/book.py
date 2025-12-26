@@ -84,7 +84,15 @@ class Book:
             conn.rollback()
             raise
         else:
-            conn.commit()
+            try:
+                conn.commit()
+            except BaseException:
+                # A commit can fail on its own. Deferred foreign keys are checked
+                # here rather than per statement, so a load that looked fine all
+                # the way through raises at this point, and without this rollback
+                # the transaction stays open and the rows stay visible.
+                conn.rollback()
+                raise
 
     def applied(self) -> list[Applied]:
         """The ledger, oldest first."""

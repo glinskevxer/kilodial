@@ -115,3 +115,19 @@ def test_open_migrated_is_open_plus_migrate(tmp_path: Path) -> None:
         assert first.version == latest_number()
     with open_migrated(path) as again:
         assert again.check() == []
+
+
+def test_a_transaction_rolls_back_when_the_commit_itself_fails(book: Book) -> None:
+    def load_out_of_order() -> None:
+        with book.transaction() as conn:
+            conn.execute("PRAGMA defer_foreign_keys = ON")
+            conn.execute(
+                "INSERT INTO bench_point (run_reference, position, kind, amperes, "
+                "volts, pf_value, pf_sense) VALUES ('nope', 1, 'FL', '30', '240', "
+                "'1', 'unity')"
+            )
+
+    with pytest.raises(sqlite3.IntegrityError, match="FOREIGN KEY"):
+        load_out_of_order()
+    assert book.connection.execute("SELECT COUNT(*) FROM bench_point").fetchone()[0] == 0
+    assert book.connection.execute("SELECT COUNT(*) FROM meter").fetchone()[0] == 0
