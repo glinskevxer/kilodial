@@ -99,6 +99,14 @@ Report every record that points at something that is not there.
 
 Report anything structurally wrong with the book.
 
+## `book export`
+
+    kilodial book export
+
+Write the whole book out as json.
+
+- `--out` write to a file rather than to standard output
+
 ## `book history`
 
     kilodial book history
@@ -110,6 +118,12 @@ What has been done to the book, oldest first.
 - `--by` only lines by this actor
 - `--on` only lines from this day
 - `--last` only the last so many lines
+
+## `book restore`
+
+    kilodial book restore PATH
+
+Load a json dump into an empty book.
 
 ## `book summary`
 

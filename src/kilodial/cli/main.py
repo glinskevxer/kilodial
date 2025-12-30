@@ -10,6 +10,7 @@ the person at the keyboard.
 
 from __future__ import annotations
 
+import json
 import sys
 from pathlib import Path
 
@@ -35,7 +36,8 @@ from kilodial.cli.runs import runs
 from kilodial.cli.tamper import tamper
 from kilodial.cli.technicians import technicians
 from kilodial.cli.transformers import transformers
-from kilodial.errors import ShopError
+from kilodial.errors import ConfigError, ShopError
+from kilodial.store import dump
 from kilodial.store.events import DEFAULT_ACTOR
 
 EXIT_SHOP_ERROR = 2
@@ -133,6 +135,45 @@ def book_audit(context: Context) -> None:
     for fault in faults:
         click.echo(fault)
     raise SystemExit(1)
+
+
+@book.command("export")
+@click.option(
+    "--out",
+    type=click.Path(dir_okay=False, path_type=Path),
+    default=None,
+    help="write to a file rather than to standard output",
+)
+@pass_context
+def book_export(context: Context, out: Path | None) -> None:
+    """Write the whole book out as json."""
+    shop = context.open()
+    text = dump.to_json(shop.book)
+    if out is None:
+        click.echo(text, nl=False)
+        return
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(text)
+    rows = sum(dump.counts(dump.dump(shop.book)).values())
+    context.say(f"wrote {out}, {rows} rows at migration {shop.book.version}")
+
+
+@book.command("restore")
+@click.argument("path", type=click.Path(exists=True, dir_okay=False, path_type=Path))
+@pass_context
+def book_restore(context: Context, path: Path) -> None:
+    """Load a json dump into an empty book."""
+    shop = context.open(create=True)
+    try:
+        payload = json.loads(path.read_text())
+    except json.JSONDecodeError as exc:
+        raise ConfigError(f"{path} is not json: {exc}") from exc
+    loaded = dump.restore(shop.book, payload)
+    rows = sum(loaded.values())
+    context.say(f"restored {rows} rows into {context.book_path}")
+    for name, count in sorted(loaded.items()):
+        if count:
+            context.say(f"  {name} {count}")
 
 
 @book.command("history")
