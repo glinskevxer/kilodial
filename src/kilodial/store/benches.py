@@ -13,6 +13,7 @@ import sqlite3
 
 from kilodial.errors import DuplicateError, NotFoundError, RuleError
 from kilodial.model.bench import Bench, ReferenceStandard
+from kilodial.store.base import or_none
 from kilodial.store.codec import bench_row, read_bench, read_standard, standard_row
 from kilodial.units.span import parse_date
 
@@ -66,6 +67,10 @@ class StandardRepository:
         if row is None:
             raise NotFoundError("reference standard", key)
         return read_standard(row)
+
+    def find(self, serial: str | None) -> ReferenceStandard | None:
+        """Look one up, handing back nothing rather than raising."""
+        return or_none(self.get, serial)
 
     def all(self) -> list[ReferenceStandard]:
         rows = self._conn.execute(
@@ -142,6 +147,10 @@ class BenchRepository:
         if row is None:
             raise NotFoundError("bench", key)
         return read_bench(row)
+
+    def find(self, code: str | None) -> Bench | None:
+        """Look one up, handing back nothing rather than raising."""
+        return or_none(self.get, code)
 
     def all(self) -> list[Bench]:
         rows = self._conn.execute(f"SELECT {BENCH_COLUMNS} FROM bench ORDER BY code").fetchall()

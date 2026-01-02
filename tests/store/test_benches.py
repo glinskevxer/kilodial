@@ -153,3 +153,16 @@ def test_all_benches_come_back_sorted(
     for code in ("B7", "B1", "B4"):
         benches.add(bench(code))
     assert [b.code for b in benches.all()] == ["B1", "B4", "B7"]
+
+
+def test_finding_something_that_is_not_there(
+    standards: StandardRepository, benches: BenchRepository
+) -> None:
+    assert standards.find("RS-5511") is None
+    assert standards.find(None) is None
+    assert benches.find("B2") is None
+    assert benches.find(None) is None
+    standards.add(standard())
+    found = standards.find("rs-5511")
+    assert found is not None
+    assert found.serial == "RS-5511"
