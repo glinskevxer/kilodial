@@ -41,6 +41,23 @@ Put a bench on the book.
 - `--polyphase`
 - `--installed` (required)
 
+## `bench capacity`
+
+    kilodial bench capacity
+
+How many positions the shop has on a day, and why any are missing.
+
+- `--on` (required)
+
+## `bench day`
+
+    kilodial bench day
+
+Fill the benches for a day off the live test orders.
+
+- `--on` the day to plan (required)
+- `--bench` only this bench
+
 ## `bench list`
 
     kilodial bench list

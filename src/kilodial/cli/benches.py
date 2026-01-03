@@ -13,6 +13,7 @@ import click
 from kilodial.cli.context import Context, pass_context
 from kilodial.cli.render import or_dash, pairs, table, yes_no
 from kilodial.model.bench import Bench, ReferenceStandard
+from kilodial.programme import queue
 
 
 @click.group("standard")
@@ -226,6 +227,43 @@ def bench_list(context: Context, day: str | None) -> None:
         ["bench", "name", "positions", "standard", "max amps", "max volts", "polyphase"], rows
     ):
         click.echo(line)
+
+
+@benches.command("day")
+@click.option("--on", "day", required=True, help="the day to plan")
+@click.option("--bench", "code", default=None, help="only this bench")
+@pass_context
+def bench_day(context: Context, day: str, code: str | None) -> None:
+    """Fill the benches for a day off the live test orders."""
+    shop = context.open()
+    planned = queue.plan_day(shop, on=day)
+    slots = planned.on_bench(code) if code is not None else list(planned.slots)
+    rows = [
+        [s.bench_code, str(s.position), s.meter_serial, s.order_reference, str(s.priority)]
+        for s in slots
+    ]
+    for line in table(["bench", "position", "meter", "order", "priority"], rows):
+        click.echo(line)
+    for reference, why in planned.unplaced:
+        click.echo(f"could not place {reference}: {why}")
+    load = ", ".join(f"{name} {count}" for name, count in sorted(planned.load().items()))
+    click.echo(f"{planned.show()} ({load})")
+    if planned.unplaced:
+        raise SystemExit(1)
+
+
+@benches.command("capacity")
+@click.option("--on", "day", required=True)
+@pass_context
+def bench_capacity(context: Context, day: str) -> None:
+    """How many positions the shop has on a day, and why any are missing."""
+    shop = context.open()
+    rows = []
+    for bench, why in queue.usable_benches(shop, day):
+        rows.append([bench.code, str(bench.positions), yes_no(why is None), why or "-"])
+    for line in table(["bench", "positions", "usable", "why not"], rows):
+        click.echo(line)
+    click.echo(f"{queue.capacity(shop, day)} positions on {day}")
 
 
 @benches.command("show")

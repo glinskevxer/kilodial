@@ -180,3 +180,122 @@ def test_showing_a_bench(kitted: Invoke) -> None:
 def test_listing_benches_in_service_on_a_day(kitted: Invoke) -> None:
     assert "B2" in kitted("bench", "list", "--on", "2025-01-01").output
     assert "B2" not in kitted("bench", "list", "--on", "2017-01-01").output
+
+
+@pytest.fixture
+def busy(kitted: Invoke) -> Invoke:
+    kitted(
+        "device",
+        "add",
+        "Halvern",
+        "R4S",
+        "--form",
+        "2S",
+        "--class",
+        "200",
+        "--volts",
+        "240",
+        "--kh",
+        "7.2",
+        "--ratio",
+        "100",
+        "--introduced",
+        "2004-05-01",
+    )
+    for n in range(3):
+        kitted(
+            "meter",
+            "receive",
+            f"84-11930{n}",
+            "--type",
+            "Halvern/R4S",
+            "--acquired",
+            "2015-01-01",
+        )
+        kitted("work", "raise", f"WO-{n}", "test", f"84-11930{n}", "--on", "2025-03-04")
+    return kitted
+
+
+def test_a_day_is_planned(busy: Invoke) -> None:
+    result = busy("bench", "day", "--on", "2025-03-04")
+    assert "B2" in result.output
+    assert "84-119300" in result.output
+    assert "3 placed" in result.output
+
+
+def test_what_will_not_fit_is_named(busy: Invoke) -> None:
+    busy(
+        "bench",
+        "add",
+        "B3",
+        "small",
+        "--positions",
+        "1",
+        "--standard",
+        "RS-5511",
+        "--max-amps",
+        "100",
+        "--max-volts",
+        "480",
+        "--installed",
+        "2010-01-01",
+    )
+    result = busy("bench", "day", "--on", "2025-03-04")
+    assert "3 placed" in result.output
+
+
+def test_a_day_with_more_work_than_positions(kitted: Invoke) -> None:
+    kitted(
+        "device",
+        "add",
+        "Halvern",
+        "R4S",
+        "--form",
+        "2S",
+        "--class",
+        "200",
+        "--volts",
+        "240",
+        "--kh",
+        "7.2",
+        "--ratio",
+        "100",
+        "--introduced",
+        "2004-05-01",
+    )
+    for n in range(9):
+        kitted(
+            "meter",
+            "receive",
+            f"84-11930{n}",
+            "--type",
+            "Halvern/R4S",
+            "--acquired",
+            "2015-01-01",
+        )
+        kitted("work", "raise", f"WO-{n}", "test", f"84-11930{n}", "--on", "2025-03-04")
+    result = kitted("bench", "day", "--on", "2025-03-04", expect=1)
+    assert "could not place" in result.output
+    assert "is full" in result.output
+
+
+def test_a_day_filtered_to_one_bench(busy: Invoke) -> None:
+    assert "84-119300" in busy("bench", "day", "--on", "2025-03-04", "--bench", "b2").output
+    assert "84-119300" not in busy("bench", "day", "--on", "2025-03-04", "--bench", "B9").output
+
+
+def test_a_day_with_no_usable_bench(busy: Invoke) -> None:
+    result = busy("bench", "day", "--on", "2036-01-01", expect=2)
+    assert "no bench can be used" in result.output
+
+
+def test_the_capacity_command(kitted: Invoke) -> None:
+    result = kitted("bench", "capacity", "--on", "2025-03-04")
+    assert "8 positions" in result.output
+    assert "yes" in result.output
+
+
+def test_capacity_says_why_a_bench_is_out(kitted: Invoke) -> None:
+    result = kitted("bench", "capacity", "--on", "2036-01-01")
+    assert "out of certificate" in result.output
+    assert "0 positions" in result.output
