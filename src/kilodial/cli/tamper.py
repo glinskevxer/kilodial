@@ -13,6 +13,7 @@ import click
 
 from kilodial.cli.context import Context, pass_context
 from kilodial.cli.render import or_dash, pairs, table
+from kilodial.cli.window import span_of
 from kilodial.tamper.event import Finding, TamperKind, tamper_kind
 
 
@@ -104,10 +105,8 @@ def tamper_list(
 ) -> None:
     """List tamper findings, open suspicions by default."""
     shop = context.open()
-    if first is not None and last is not None:
-        found = shop.tamper.between(first, last)
-    elif first is not None or last is not None:
-        raise click.BadParameter("a window needs both --from and --to")
+    if (window := span_of(first, last)) is not None:
+        found = shop.tamper.between(window.start, window.end)
     elif point_code is not None:
         found = shop.tamper.for_point(point_code)
     elif everything:

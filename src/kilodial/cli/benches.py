@@ -12,6 +12,7 @@ import click
 
 from kilodial.cli.context import Context, pass_context
 from kilodial.cli.render import or_dash, pairs, table, yes_no
+from kilodial.cli.window import counted_from
 from kilodial.model.bench import Bench, ReferenceStandard
 from kilodial.programme import queue
 
@@ -102,9 +103,7 @@ def standard_list(context: Context, day: str | None, window: int | None) -> None
     """List reference standards."""
     shop = context.open()
     if window is not None:
-        if day is None:
-            raise click.BadParameter("--due-within needs --on to count from")
-        found = shop.standards.due_within(day, window)
+        found = shop.standards.due_within(counted_from(day, "--due-within"), window)
     elif day is not None:
         found = shop.standards.valid_on(day)
     else:

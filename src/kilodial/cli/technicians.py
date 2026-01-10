@@ -13,6 +13,7 @@ import click
 from kilodial.cli.context import Context, pass_context
 from kilodial.cli.render import or_dash, pairs, table
 from kilodial.cli.runs import run_kind
+from kilodial.cli.window import counted_from
 from kilodial.model.technician import Grade, Technician, grade_named
 
 
@@ -91,9 +92,7 @@ def technician_list(
     """List the register."""
     shop = context.open()
     if window is not None:
-        if day is None:
-            raise click.BadParameter("--due-within needs --on to count from")
-        found = shop.technicians.due_within(day, window)
+        found = shop.technicians.due_within(counted_from(day, "--due-within"), window)
     elif grade is not None:
         found = shop.technicians.by_grade(grade_named(grade))
     elif day is not None:

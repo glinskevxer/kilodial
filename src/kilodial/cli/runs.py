@@ -17,6 +17,7 @@ import click
 
 from kilodial.cli.context import Context, pass_context
 from kilodial.cli.render import or_dash, pairs, table
+from kilodial.cli.window import span_of
 from kilodial.errors import BadInputError
 from kilodial.model.run import BenchRun, RunKind
 from kilodial.testing.record import Readings, build_run
@@ -204,10 +205,8 @@ def run_list(
         found = shop.runs.for_meter(meter_serial)
     elif bench_code is not None:
         found = shop.runs.on_bench(bench_code)
-    elif first is not None and last is not None:
-        found = shop.runs.between(first, last)
-    elif first is not None or last is not None:
-        raise click.BadParameter("a window needs both --from and --to")
+    elif (window := span_of(first, last)) is not None:
+        found = shop.runs.between(window.start, window.end)
     else:
         found = shop.runs.all()
     if kind is not None:

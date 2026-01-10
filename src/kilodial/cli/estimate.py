@@ -12,6 +12,7 @@ import click
 
 from kilodial.cli.context import Context, pass_context
 from kilodial.cli.render import or_dash, pairs, table
+from kilodial.cli.window import span_of
 from kilodial.estimate.basis import Basis, from_connected_load
 from kilodial.estimate.service import estimate_point, gap_for, options_for
 from kilodial.units.span import DateSpan
@@ -57,8 +58,9 @@ def estimate_list(
 ) -> None:
     """Every basis the book supports for a gap, strongest first."""
     shop = context.open()
-    if first is not None and last is not None:
-        found = options_for(shop, point_code, DateSpan(first, last), note=note)
+    window = span_of(first, last)
+    if window is not None:
+        found = options_for(shop, point_code, window, note=note)
     elif day is not None:
         found = estimate_point(shop, point_code, on=day, note=note)
     else:

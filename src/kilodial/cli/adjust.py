@@ -18,6 +18,7 @@ from kilodial.adjust.service import Refusal, raise_adjustment
 from kilodial.cli.context import Context, pass_context
 from kilodial.cli.render import or_dash, pairs, table
 from kilodial.cli.transformers import load_factor
+from kilodial.cli.window import span_of
 
 
 @click.group("bill")
@@ -53,12 +54,9 @@ def bill_list(context: Context, point_code: str, first: str | None, last: str | 
     shop = context.open()
     code = shop.points.get(point_code).code
     months = shop.billing.for_point(code)
-    if first is not None and last is not None:
-        from kilodial.units.span import DateSpan
-
-        months = shop.billing.covering(code, DateSpan(first, last))
-    elif first is not None or last is not None:
-        raise click.BadParameter("a window needs both --from and --to")
+    window = span_of(first, last)
+    if window is not None:
+        months = shop.billing.covering(code, window)
     rows = [
         [
             m.span.start.isoformat(),

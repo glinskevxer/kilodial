@@ -11,6 +11,7 @@ import click
 
 from kilodial.cli.context import Context, pass_context
 from kilodial.cli.render import or_dash, pairs, table
+from kilodial.cli.window import span_of
 from kilodial.model.repair import Fault, Repair, families, fault_named
 
 
@@ -83,10 +84,8 @@ def repair_list(
         found = shop.repairs.for_meter(meter_serial)
     elif fault is not None:
         found = shop.repairs.by_fault(fault_named(fault))
-    elif first is not None and last is not None:
-        found = shop.repairs.between(first, last)
-    elif first is not None or last is not None:
-        raise click.BadParameter("a window needs both --from and --to")
+    elif (window := span_of(first, last)) is not None:
+        found = shop.repairs.between(window.start, window.end)
     else:
         found = shop.repairs.all()
     rows = [
