@@ -29,6 +29,7 @@ jobs:
       - run: python -m kilodial.tools.check_docstrings
       - run: python -m kilodial.tools.check_workflow
       - run: python -m kilodial.tools.release_check
+      - run: python -m kilodial.tools.query_plan
       - run: python -m kilodial.tools.schema_dump --check
       - run: python -m kilodial.tools.build_docs --check
 
