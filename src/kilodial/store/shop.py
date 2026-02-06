@@ -34,6 +34,7 @@ from kilodial.store.groups import GroupRepository, PlanRepository
 from kilodial.store.installs import InstallRepository, ServicePointRepository
 from kilodial.store.meters import MeterRepository
 from kilodial.store.orders import OrderRepository
+from kilodial.store.readings import ReadingRepository
 from kilodial.store.repairs import RepairRepository
 from kilodial.store.runs import RunRepository
 from kilodial.store.tamper import TamperRepository
@@ -70,6 +71,7 @@ class Shop:
         self.tamper = TamperRepository(conn)
         self.repairs = RepairRepository(conn)
         self.events = EventRepository(conn)
+        self.readings = ReadingRepository(conn)
 
     @property
     def path(self) -> Path:
@@ -229,6 +231,7 @@ class Shop:
             "tamper findings": self.tamper.count(),
             "repairs": self.repairs.count(),
             "events": self.events.count(),
+            "readings": self.readings.count(),
         }
 
     def audit(self) -> list[str]:

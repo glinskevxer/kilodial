@@ -34,9 +34,15 @@ def test_a_value_the_book_should_not_hold() -> None:
         member_of(MeterState, "melted", "meter state")
 
 
+def test_reading_a_member_by_its_label() -> None:
+    from kilodial.orders.order import OrderKind
+
+    assert member_of(OrderKind, "test", "order kind", field="label") is OrderKind.TEST
+
+
 def test_a_field_nobody_stores_by() -> None:
     with pytest.raises(ConfigError, match="an enum column is stored by"):
-        member_of(MeterState, "stock", "meter state", field="label")
+        member_of(MeterState, "stock", "meter state", field="colour")
 
 
 def test_an_enum_with_no_such_attribute_matches_nothing() -> None:

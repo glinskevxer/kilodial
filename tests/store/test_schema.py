@@ -108,3 +108,9 @@ def test_the_fourteenth_migration_adds_the_event_log() -> None:
     joined = " ".join(MIGRATIONS[13].statements)
     assert "CREATE TABLE event" in joined
     assert "AUTOINCREMENT" in joined
+
+
+def test_the_fifteenth_migration_adds_readings() -> None:
+    joined = " ".join(MIGRATIONS[14].statements)
+    assert "CREATE TABLE reading" in joined
+    assert "reading_by_meter" in joined

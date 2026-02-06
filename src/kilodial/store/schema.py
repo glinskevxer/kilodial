@@ -354,6 +354,25 @@ MIGRATIONS: tuple[Migration, ...] = (
         "CREATE INDEX event_by_subject ON event (subject, sequence)",
         "CREATE INDEX event_by_action ON event (action, sequence)",
     ),
+    _m(
+        15,
+        "register readings",
+        """
+        CREATE TABLE reading (
+            point_code    TEXT NOT NULL,
+            meter_serial  TEXT NOT NULL,
+            read_on       TEXT NOT NULL,
+            dials         INTEGER NOT NULL,
+            value         INTEGER NOT NULL,
+            kind          TEXT NOT NULL,
+            note          TEXT,
+            PRIMARY KEY (point_code, meter_serial, read_on),
+            FOREIGN KEY (point_code) REFERENCES service_point (code) ON DELETE CASCADE
+        )
+        """,
+        "CREATE INDEX reading_by_point ON reading (point_code, read_on)",
+        "CREATE INDEX reading_by_meter ON reading (meter_serial, read_on)",
+    ),
 )
 
 

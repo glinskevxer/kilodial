@@ -23,7 +23,7 @@ _E = TypeVar("_E", bound=enum.Enum)
 _T = TypeVar("_T")
 
 
-FIELDS = ("value", "name", "code")
+FIELDS = ("value", "name", "code", "label")
 
 
 def member_of(cls: type[_E], value: object, what: str, *, field: str = "value") -> _E:
