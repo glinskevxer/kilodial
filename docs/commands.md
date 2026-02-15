@@ -3,7 +3,7 @@
 Generated from the command tree. Do not edit by hand.
 Rebuild with: python -m kilodial.tools.build_docs
 
-Groups: adjust, bench, bill, book, complaint, device, due, estimate, group, import, meter, point, repair, report, run, standard, tamper, tech, work, xfmr
+Groups: adjust, bench, bill, book, complaint, device, due, estimate, group, import, meter, point, read, repair, report, run, standard, tamper, tech, work, xfmr
 
 ## `adjust period`
 
@@ -489,6 +489,42 @@ Set a meter at a service point.
 - `--register-multiplier`
 - `--multiplier` as programmed (required)
 - `--on` (required)
+
+## `read consumption`
+
+    kilodial read consumption POINT_CODE
+
+What passed at a point between two readings.
+
+- `--from` start of the window (required)
+- `--to` end of the window (required)
+- `--multiplier` override the set's multiplier
+
+## `read kinds`
+
+    kilodial read kinds
+
+The kinds of reading the shop records.
+
+## `read list`
+
+    kilodial read list POINT_CODE
+
+A point's readings, oldest first.
+
+- `--from` start of the window
+- `--to` end of the window
+
+## `read take`
+
+    kilodial read take POINT_CODE METER_SERIAL VALUE
+
+Write a register reading down.
+
+- `--on` the day it was read (required)
+- `--dials` how many dials the register has (required)
+- `--kind`
+- `--note`
 
 ## `repair faults`
 
