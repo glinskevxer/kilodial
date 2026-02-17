@@ -127,3 +127,23 @@ def test_the_certificate_report_warning_window(stocked: Invoke) -> None:
 def test_the_certificate_report_as_csv(stocked: Invoke) -> None:
     result = stocked("report", "certificates", "--on", "2025-06-30", "--format", "csv")
     assert result.output.startswith("kind,reference,detail")
+
+
+def test_the_fault_report(stocked: Invoke) -> None:
+    result = stocked("report", "faults", "--from", "2025-01-01", "--to", "2025-12-31")
+    assert "Fault report" in result.output
+    assert "By family" in result.output
+
+
+def test_the_fault_report_as_csv(stocked: Invoke) -> None:
+    result = stocked(
+        "report",
+        "faults",
+        "--from",
+        "2025-01-01",
+        "--to",
+        "2025-12-31",
+        "--format",
+        "csv",
+    )
+    assert result.output.startswith("type,meters,repairs")

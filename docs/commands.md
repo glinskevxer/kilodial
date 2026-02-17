@@ -596,6 +596,17 @@ The annual filing for the commission.
 - `--format`
 - `--out`
 
+## `report faults`
+
+    kilodial report faults
+
+What breaks, on which types, and what it costs to keep fixing.
+
+- `--from` start of the window (required)
+- `--to` end of the window (required)
+- `--format`
+- `--out`
+
 ## `report formats`
 
     kilodial report formats
