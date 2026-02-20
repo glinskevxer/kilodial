@@ -147,3 +147,9 @@ def test_the_fault_report_as_csv(stocked: Invoke) -> None:
         "csv",
     )
     assert result.output.startswith("type,meters,repairs")
+
+
+def test_the_bench_report(stocked: Invoke) -> None:
+    result = stocked("report", "bench", "--from", "2025-01-01", "--to", "2025-12-31")
+    assert "Bench report" in result.output
+    assert "By run kind" in result.output

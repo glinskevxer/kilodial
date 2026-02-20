@@ -574,6 +574,17 @@ What the shop spent on repairs over a window.
 - `--from` (required)
 - `--to` (required)
 
+## `report bench`
+
+    kilodial report bench
+
+Who benched what, and what came of it.
+
+- `--from` start of the window (required)
+- `--to` end of the window (required)
+- `--format`
+- `--out`
+
 ## `report certificates`
 
     kilodial report certificates

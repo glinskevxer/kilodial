@@ -16,7 +16,7 @@ from typing import Any, TypeVar
 import click
 
 from kilodial.cli.context import Context, pass_context
-from kilodial.report import certifications, commission, faults, register
+from kilodial.report import bench, certifications, commission, faults, register
 from kilodial.report import shop as shop_report
 from kilodial.report.document import Document
 
@@ -93,6 +93,17 @@ def report_commission(
 def report_register(context: Context, day: str, shape: str, out: Path | None) -> None:
     """Every point that owes money or is owed it."""
     emit(context, register.build(context.open(), on=day), shape, out)
+
+
+@reports.command("bench")
+@click.option("--from", "first", required=True, help="start of the window")
+@click.option("--to", "last", required=True, help="end of the window")
+@format_option()
+@click.option("--out", type=click.Path(dir_okay=False, path_type=Path), default=None)
+@pass_context
+def report_bench(context: Context, first: str, last: str, shape: str, out: Path | None) -> None:
+    """Who benched what, and what came of it."""
+    emit(context, bench.build(context.open(), first=first, last=last), shape, out)
 
 
 @reports.command("faults")
