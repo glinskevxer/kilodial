@@ -148,3 +148,27 @@ def test_a_restore_still_checks_foreign_keys(shop: Shop, empty: Book) -> None:
     with pytest.raises(Exception, match="FOREIGN KEY"):
         restore(empty, payload)
     assert empty.connection.execute("SELECT COUNT(*) FROM meter_set").fetchone()[0] == 0
+
+
+def test_a_large_book_round_trips(empty: Book, tmp_path: Path) -> None:
+    from kilodial.store.bulk import insert_many
+
+    other = open_migrated(tmp_path / "big.sqlite3", create=True)
+    try:
+        insert_many(
+            other.connection,
+            "meter",
+            ["serial", "device_key", "state", "acquired", "owner"],
+            (
+                (f"84-{index:06d}", "Halvern/R4S", "stock", "2015-01-01", "utility")
+                for index in range(3000)
+            ),
+        )
+        other.connection.commit()
+        payload = dump(other)
+        assert counts(payload)["meter"] == 3000
+        loaded = restore(empty, payload)
+        assert loaded["meter"] == 3000
+        assert dump(empty) == payload
+    finally:
+        other.close()

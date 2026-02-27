@@ -19,6 +19,7 @@ import sqlite3
 from kilodial.errors import DuplicateError, NotFoundError, RuleError
 from kilodial.model.run import BenchPoint, BenchRun, RunKind
 from kilodial.store.base import or_none
+from kilodial.store.bulk import insert_many
 from kilodial.store.codec import point_row, read_point, read_run, run_row
 from kilodial.units.span import parse_date
 
@@ -49,11 +50,15 @@ class RunRepository:
                 f"INSERT INTO bench_run ({RUN_COLUMNS}) VALUES ({', '.join('?' * 10)})",
                 run_row(run),
             )
-            for position, point in enumerate(run.points, start=1):
-                self._conn.execute(
-                    f"INSERT INTO bench_point ({POINT_COLUMNS}) VALUES ({', '.join('?' * 9)})",
-                    point_row(run.reference, position, point),
-                )
+            insert_many(
+                self._conn,
+                "bench_point",
+                POINT_COLUMNS.split(", "),
+                (
+                    point_row(run.reference, position, point)
+                    for position, point in enumerate(run.points, start=1)
+                ),
+            )
         except BaseException:
             self._conn.execute("ROLLBACK TO add_run")
             self._conn.execute("RELEASE add_run")

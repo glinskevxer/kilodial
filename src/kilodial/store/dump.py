@@ -29,6 +29,7 @@ from typing import Any
 
 from kilodial.errors import ConfigError, RuleError
 from kilodial.store.book import Book
+from kilodial.store.bulk import insert_many
 from kilodial.store.schema import APPLICATION_ID
 
 FORMAT = 1
@@ -142,12 +143,12 @@ def restore(book: Book, payload: object) -> dict[str, int]:
         # which is both correct and the only way to load in any fixed order.
         connection.execute("PRAGMA defer_foreign_keys = ON")
         for name, body in sorted(found["tables"].items()):
-            columns = list(body["columns"])
-            marks = ", ".join("?" * len(columns))
-            statement = f"INSERT INTO {name} ({', '.join(columns)}) VALUES ({marks})"
-            for row in body["rows"]:
-                connection.execute(statement, tuple(row))
-            loaded[name] = len(body["rows"])
+            loaded[name] = insert_many(
+                connection,
+                name,
+                list(body["columns"]),
+                (tuple(row) for row in body["rows"]),
+            )
     return loaded
 
 
