@@ -1,6 +1,6 @@
 -- kilodial schema, built from the migrations. Do not edit by hand.
 -- Rebuild with: python -m kilodial.tools.schema_dump
--- Migrations applied: 15 (latest 15)
+-- Migrations applied: 16 (latest 16)
 
 CREATE TABLE bench (
             code             TEXT PRIMARY KEY,
@@ -76,6 +76,20 @@ CREATE TABLE device_type (
             introduced      TEXT    NOT NULL,
             retired         TEXT, demand_interval TEXT,
             PRIMARY KEY (manufacturer, model_code)
+        );
+
+CREATE TABLE estimate (
+            reference    TEXT PRIMARY KEY,
+            point_code   TEXT NOT NULL,
+            first_day    TEXT NOT NULL,
+            last_day     TEXT NOT NULL,
+            basis        TEXT NOT NULL,
+            amount       INTEGER NOT NULL,
+            working      TEXT NOT NULL,
+            settled_on   TEXT NOT NULL,
+            settled_by   TEXT NOT NULL,
+            note         TEXT,
+            FOREIGN KEY (point_code) REFERENCES service_point (code) ON DELETE CASCADE
         );
 
 CREATE TABLE event (
@@ -246,6 +260,8 @@ CREATE INDEX complaint_by_point ON complaint_request (point_code, requested_on);
 CREATE INDEX complaint_open ON complaint_request (closed_on);
 
 CREATE INDEX device_by_demand ON device_type (demand_capable);
+
+CREATE INDEX estimate_by_point ON estimate (point_code, first_day);
 
 CREATE INDEX event_by_action ON event (action, sequence);
 

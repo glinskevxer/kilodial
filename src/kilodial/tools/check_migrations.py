@@ -49,6 +49,7 @@ EXPECTED_TABLES = frozenset(
         "repair",
         "event",
         "reading",
+        "estimate",
     }
 )
 

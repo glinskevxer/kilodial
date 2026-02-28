@@ -373,6 +373,26 @@ MIGRATIONS: tuple[Migration, ...] = (
         "CREATE INDEX reading_by_point ON reading (point_code, read_on)",
         "CREATE INDEX reading_by_meter ON reading (meter_serial, read_on)",
     ),
+    _m(
+        16,
+        "the estimates somebody settled on",
+        """
+        CREATE TABLE estimate (
+            reference    TEXT PRIMARY KEY,
+            point_code   TEXT NOT NULL,
+            first_day    TEXT NOT NULL,
+            last_day     TEXT NOT NULL,
+            basis        TEXT NOT NULL,
+            amount       INTEGER NOT NULL,
+            working      TEXT NOT NULL,
+            settled_on   TEXT NOT NULL,
+            settled_by   TEXT NOT NULL,
+            note         TEXT,
+            FOREIGN KEY (point_code) REFERENCES service_point (code) ON DELETE CASCADE
+        )
+        """,
+        "CREATE INDEX estimate_by_point ON estimate (point_code, first_day)",
+    ),
 )
 
 

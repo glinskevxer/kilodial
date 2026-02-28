@@ -114,3 +114,9 @@ def test_the_fifteenth_migration_adds_readings() -> None:
     joined = " ".join(MIGRATIONS[14].statements)
     assert "CREATE TABLE reading" in joined
     assert "reading_by_meter" in joined
+
+
+def test_the_sixteenth_migration_adds_settled_estimates() -> None:
+    joined = " ".join(MIGRATIONS[15].statements)
+    assert "CREATE TABLE estimate" in joined
+    assert "settled_by" in joined
