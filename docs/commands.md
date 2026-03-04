@@ -307,6 +307,26 @@ Estimate from nameplate load when there is no history to work from.
 - `--rate` energy rate (required)
 - `--note`
 
+## `estimate settle`
+
+    kilodial estimate settle REFERENCE POINT_CODE
+
+Write down which estimate was used, and who chose it.
+
+- `--basis` which basis was chosen (required)
+- `--on` find the gap from the findings
+- `--from` or give the period yourself
+- `--to`
+- `--settled-on` the day it was settled (required)
+- `--by` who settled it (required)
+- `--note`
+
+## `estimate settled`
+
+    kilodial estimate settled POINT_CODE
+
+Estimates already settled at a point.
+
 ## `group add`
 
     kilodial group add CODE NAME

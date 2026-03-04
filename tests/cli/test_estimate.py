@@ -164,3 +164,126 @@ def test_the_bases_command(stocked: Invoke) -> None:
     result = stocked("estimate", "bases")
     assert result.output.splitlines()[2].startswith("same period last year")
     assert "connected load" in result.output
+
+
+def test_settling_an_estimate(stocked: Invoke) -> None:
+    confirm(stocked)
+    result = stocked(
+        "estimate",
+        "settle",
+        "ES-1",
+        "SP-1042",
+        "--basis",
+        "same period last year",
+        "--on",
+        "2025-12-31",
+        "--settled-on",
+        "2025-12-31",
+        "--by",
+        "M Okafor",
+    )
+    assert "settled by M Okafor" in result.output
+    assert "ES-1" in stocked("estimate", "settled", "SP-1042").output
+
+
+def test_a_basis_the_book_does_not_support(stocked: Invoke, book: Path) -> None:
+    with open_shop(book) as shop:
+        for month in shop.billing.for_point("SP-1042"):
+            shop.billing.delete("SP-1042", month.span.start)
+    confirm(stocked)
+    result = stocked(
+        "estimate",
+        "settle",
+        "ES-1",
+        "SP-1042",
+        "--basis",
+        "same period last year",
+        "--on",
+        "2025-12-31",
+        "--settled-on",
+        "2025-12-31",
+        "--by",
+        "M Okafor",
+        expect=2,
+    )
+    assert "not one of the bases" in result.output
+
+
+def test_a_basis_nobody_uses(stocked: Invoke) -> None:
+    confirm(stocked)
+    result = stocked(
+        "estimate",
+        "settle",
+        "ES-1",
+        "SP-1042",
+        "--basis",
+        "guesswork",
+        "--on",
+        "2025-12-31",
+        "--settled-on",
+        "2025-12-31",
+        "--by",
+        "M Okafor",
+        expect=2,
+    )
+    assert "not a basis an estimate can rest on" in result.output
+
+
+def test_settling_needs_a_period_from_somewhere(stocked: Invoke) -> None:
+    result = stocked(
+        "estimate",
+        "settle",
+        "ES-1",
+        "SP-1042",
+        "--basis",
+        "neighbouring periods",
+        "--settled-on",
+        "2025-12-31",
+        "--by",
+        "M Okafor",
+        expect=2,
+    )
+    assert "either --on or both --from and --to" in result.output
+
+
+def test_settling_from_a_period_given_by_hand(stocked: Invoke) -> None:
+    stocked(
+        "estimate",
+        "settle",
+        "ES-1",
+        "SP-1042",
+        "--basis",
+        "neighbouring periods",
+        "--from",
+        "2025-03-01",
+        "--to",
+        "2025-05-31",
+        "--settled-on",
+        "2025-12-31",
+        "--by",
+        "M Okafor",
+    )
+    assert "neighbouring periods" in stocked("estimate", "settled", "SP-1042").output
+
+
+def test_a_settled_estimate_leaves_a_line_in_the_log(stocked: Invoke) -> None:
+    confirm(stocked)
+    stocked(
+        "estimate",
+        "settle",
+        "ES-1",
+        "SP-1042",
+        "--basis",
+        "same period last year",
+        "--on",
+        "2025-12-31",
+        "--settled-on",
+        "2025-12-31",
+        "--by",
+        "M Okafor",
+    )
+    assert "estimated" in stocked("book", "history").output
+
+
+def test_settled_estimates_at_a_point_with_none(stocked: Invoke) -> None:
+    assert "$0.00 settled at SP-1042" in stocked("estimate", "settled", "SP-1042").output
