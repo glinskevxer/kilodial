@@ -13,7 +13,7 @@ import sqlite3
 
 from kilodial.errors import DuplicateError, NotFoundError, RuleError
 from kilodial.model.bench import Bench, ReferenceStandard
-from kilodial.store.base import or_none
+from kilodial.store.base import has_row, one_row, or_none, upper
 from kilodial.store.codec import bench_row, read_bench, read_standard, standard_row
 from kilodial.units.span import parse_date
 
@@ -54,19 +54,19 @@ class StandardRepository:
         return standard
 
     def exists(self, serial: str) -> bool:
-        found = self._conn.execute(
-            "SELECT 1 FROM reference_standard WHERE serial = ?", (serial.strip().upper(),)
-        ).fetchone()
-        return found is not None
+        return has_row(self._conn, "reference_standard", "serial", upper(serial))
 
     def get(self, serial: str) -> ReferenceStandard:
-        key = serial.strip().upper()
-        row = self._conn.execute(
-            f"SELECT {STANDARD_COLUMNS} FROM reference_standard WHERE serial = ?", (key,)
-        ).fetchone()
-        if row is None:
-            raise NotFoundError("reference standard", key)
-        return read_standard(row)
+        return read_standard(
+            one_row(
+                self._conn,
+                STANDARD_COLUMNS,
+                "reference_standard",
+                "serial",
+                upper(serial),
+                "reference standard",
+            )
+        )
 
     def find(self, serial: str | None) -> ReferenceStandard | None:
         """Look one up, handing back nothing rather than raising."""
@@ -134,19 +134,10 @@ class BenchRepository:
         return bench
 
     def exists(self, code: str) -> bool:
-        found = self._conn.execute(
-            "SELECT 1 FROM bench WHERE code = ?", (code.strip().upper(),)
-        ).fetchone()
-        return found is not None
+        return has_row(self._conn, "bench", "code", upper(code))
 
     def get(self, code: str) -> Bench:
-        key = code.strip().upper()
-        row = self._conn.execute(
-            f"SELECT {BENCH_COLUMNS} FROM bench WHERE code = ?", (key,)
-        ).fetchone()
-        if row is None:
-            raise NotFoundError("bench", key)
-        return read_bench(row)
+        return read_bench(one_row(self._conn, BENCH_COLUMNS, "bench", "code", upper(code), "bench"))
 
     def find(self, code: str | None) -> Bench | None:
         """Look one up, handing back nothing rather than raising."""

@@ -20,6 +20,7 @@ from kilodial.model.meter import Meter
 from kilodial.sampling.decision import Decision, interval_after
 from kilodial.sampling.group import Group
 from kilodial.sampling.plan import INTERVAL_LADDER
+from kilodial.store.base import has_row, one_row, upper
 from kilodial.store.codec import group_row, plan_row, read_group, read_plan
 from kilodial.store.devices import DeviceRepository
 from kilodial.store.meters import MeterRepository
@@ -64,19 +65,19 @@ class GroupRepository:
         return group
 
     def exists(self, code: str) -> bool:
-        found = self._conn.execute(
-            "SELECT 1 FROM sample_group WHERE code = ?", (code.strip().upper(),)
-        ).fetchone()
-        return found is not None
+        return has_row(self._conn, "sample_group", "code", upper(code))
 
     def get(self, code: str) -> Group:
-        wanted = code.strip().upper()
-        row = self._conn.execute(
-            f"SELECT {GROUP_COLUMNS} FROM sample_group WHERE code = ?", (wanted,)
-        ).fetchone()
-        if row is None:
-            raise NotFoundError("sampling group", wanted)
-        return read_group(row)
+        return read_group(
+            one_row(
+                self._conn,
+                GROUP_COLUMNS,
+                "sample_group",
+                "code",
+                upper(code),
+                "sampling group",
+            )
+        )
 
     def all(self) -> list[Group]:
         rows = self._conn.execute(

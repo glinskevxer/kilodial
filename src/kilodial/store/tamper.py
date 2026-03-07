@@ -11,7 +11,7 @@ from __future__ import annotations
 import sqlite3
 
 from kilodial.errors import DuplicateError, NotFoundError, RuleError
-from kilodial.store.base import member_of, or_none, upper
+from kilodial.store.base import has_row, member_of, one_row, or_none, upper
 from kilodial.tamper.event import Finding, Standing, TamperKind, confirmed_before
 from kilodial.units.span import parse_date
 
@@ -53,19 +53,19 @@ class TamperRepository:
         return finding
 
     def exists(self, reference: str) -> bool:
-        found = self._conn.execute(
-            "SELECT 1 FROM tamper_finding WHERE reference = ?", (upper(reference),)
-        ).fetchone()
-        return found is not None
+        return has_row(self._conn, "tamper_finding", "reference", upper(reference))
 
     def get(self, reference: str) -> Finding:
-        wanted = upper(reference)
-        row = self._conn.execute(
-            f"SELECT {COLUMNS} FROM tamper_finding WHERE reference = ?", (wanted,)
-        ).fetchone()
-        if row is None:
-            raise NotFoundError("tamper finding", wanted)
-        return _read(row)
+        return _read(
+            one_row(
+                self._conn,
+                COLUMNS,
+                "tamper_finding",
+                "reference",
+                upper(reference),
+                "tamper finding",
+            )
+        )
 
     def find(self, reference: str | None) -> Finding | None:
         """Look one up, handing back nothing rather than raising."""

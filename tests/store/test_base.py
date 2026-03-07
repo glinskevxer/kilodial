@@ -74,3 +74,34 @@ def test_or_none_does_not_swallow_anything_else() -> None:
 
     with pytest.raises(ValueError, match="that is a bug"):
         or_none(getter, "anything")
+
+
+def test_has_row_and_one_row(tmp_path: object) -> None:
+    from pathlib import Path
+
+    from kilodial.errors import NotFoundError
+    from kilodial.store.base import has_row, one_row
+    from kilodial.store.book import open_migrated
+
+    book = open_migrated(Path(str(tmp_path)) / "shop.sqlite3", create=True)
+    try:
+        conn = book.connection
+        assert not has_row(conn, "meter", "serial", "84-119302")
+        with pytest.raises(NotFoundError, match="meter"):
+            one_row(conn, "serial", "meter", "serial", "84-119302", "meter")
+        conn.execute(
+            "INSERT INTO meter (serial, device_key, state, acquired, owner) "
+            "VALUES ('84-119302', 'a/b', 'stock', '2025-01-01', 'utility')"
+        )
+        assert has_row(conn, "meter", "serial", "84-119302")
+        row = one_row(conn, "serial, state", "meter", "serial", "84-119302", "meter")
+        assert row == ("84-119302", "stock")
+    finally:
+        book.close()
+
+
+def test_one_row_calls_the_record_what_a_person_would() -> None:
+    from kilodial.errors import NotFoundError
+
+    exc = NotFoundError("sampling group", "G1")
+    assert "sampling group" in str(exc)

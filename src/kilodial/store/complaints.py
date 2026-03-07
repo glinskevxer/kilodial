@@ -22,8 +22,8 @@ from dataclasses import dataclass
 from datetime import date
 
 from kilodial.complaint.request import Charge, Reason, Request
-from kilodial.errors import DuplicateError, NotFoundError, RuleError, StateError
-from kilodial.store.base import member_of
+from kilodial.errors import DuplicateError, RuleError, StateError
+from kilodial.store.base import has_row, member_of, one_row, upper
 from kilodial.units.money import Money
 from kilodial.units.span import parse_date
 
@@ -112,20 +112,19 @@ class ComplaintRepository:
         return self.get(complaint.reference)
 
     def exists(self, reference: str) -> bool:
-        found = self._conn.execute(
-            "SELECT 1 FROM complaint_request WHERE reference = ?",
-            (reference.strip().upper(),),
-        ).fetchone()
-        return found is not None
+        return has_row(self._conn, "complaint_request", "reference", upper(reference))
 
     def get(self, reference: str) -> Complaint:
-        wanted = reference.strip().upper()
-        row = self._conn.execute(
-            f"SELECT {COLUMNS} FROM complaint_request WHERE reference = ?", (wanted,)
-        ).fetchone()
-        if row is None:
-            raise NotFoundError("complaint request", wanted)
-        return self._read(row)
+        return self._read(
+            one_row(
+                self._conn,
+                COLUMNS,
+                "complaint_request",
+                "reference",
+                upper(reference),
+                "complaint request",
+            )
+        )
 
     def all(self) -> list[Complaint]:
         rows = self._conn.execute(

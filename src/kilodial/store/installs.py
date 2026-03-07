@@ -19,6 +19,7 @@ import sqlite3
 
 from kilodial.errors import DuplicateError, NotFoundError, RuleError
 from kilodial.install.point import MeterSet, ServicePoint
+from kilodial.store.base import has_row, one_row, upper
 from kilodial.store.codec import (
     meter_set_row,
     read_meter_set,
@@ -61,19 +62,19 @@ class ServicePointRepository:
         return point
 
     def exists(self, code: str) -> bool:
-        found = self._conn.execute(
-            "SELECT 1 FROM service_point WHERE code = ?", (code.strip().upper(),)
-        ).fetchone()
-        return found is not None
+        return has_row(self._conn, "service_point", "code", upper(code))
 
     def get(self, code: str) -> ServicePoint:
-        key = code.strip().upper()
-        row = self._conn.execute(
-            f"SELECT {POINT_COLUMNS} FROM service_point WHERE code = ?", (key,)
-        ).fetchone()
-        if row is None:
-            raise NotFoundError("service point", key)
-        return read_service_point(row)
+        return read_service_point(
+            one_row(
+                self._conn,
+                POINT_COLUMNS,
+                "service_point",
+                "code",
+                upper(code),
+                "service point",
+            )
+        )
 
     def all(self) -> list[ServicePoint]:
         rows = self._conn.execute(

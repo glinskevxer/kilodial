@@ -18,7 +18,7 @@ import sqlite3
 
 from kilodial.errors import DuplicateError, NotFoundError, RuleError
 from kilodial.model.technician import Grade, Technician
-from kilodial.store.base import or_none
+from kilodial.store.base import has_row, one_row, or_none, upper
 from kilodial.store.codec import read_technician, technician_row
 from kilodial.units.span import parse_date
 
@@ -54,19 +54,12 @@ class TechnicianRepository:
         return technician
 
     def exists(self, badge: str) -> bool:
-        found = self._conn.execute(
-            "SELECT 1 FROM technician WHERE badge = ?", (badge.strip().upper(),)
-        ).fetchone()
-        return found is not None
+        return has_row(self._conn, "technician", "badge", upper(badge))
 
     def get(self, badge: str) -> Technician:
-        wanted = badge.strip().upper()
-        row = self._conn.execute(
-            f"SELECT {COLUMNS} FROM technician WHERE badge = ?", (wanted,)
-        ).fetchone()
-        if row is None:
-            raise NotFoundError("technician", wanted)
-        return read_technician(row)
+        return read_technician(
+            one_row(self._conn, COLUMNS, "technician", "badge", upper(badge), "technician")
+        )
 
     def find(self, badge: str | None) -> Technician | None:
         """Look one up, taking None for a run that names nobody."""

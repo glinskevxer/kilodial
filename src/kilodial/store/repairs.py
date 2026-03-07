@@ -14,9 +14,9 @@ from __future__ import annotations
 import sqlite3
 from decimal import Decimal
 
-from kilodial.errors import DuplicateError, NotFoundError, RuleError
+from kilodial.errors import DuplicateError, RuleError
 from kilodial.model.repair import Fault, Repair
-from kilodial.store.base import member_of, or_none, upper
+from kilodial.store.base import has_row, member_of, one_row, or_none, upper
 from kilodial.store.meters import MeterRepository
 from kilodial.units.money import Money
 from kilodial.units.span import parse_date
@@ -49,19 +49,12 @@ class RepairRepository:
         return repair
 
     def exists(self, reference: str) -> bool:
-        found = self._conn.execute(
-            "SELECT 1 FROM repair WHERE reference = ?", (upper(reference),)
-        ).fetchone()
-        return found is not None
+        return has_row(self._conn, "repair", "reference", upper(reference))
 
     def get(self, reference: str) -> Repair:
-        wanted = upper(reference)
-        row = self._conn.execute(
-            f"SELECT {COLUMNS} FROM repair WHERE reference = ?", (wanted,)
-        ).fetchone()
-        if row is None:
-            raise NotFoundError("repair", wanted)
-        return _read(row)
+        return _read(
+            one_row(self._conn, COLUMNS, "repair", "reference", upper(reference), "repair")
+        )
 
     def find(self, reference: str | None) -> Repair | None:
         """Look one up, handing back nothing rather than raising."""

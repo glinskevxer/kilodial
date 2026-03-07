@@ -22,7 +22,7 @@ from kilodial.orders.order import (
     Priority,
     WorkOrder,
 )
-from kilodial.store.base import member_of
+from kilodial.store.base import has_row, member_of, one_row, upper
 from kilodial.store.meters import MeterRepository
 from kilodial.units.span import parse_date
 
@@ -69,19 +69,19 @@ class OrderRepository:
         return order
 
     def exists(self, reference: str) -> bool:
-        found = self._conn.execute(
-            "SELECT 1 FROM work_order WHERE reference = ?", (reference.strip().upper(),)
-        ).fetchone()
-        return found is not None
+        return has_row(self._conn, "work_order", "reference", upper(reference))
 
     def get(self, reference: str) -> WorkOrder:
-        wanted = reference.strip().upper()
-        row = self._conn.execute(
-            f"SELECT {COLUMNS} FROM work_order WHERE reference = ?", (wanted,)
-        ).fetchone()
-        if row is None:
-            raise NotFoundError("work order", wanted)
-        return _read(row)
+        return _read(
+            one_row(
+                self._conn,
+                COLUMNS,
+                "work_order",
+                "reference",
+                upper(reference),
+                "work order",
+            )
+        )
 
     def all(self) -> list[WorkOrder]:
         rows = self._conn.execute(

@@ -16,9 +16,9 @@ from __future__ import annotations
 import sqlite3
 from datetime import date
 
-from kilodial.errors import DuplicateError, NotFoundError, RuleError
+from kilodial.errors import DuplicateError, RuleError
 from kilodial.estimate.basis import Basis, Estimate
-from kilodial.store.base import member_of, upper
+from kilodial.store.base import has_row, member_of, one_row, upper
 from kilodial.units.money import Money
 from kilodial.units.span import DateSpan, parse_date
 from kilodial.units.text import key, optional, tidy
@@ -116,19 +116,12 @@ class EstimateRepository:
         return settled
 
     def exists(self, reference: str) -> bool:
-        found = self._conn.execute(
-            "SELECT 1 FROM estimate WHERE reference = ?", (upper(reference),)
-        ).fetchone()
-        return found is not None
+        return has_row(self._conn, "estimate", "reference", upper(reference))
 
     def get(self, reference: str) -> SettledEstimate:
-        wanted = upper(reference)
-        row = self._conn.execute(
-            f"SELECT {COLUMNS} FROM estimate WHERE reference = ?", (wanted,)
-        ).fetchone()
-        if row is None:
-            raise NotFoundError("estimate", wanted)
-        return _read(row)
+        return _read(
+            one_row(self._conn, COLUMNS, "estimate", "reference", upper(reference), "estimate")
+        )
 
     def for_point(self, point_code: str) -> list[SettledEstimate]:
         rows = self._conn.execute(

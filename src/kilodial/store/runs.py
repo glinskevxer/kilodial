@@ -18,7 +18,7 @@ import sqlite3
 
 from kilodial.errors import DuplicateError, NotFoundError, RuleError
 from kilodial.model.run import BenchPoint, BenchRun, RunKind
-from kilodial.store.base import or_none
+from kilodial.store.base import has_row, one_row, or_none, upper
 from kilodial.store.bulk import insert_many
 from kilodial.store.codec import point_row, read_point, read_run, run_row
 from kilodial.units.span import parse_date
@@ -84,19 +84,12 @@ class RunRepository:
             )
 
     def exists(self, reference: str) -> bool:
-        found = self._conn.execute(
-            "SELECT 1 FROM bench_run WHERE reference = ?", (reference.strip().upper(),)
-        ).fetchone()
-        return found is not None
+        return has_row(self._conn, "bench_run", "reference", upper(reference))
 
     def get(self, reference: str) -> BenchRun:
-        key = reference.strip().upper()
-        row = self._conn.execute(
-            f"SELECT {RUN_COLUMNS} FROM bench_run WHERE reference = ?", (key,)
-        ).fetchone()
-        if row is None:
-            raise NotFoundError("bench run", key)
-        return read_run(row, self._points(key))
+        wanted = upper(reference)
+        row = one_row(self._conn, RUN_COLUMNS, "bench_run", "reference", wanted, "bench run")
+        return read_run(row, self._points(wanted))
 
     def _points(self, reference: str) -> list[BenchPoint]:
         rows = self._conn.execute(

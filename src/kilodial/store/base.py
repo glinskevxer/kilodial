@@ -14,8 +14,9 @@ input, and the error class is the difference between "fix your command" and
 from __future__ import annotations
 
 import enum
+import sqlite3
 from collections.abc import Callable
-from typing import TypeVar
+from typing import Any, TypeVar
 
 from kilodial.errors import ConfigError, NotFoundError
 
@@ -62,4 +63,33 @@ def or_none(getter: Callable[[str], _T], key: str | None) -> _T | None:
         return None
 
 
-__all__ = ["FIELDS", "member_of", "or_none", "upper"]
+def has_row(connection: sqlite3.Connection, table: str, column: str, value: str) -> bool:
+    """Whether a table holds a row with that key, which every repository asks."""
+    found = connection.execute(f"SELECT 1 FROM {table} WHERE {column} = ?", (value,)).fetchone()
+    return found is not None
+
+
+def one_row(
+    connection: sqlite3.Connection,
+    columns: str,
+    table: str,
+    column: str,
+    value: str,
+    kind: str,
+) -> tuple[Any, ...]:
+    """One row by key, raising the standard not found error when there is none.
+
+    The ``kind`` is what the error calls the record, and it is passed in rather
+    than derived from the table name because the two are not always the same
+    word: the table is ``sample_group`` and the thing a person is looking for is
+    a sampling group.
+    """
+    row = connection.execute(
+        f"SELECT {columns} FROM {table} WHERE {column} = ?", (value,)
+    ).fetchone()
+    if row is None:
+        raise NotFoundError(kind, value)
+    return tuple(row)
+
+
+__all__ = ["FIELDS", "has_row", "member_of", "one_row", "or_none", "upper"]

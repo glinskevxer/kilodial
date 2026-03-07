@@ -17,7 +17,7 @@ import sqlite3
 
 from kilodial.errors import DuplicateError, NotFoundError, RuleError
 from kilodial.model.meter import BENCHABLE, Meter, MeterState, normalise_serial
-from kilodial.store.base import or_none
+from kilodial.store.base import has_row, one_row, or_none
 from kilodial.store.codec import meter_row, read_meter
 from kilodial.store.devices import DeviceRepository
 
@@ -64,17 +64,23 @@ class MeterRepository:
         return meter
 
     def exists(self, serial: object) -> bool:
-        found = self._conn.execute(
-            "SELECT 1 FROM meter WHERE serial = ?", (normalise_serial(serial),)
-        ).fetchone()
-        return found is not None
+        return has_row(self._conn, "meter", "serial", normalise_serial(serial))
 
     def get(self, serial: object) -> Meter:
-        key = normalise_serial(serial)
-        row = self._conn.execute(f"SELECT {COLUMNS} FROM meter WHERE serial = ?", (key,)).fetchone()
-        if row is None:
-            raise NotFoundError("meter", key)
-        return read_meter(row)
+        return read_meter(
+            one_row(
+                self._conn,
+                COLUMNS,
+                "meter",
+                "serial",
+                normalise_serial(serial),
+                "meter",
+            )
+        )
+
+    def find(self, serial: object) -> Meter | None:
+        """The same lookup, handing back nothing rather than raising."""
+        return or_none(self.get, str(serial))
 
     def move(self, serial: object, state: MeterState, *, on: object = None) -> Meter:
         """Move a meter and write the move down, or refuse it."""
@@ -83,10 +89,6 @@ class MeterRepository:
 
     def reseal(self, serial: object, seal: object) -> Meter:
         return self.save(self.get(serial).resealed(seal))
-
-    def find(self, serial: object) -> Meter | None:
-        """The same lookup, handing back nothing rather than raising."""
-        return or_none(self.get, str(serial))
 
     def all(self) -> list[Meter]:
         rows = self._conn.execute(f"SELECT {COLUMNS} FROM meter ORDER BY serial").fetchall()
