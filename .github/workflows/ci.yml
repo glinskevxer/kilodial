@@ -31,6 +31,7 @@ jobs:
       - run: python -m kilodial.tools.release_check
       - run: python -m kilodial.tools.query_plan
       - run: python -m kilodial.tools.check_wiring
+      - run: python -m kilodial.tools.check_tests
       - run: python -m kilodial.tools.schema_dump --check
       - run: python -m kilodial.tools.build_docs --check
 
