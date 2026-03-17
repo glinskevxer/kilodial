@@ -73,7 +73,7 @@ def unimported() -> list[str]:
     for name in edges:
         if is_root(name) or name in imported:
             continue
-        if name.endswith(".__init__") or name.count(".") == 1 and _is_package(name):
+        if name.endswith(".__init__") or (name.count(".") == 1 and _is_package(name)):
             continue
         found.append(name)
     return sorted(found)

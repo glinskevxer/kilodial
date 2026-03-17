@@ -19,7 +19,7 @@ from __future__ import annotations
 import enum
 from dataclasses import dataclass
 from datetime import date
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 
 from kilodial.errors import BadInputError, RuleError
 from kilodial.units.money import Money
@@ -153,7 +153,7 @@ class Repair:
 def _hours(value: object) -> Decimal:
     try:
         spent = Decimal(str(value).strip())
-    except Exception:
+    except (InvalidOperation, ValueError):
         raise BadInputError(f"{value!r} is not a number of hours") from None
     if spent <= 0:
         raise BadInputError("a repair takes more than no time at all")

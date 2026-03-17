@@ -11,7 +11,7 @@ One copy, and the limits stay on the caller where they belong.
 
 from __future__ import annotations
 
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 
 from kilodial.errors import BadInputError
 
@@ -61,7 +61,7 @@ def number(value: object, what: str) -> Decimal:
     if isinstance(value, str):
         try:
             return Decimal(value.strip())
-        except Exception:
+        except (InvalidOperation, ValueError):
             raise BadInputError(f"{value!r} is not a {what}") from None
     raise BadInputError(f"cannot read a {what} from {type(value).__name__}")
 

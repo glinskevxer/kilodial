@@ -40,6 +40,7 @@ ELSEWHERE = {
     "kilodial.cli.installs": "tests/cli/test_installs.py",
     "kilodial.model.form": "tests/model/test_form.py",
     "kilodial.programme.roster": "tests/programme/test_roster.py",
+    "kilodial.programme.rota": "tests/programme/test_rota.py",
 }
 
 

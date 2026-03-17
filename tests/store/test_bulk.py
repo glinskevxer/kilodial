@@ -60,13 +60,13 @@ def test_inserting_nothing(book: Book) -> None:
 
 
 def test_a_failing_batch_reports_the_row_that_broke(book: Book) -> None:
-    bad = rows(3) + [rows(1)[0]]
+    bad = [*rows(3), rows(1)[0]]
     with pytest.raises(sqlite3.IntegrityError, match="UNIQUE"):
         insert_many(book.connection, "meter", COLUMNS, bad, size=10)
 
 
 def test_the_good_rows_of_a_failing_batch_are_still_written(book: Book) -> None:
-    bad = rows(3) + [rows(1)[0]]
+    bad = [*rows(3), rows(1)[0]]
     with pytest.raises(sqlite3.IntegrityError):
         insert_many(book.connection, "meter", COLUMNS, bad, size=10)
     assert book.connection.execute("SELECT COUNT(*) FROM meter").fetchone()[0] == 3

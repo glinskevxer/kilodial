@@ -33,7 +33,7 @@ from kilodial.model.run import RunKind
 from kilodial.model.technician import Grade, Technician
 from kilodial.orders.order import OrderKind, OrderState, WorkOrder
 from kilodial.orders.planner import raise_orders
-from kilodial.programme import queue, roster
+from kilodial.programme import roster, rota
 from kilodial.programme.schedule import DueState
 from kilodial.programme.season import run_sample
 from kilodial.report import commission, register
@@ -175,7 +175,7 @@ def test_a_year_in_the_shop(shop: Shop) -> None:
     assert shop.orders.count() == FLEET
 
     # The bench takes four at a time, so two orders wait.
-    day = queue.plan_day(shop, on="2025-01-07")
+    day = rota.plan_day(shop, on="2025-01-07")
     assert day.placed == 4
     assert len(day.unplaced) == 2
     assert day.unplaced[0][1] == "B2 is full"

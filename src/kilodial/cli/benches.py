@@ -14,7 +14,7 @@ from kilodial.cli.context import Context, pass_context
 from kilodial.cli.render import or_dash, pairs, table, yes_no
 from kilodial.cli.window import counted_from
 from kilodial.model.bench import Bench, ReferenceStandard
-from kilodial.programme import queue
+from kilodial.programme import rota
 
 
 @click.group("standard")
@@ -235,7 +235,7 @@ def bench_list(context: Context, day: str | None) -> None:
 def bench_day(context: Context, day: str, code: str | None) -> None:
     """Fill the benches for a day off the live test orders."""
     shop = context.open()
-    planned = queue.plan_day(shop, on=day)
+    planned = rota.plan_day(shop, on=day)
     slots = planned.on_bench(code) if code is not None else list(planned.slots)
     rows = [
         [s.bench_code, str(s.position), s.meter_serial, s.order_reference, str(s.priority)]
@@ -258,11 +258,11 @@ def bench_capacity(context: Context, day: str) -> None:
     """How many positions the shop has on a day, and why any are missing."""
     shop = context.open()
     rows = []
-    for bench, why in queue.usable_benches(shop, day):
+    for bench, why in rota.usable_benches(shop, day):
         rows.append([bench.code, str(bench.positions), yes_no(why is None), why or "-"])
     for line in table(["bench", "positions", "usable", "why not"], rows):
         click.echo(line)
-    click.echo(f"{queue.capacity(shop, day)} positions on {day}")
+    click.echo(f"{rota.capacity(shop, day)} positions on {day}")
 
 
 @benches.command("show")

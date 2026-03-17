@@ -123,9 +123,8 @@ def condition_faults(point: BenchPoint, device: DeviceType) -> list[str]:
         faults.append(
             f"{point.kind.name.lower()} was run at {point.volts}, nominal is {want.volts}"
         )
-    if (
-        point.power_factor.sense is not want.power_factor.sense
-        or point.power_factor.sense is Sense.LAGGING
+    if point.power_factor.sense is not want.power_factor.sense or (
+        point.power_factor.sense is Sense.LAGGING
         and (point.power_factor.value != want.power_factor.value)
     ):
         faults.append(

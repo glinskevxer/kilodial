@@ -99,6 +99,32 @@ def _signature_faults(run: BenchRun, device: DeviceType, signer: Technician | No
     return signer.refusals(run.kind, device, on=run.tested_on)
 
 
+def _band_faults(run: BenchRun, average: WeightedAverage, band: Band) -> list[str]:
+    """Everything about a run's numbers that is outside its band.
+
+    Split out of ``judge`` because that function had grown past the point where
+    a reader could hold the order of precedence in their head, which is the one
+    thing about it that has to be obvious.
+    """
+    found: list[str] = []
+    if run.has(PointKind.CREEP) and run.point(PointKind.CREEP).crept:
+        found.append("the disc crept at no load")
+    if not band.accepts(average.value):
+        found.append(
+            f"weighted average {average.value} is outside the "
+            f"+/-{band.weighted} percent band for an {run.kind} run"
+        )
+    for point in run.points:
+        if point.registration is None or not point.kind.weighted:
+            continue
+        if not band.accepts_point(point.kind, point.registration):
+            found.append(
+                f"{point.kind.name.lower()} at {point.registration} is outside the "
+                f"+/-{band.limit_for(point.kind)} percent point band"
+            )
+    return found
+
+
 def judge(
     run: BenchRun,
     device: DeviceType,
@@ -158,21 +184,7 @@ def judge(
             ),
         )
 
-    if run.has(PointKind.CREEP) and run.point(PointKind.CREEP).crept:
-        reasons.append("the disc crept at no load")
-    if not band.accepts(average.value):
-        reasons.append(
-            f"weighted average {average.value} is outside the "
-            f"+/-{band.weighted} percent band for an {run.kind} run"
-        )
-    for point in run.points:
-        if point.registration is None or not point.kind.weighted:
-            continue
-        if not band.accepts_point(point.kind, point.registration):
-            reasons.append(
-                f"{point.kind.name.lower()} at {point.registration} is outside the "
-                f"+/-{band.limit_for(point.kind)} percent point band"
-            )
+    reasons.extend(_band_faults(run, average, band))
     outcome = Outcome.FAILED if reasons else Outcome.PASSED
     return Verdict(run.reference, outcome, average, band, tuple(reasons))
 

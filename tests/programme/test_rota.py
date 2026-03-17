@@ -11,7 +11,7 @@ from kilodial.model.device import DeviceType
 from kilodial.model.form import Technology
 from kilodial.model.meter import Meter
 from kilodial.orders.order import OrderKind, WorkOrder
-from kilodial.programme.queue import capacity, plan_day, usable_benches, waiting
+from kilodial.programme.rota import capacity, plan_day, usable_benches, waiting
 from kilodial.store.shop import Shop, open_shop
 
 

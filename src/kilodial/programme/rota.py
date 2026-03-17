@@ -1,4 +1,4 @@
-"""Filling the benches for a day.
+"""The bench rota: filling the benches for a day.
 
 The due list says which meters want testing and the work orders say who owns
 each job. Neither says which bench a meter can actually go on, and that is not a
