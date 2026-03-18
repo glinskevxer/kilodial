@@ -38,7 +38,9 @@ ELSEWHERE = {
     "kilodial.cli.estimate": "tests/cli/test_estimate.py",
     "kilodial.cli.groups": "tests/cli/test_groups.py",
     "kilodial.cli.installs": "tests/cli/test_installs.py",
+    "kilodial.cli.render": "tests/report/test_layout.py",
     "kilodial.model.form": "tests/model/test_form.py",
+    "kilodial.report.layout": "tests/report/test_layout.py",
     "kilodial.programme.roster": "tests/programme/test_roster.py",
     "kilodial.programme.rota": "tests/programme/test_rota.py",
 }

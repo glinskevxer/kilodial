@@ -23,8 +23,8 @@ from dataclasses import dataclass, field
 from io import StringIO
 from typing import Any
 
-from kilodial.cli.render import pairs, table
 from kilodial.errors import BadInputError
+from kilodial.report.layout import pairs, table
 
 
 @dataclass(frozen=True)

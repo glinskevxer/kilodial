@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from kilodial.cli.render import or_dash, pairs, table, yes_no
+from kilodial.report.layout import or_dash, pairs, table, yes_no
 
 
 def test_a_table_pads_to_the_widest_cell() -> None:
