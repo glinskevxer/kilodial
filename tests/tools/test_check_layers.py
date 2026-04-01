@@ -40,16 +40,16 @@ def test_the_exception_list_is_empty() -> None:
 
 
 def test_an_upward_import_is_caught(monkeypatch: pytest.MonkeyPatch) -> None:
-    edges = graph()
-    edges["kilodial.model.device"] = {"kilodial.store.shop"}
+    edges = dict(graph())
+    edges["kilodial.model.device"] = frozenset({"kilodial.store.shop"})
     monkeypatch.setattr(gate, "graph", lambda: edges)
     problems = gate.faults()
     assert "kilodial.model.device (layer 1) imports kilodial.store.shop (layer 3)" in problems
 
 
 def test_an_exception_is_allowed(monkeypatch: pytest.MonkeyPatch) -> None:
-    edges = graph()
-    edges["kilodial.model.device"] = {"kilodial.store.shop"}
+    edges = dict(graph())
+    edges["kilodial.model.device"] = frozenset({"kilodial.store.shop"})
     monkeypatch.setattr(gate, "graph", lambda: edges)
     monkeypatch.setattr(gate, "EXCEPTIONS", {"kilodial.model.device": {"kilodial.store.shop"}})
     assert gate.faults() == []
@@ -75,3 +75,15 @@ def test_the_gate_fails_loudly(
     monkeypatch.setattr(gate, "faults", lambda: ["something"])
     assert gate.main([]) == 1
     assert "point the wrong way" in capsys.readouterr().out
+
+
+def test_the_known_module_set_is_cached() -> None:
+    first = gate._known()
+    assert gate._known() is first
+    assert "kilodial.store.shop" in first
+
+
+def test_trimming_is_cheap_on_a_name_that_is_already_a_module() -> None:
+    known = gate._known()
+    for name in list(known)[:20]:
+        assert gate.module_only(name) == name

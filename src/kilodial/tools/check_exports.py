@@ -21,6 +21,7 @@ import ast
 import importlib
 import pkgutil
 import sys
+from functools import cache
 from pathlib import Path
 from types import ModuleType
 
@@ -53,8 +54,13 @@ NO_EXPORTS = frozenset(
 )
 
 
+@cache
 def module_names() -> list[str]:
-    """Every module in the package, in import order."""
+    """Every module in the package, in import order.
+
+    Cached because four gates ask for it and walking the package is not free.
+    Nothing adds a module inside a process, so the answer cannot go stale.
+    """
     found = ["kilodial"]
     for info in pkgutil.walk_packages(kilodial.__path__, "kilodial."):
         found.append(info.name)

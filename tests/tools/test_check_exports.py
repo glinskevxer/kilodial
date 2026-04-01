@@ -79,3 +79,12 @@ def test_the_gate_fails_when_something_is_wrong(
     monkeypatch.setattr(gate, "faults", lambda: ["something"])
     assert gate.main([]) == 1
     assert "1 export problems" in capsys.readouterr().out
+
+
+def test_the_module_list_is_cached() -> None:
+    first = gate.module_names()
+    assert gate.module_names() is first
+
+
+def test_the_module_list_is_stable_across_calls() -> None:
+    assert gate.module_names() == sorted(set(gate.module_names()))

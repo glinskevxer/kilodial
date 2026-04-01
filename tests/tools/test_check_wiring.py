@@ -51,9 +51,9 @@ def test_who_imports_a_module() -> None:
 
 
 def test_a_module_nothing_imports_is_named(monkeypatch: pytest.MonkeyPatch) -> None:
-    edges = gate.graph()
-    edges["kilodial.store.dump"] = set()
-    edges = {k: (v - {"kilodial.store.dump"}) for k, v in edges.items()}
+    edges = dict(gate.graph())
+    edges["kilodial.store.dump"] = frozenset()
+    edges = {k: frozenset(v - {"kilodial.store.dump"}) for k, v in edges.items()}
     monkeypatch.setattr(gate, "graph", lambda: edges)
     assert "nothing imports kilodial.store.dump" in gate.faults()
 
@@ -73,3 +73,18 @@ def test_every_cli_module_is_reachable_from_the_tree() -> None:
             assert any(name == target or target.startswith(f"{name}.") for target in tree) or (
                 gate.reach(name) != []
             )
+
+
+def test_the_graph_is_cached_and_can_be_dropped() -> None:
+    first = gate.graph()
+    assert gate.graph() is first
+    gate.forget()
+    second = gate.graph()
+    assert second == first
+
+
+def test_imports_are_cached_per_module() -> None:
+    gate.forget()
+    first = gate.imports_of("kilodial.store.shop")
+    assert gate.imports_of("kilodial.store.shop") is first
+    assert isinstance(first, frozenset)

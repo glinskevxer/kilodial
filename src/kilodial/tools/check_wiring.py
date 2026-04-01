@@ -22,6 +22,7 @@ from __future__ import annotations
 import ast
 import importlib
 import sys
+from functools import cache
 from pathlib import Path
 
 from kilodial.tools import FAILED, OK
@@ -33,12 +34,20 @@ ROOTS = frozenset({"kilodial", "kilodial.cli.main"})
 ROOT_PREFIXES = ("kilodial.tools.",)
 
 
-def imports_of(name: str) -> set[str]:
-    """Every kilodial module one module imports, however it imports it."""
+@cache
+def imports_of(name: str) -> frozenset[str]:
+    """Every kilodial module one module imports, however it imports it.
+
+    Cached, and the reason is measurable. Three gates walk this graph and each
+    walk parsed every file in the package again; the test suite went from
+    twenty four seconds to forty seven when the third one landed. The source
+    does not change inside a process, so parsing it once is not an optimisation
+    so much as not doing the work three times.
+    """
     module = importlib.import_module(name)
     source = getattr(module, "__file__", None)
     if source is None:
-        return set()
+        return frozenset()
     tree = ast.parse(Path(source).read_text())
     found: set[str] = set()
     for node in ast.walk(tree):
@@ -50,12 +59,20 @@ def imports_of(name: str) -> set[str]:
             found.add(node.module)
             for alias in node.names:
                 found.add(f"{node.module}.{alias.name}")
-    return found
+    return frozenset(found)
 
 
-def graph() -> dict[str, set[str]]:
+@cache
+def graph() -> dict[str, frozenset[str]]:
     """Who imports whom, across the whole package."""
     return {name: imports_of(name) for name in module_names()}
+
+
+def forget() -> None:
+    """Drop the cached graph, which a test that rewrites a module needs."""
+    imports_of.cache_clear()
+    graph.cache_clear()
+    _is_package.cache_clear()
 
 
 def is_root(name: str) -> bool:
@@ -79,6 +96,7 @@ def unimported() -> list[str]:
     return sorted(found)
 
 
+@cache
 def _is_package(name: str) -> bool:
     module = importlib.import_module(name)
     return getattr(module, "__file__", "").endswith("__init__.py")
@@ -116,6 +134,7 @@ __all__ = [
     "ROOTS",
     "ROOT_PREFIXES",
     "faults",
+    "forget",
     "graph",
     "imports_of",
     "is_root",

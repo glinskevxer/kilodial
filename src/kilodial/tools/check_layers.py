@@ -20,6 +20,7 @@ and naming the exception is how that stays visible.
 from __future__ import annotations
 
 import sys
+from functools import cache
 from pathlib import Path
 
 from kilodial.tools import FAILED, OK
@@ -79,6 +80,12 @@ def rank_of(name: str) -> int:
     return best[0]
 
 
+@cache
+def _known() -> frozenset[str]:
+    """The module list, once, because the trimmer asks for it per import."""
+    return frozenset(module_names())
+
+
 def module_only(name: str) -> str:
     """Trim an imported name back to the module it came from.
 
@@ -86,7 +93,7 @@ def module_only(name: str) -> str:
     is not a module. Trimming by rank would not catch it, because the trimmed and
     untrimmed names sit in the same layer, so the module list decides.
     """
-    known = set(module_names())
+    known = _known()
     while name and name not in known and "." in name:
         name = name.rsplit(".", 1)[0]
     return name
