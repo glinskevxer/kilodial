@@ -215,7 +215,7 @@ def test_a_slow_meter_produces_a_back_bill_sheet(wired: Invoke) -> None:
 def test_the_period_command_names_what_bounds_it(wired: Invoke) -> None:
     bill(wired)
     bench(wired, "TR-1", "2025-06-30", "103.00")
-    result = wired("adjust", "period", "SP-1042")
+    result = wired("adjust", "period", "SP-1042", "--on", "2025-07-15")
     assert "the day the meter was set" in result.output
     assert "2024-12-01" in result.output
 
@@ -223,7 +223,7 @@ def test_the_period_command_names_what_bounds_it(wired: Invoke) -> None:
 def test_the_period_command_on_a_meter_that_is_fine(wired: Invoke) -> None:
     bill(wired)
     bench(wired, "TR-1", "2025-06-30", "100.10")
-    result = wired("adjust", "period", "SP-1042")
+    result = wired("adjust", "period", "SP-1042", "--on", "2025-07-15")
     assert "inside the" in result.output
 
 

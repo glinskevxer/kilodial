@@ -113,14 +113,14 @@ def raise_adjustment(
     run = finding_run(shop, standing.meter_serial)
     meter_set = shop.installs.on_day(code, run.tested_on) or standing
     accuracy = shop.accuracy_of_set(meter_set, power_factor=power_factor)
-    if shop.tamper.unmetered_at(code, run.tested_on):
+    if shop.tamper.unmetered_at(code, on):
         return Refusal(
             code,
             "there is a confirmed finding that stopped the meter measuring, so the "
             "usage has to be estimated rather than corrected from a registration",
             accuracy,
         )
-    tampered = bool(shop.tamper.confirmed_at(code, run.tested_on))
+    tampered = bool(shop.tamper.confirmed_at(code, on))
     if not is_adjustable(accuracy, tariff):
         return Refusal(code, str(why_not(accuracy, tariff)), accuracy)
     period = period_for(
@@ -158,13 +158,17 @@ def period_of(
     shop: Shop,
     point_code: str,
     *,
+    on: object,
     tariff: Tariff = STATE_TARIFF,
     power_factor: PowerFactor | None = None,
 ) -> Period:
-    """The adjustment period alone, for a clerk checking a date."""
-    raised = raise_adjustment(
-        shop, point_code, on="2000-01-01", tariff=tariff, power_factor=power_factor
-    )
+    """The adjustment period alone, for a clerk checking a date.
+
+    ``on`` is required rather than defaulted, because the tamper findings are
+    read as at that day and a sentinel date in the past silently excluded all of
+    them. It was defaulted once and it was wrong.
+    """
+    raised = raise_adjustment(shop, point_code, on=on, tariff=tariff, power_factor=power_factor)
     if isinstance(raised, Refusal):
         raise RuleError(raised.reason)
     return raised.period

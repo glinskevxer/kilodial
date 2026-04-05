@@ -146,14 +146,13 @@ def _print_header(found: Adjustment) -> None:
 
 @adjustments.command("period")
 @click.argument("point_code")
+@click.option("--on", "day", required=True, help="the day to work the period out as at")
 @click.option("--pf", "power_factor", default="unity", show_default=True)
 @pass_context
-def adjust_period(context: Context, point_code: str, power_factor: str) -> None:
+def adjust_period(context: Context, point_code: str, day: str, power_factor: str) -> None:
     """The period an adjustment would cover, and what bounds it."""
     shop = context.open()
-    found = raise_adjustment(
-        shop, point_code, on="2000-01-01", power_factor=load_factor(power_factor)
-    )
+    found = raise_adjustment(shop, point_code, on=day, power_factor=load_factor(power_factor))
     if isinstance(found, Refusal):
         click.echo(str(found))
         return

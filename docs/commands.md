@@ -11,6 +11,7 @@ Groups: adjust, bench, bill, book, complaint, device, due, estimate, group, impo
 
 The period an adjustment would cover, and what bounds it.
 
+- `--on` the day to work the period out as at (required)
 - `--pf`
 
 ## `adjust show`

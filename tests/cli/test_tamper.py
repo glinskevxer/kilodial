@@ -176,7 +176,7 @@ def test_a_confirmed_finding_lengthens_the_adjustment(stocked: Invoke) -> None:
         "--ll",
         "96.00",
     )
-    before = stocked("adjust", "period", "SP-1042").output
+    before = stocked("adjust", "period", "SP-1042", "--on", "2025-07-15").output
     log(stocked)
     stocked(
         "tamper",
@@ -189,7 +189,7 @@ def test_a_confirmed_finding_lengthens_the_adjustment(stocked: Invoke) -> None:
         "--evidence",
         "copper wire",
     )
-    after = stocked("adjust", "period", "SP-1042").output
+    after = stocked("adjust", "period", "SP-1042", "--on", "2025-07-15").output
     assert "2024-06-30" in before
     assert "2022-06-30" in after
 

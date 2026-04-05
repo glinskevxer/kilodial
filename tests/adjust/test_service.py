@@ -8,7 +8,12 @@ import pytest
 from kilodial.adjust.compute import Adjustment, BilledMonth
 from kilodial.adjust.period import Boundary
 from kilodial.adjust.rules import Direction
-from kilodial.adjust.service import Refusal, finding_run, raise_adjustment
+from kilodial.adjust.service import (
+    Refusal,
+    finding_run,
+    period_of,
+    raise_adjustment,
+)
 from kilodial.errors import RuleError
 from kilodial.install.point import MeterSet, ServicePoint
 from kilodial.model.bench import Bench, ReferenceStandard
@@ -296,3 +301,61 @@ def test_a_confirmed_bypass_stops_even_a_meter_inside_tolerance(shop: Shop) -> N
     found = raise_adjustment(shop, "SP-1042", on="2025-07-15")
     assert isinstance(found, Refusal)
     assert "stopped the meter measuring" in found.reason
+
+
+def test_a_finding_confirmed_after_the_run_still_counts(shop: Shop) -> None:
+    set_meter(shop, set_on="2015-01-01")
+    bench(shop, "TR-1", "2025-06-30", "96.00")
+    bill(shop, 2023)
+    bill(shop, 2024)
+    bill(shop, 2025, 6)
+    shop.tamper.add(
+        TamperFinding.raise_finding(
+            "TF-1", "SP-1042", "seal cut", found_on="2025-07-02", found_by="R Ellis"
+        )
+    )
+    shop.tamper.save(
+        shop.tamper.get("TF-1").confirmed(
+            on="2025-07-02", since="2022-01-01", evidence="copper wire"
+        )
+    )
+    found = raise_adjustment(shop, "SP-1042", on="2025-07-15")
+    assert isinstance(found, Adjustment)
+    assert found.period.span.start.isoformat() == "2022-06-30"
+
+
+def test_a_finding_confirmed_after_the_adjustment_does_not(shop: Shop) -> None:
+    set_meter(shop, set_on="2015-01-01")
+    bench(shop, "TR-1", "2025-06-30", "96.00")
+    bill(shop, 2024)
+    bill(shop, 2025, 6)
+    shop.tamper.add(
+        TamperFinding.raise_finding(
+            "TF-1", "SP-1042", "seal cut", found_on="2025-08-02", found_by="R Ellis"
+        )
+    )
+    shop.tamper.save(
+        shop.tamper.get("TF-1").confirmed(
+            on="2025-08-02", since="2022-01-01", evidence="copper wire"
+        )
+    )
+    found = raise_adjustment(shop, "SP-1042", on="2025-07-15")
+    assert isinstance(found, Adjustment)
+    assert found.period.span.start.isoformat() == "2024-06-30"
+
+
+def test_the_period_alone_needs_a_day(shop: Shop) -> None:
+    set_meter(shop, set_on="2015-01-01")
+    bench(shop, "TR-1", "2025-06-30", "96.00")
+    bill(shop, 2024)
+    bill(shop, 2025, 6)
+    period = period_of(shop, "SP-1042", on="2025-07-15")
+    assert period.span.start.isoformat() == "2024-06-30"
+
+
+def test_the_period_alone_refuses_a_meter_that_is_fine(shop: Shop) -> None:
+    set_meter(shop, set_on="2015-01-01")
+    bench(shop, "TR-1", "2025-06-30", "100.10")
+    bill(shop, 2025, 6)
+    with pytest.raises(RuleError, match="inside the"):
+        period_of(shop, "SP-1042", on="2025-07-15")
