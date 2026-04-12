@@ -53,6 +53,7 @@ def format_option() -> Callable[[_F], _F]:
         type=click.Choice(FORMATS),
         default="text",
         show_default=True,
+        help="the shape to write it in",
     )
 
 
@@ -64,7 +65,12 @@ def reports() -> None:
 @reports.command("shop")
 @click.option("--on", "day", required=True, help="the day to report as at")
 @format_option()
-@click.option("--out", type=click.Path(dir_okay=False, path_type=Path), default=None)
+@click.option(
+    "--out",
+    type=click.Path(dir_okay=False, path_type=Path),
+    default=None,
+    help="write to a file rather than to standard output",
+)
 @pass_context
 def report_shop(context: Context, day: str, shape: str, out: Path | None) -> None:
     """What the shop looks like on a day."""
@@ -75,7 +81,12 @@ def report_shop(context: Context, day: str, shape: str, out: Path | None) -> Non
 @click.option("--from", "first", required=True, help="start of the reporting period")
 @click.option("--to", "last", required=True, help="end of the reporting period")
 @format_option()
-@click.option("--out", type=click.Path(dir_okay=False, path_type=Path), default=None)
+@click.option(
+    "--out",
+    type=click.Path(dir_okay=False, path_type=Path),
+    default=None,
+    help="write to a file rather than to standard output",
+)
 @pass_context
 def report_commission(
     context: Context, first: str, last: str, shape: str, out: Path | None
@@ -88,7 +99,12 @@ def report_commission(
 @reports.command("register")
 @click.option("--on", "day", required=True, help="the day to price the register at")
 @format_option()
-@click.option("--out", type=click.Path(dir_okay=False, path_type=Path), default=None)
+@click.option(
+    "--out",
+    type=click.Path(dir_okay=False, path_type=Path),
+    default=None,
+    help="write to a file rather than to standard output",
+)
 @pass_context
 def report_register(context: Context, day: str, shape: str, out: Path | None) -> None:
     """Every point that owes money or is owed it."""
@@ -99,7 +115,12 @@ def report_register(context: Context, day: str, shape: str, out: Path | None) ->
 @click.option("--from", "first", required=True, help="start of the window")
 @click.option("--to", "last", required=True, help="end of the window")
 @format_option()
-@click.option("--out", type=click.Path(dir_okay=False, path_type=Path), default=None)
+@click.option(
+    "--out",
+    type=click.Path(dir_okay=False, path_type=Path),
+    default=None,
+    help="write to a file rather than to standard output",
+)
 @pass_context
 def report_bench(context: Context, first: str, last: str, shape: str, out: Path | None) -> None:
     """Who benched what, and what came of it."""
@@ -110,7 +131,12 @@ def report_bench(context: Context, first: str, last: str, shape: str, out: Path 
 @click.option("--from", "first", required=True, help="start of the window")
 @click.option("--to", "last", required=True, help="end of the window")
 @format_option()
-@click.option("--out", type=click.Path(dir_okay=False, path_type=Path), default=None)
+@click.option(
+    "--out",
+    type=click.Path(dir_okay=False, path_type=Path),
+    default=None,
+    help="write to a file rather than to standard output",
+)
 @pass_context
 def report_faults(context: Context, first: str, last: str, shape: str, out: Path | None) -> None:
     """What breaks, on which types, and what it costs to keep fixing."""
@@ -121,7 +147,12 @@ def report_faults(context: Context, first: str, last: str, shape: str, out: Path
 @click.option("--on", "day", required=True, help="the day to report as at")
 @click.option("--warning", type=int, default=None, help="days ahead to warn on")
 @format_option()
-@click.option("--out", type=click.Path(dir_okay=False, path_type=Path), default=None)
+@click.option(
+    "--out",
+    type=click.Path(dir_okay=False, path_type=Path),
+    default=None,
+    help="write to a file rather than to standard output",
+)
 @pass_context
 def report_certificates(
     context: Context, day: str, warning: int | None, shape: str, out: Path | None

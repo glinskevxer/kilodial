@@ -28,7 +28,7 @@ def technicians() -> None:
 @click.option("--grade", required=True, help="bench, polyphase or supervisor")
 @click.option("--certified", required=True, help="the day the certification was issued")
 @click.option("--due", required=True, help="the day it runs out")
-@click.option("--note", default=None)
+@click.option("--note", default=None, help="anything worth writing down")
 @pass_context
 def technician_add(
     context: Context,
@@ -56,8 +56,8 @@ def technician_add(
 
 @technicians.command("recertify")
 @click.argument("badge")
-@click.option("--certified", required=True)
-@click.option("--due", required=True)
+@click.option("--certified", required=True, help="the day the certificate was issued")
+@click.option("--due", required=True, help="the day the certificate runs out")
 @click.option("--grade", default=None, help="promote at the same time")
 @pass_context
 def technician_recertify(
@@ -83,7 +83,7 @@ def technician_recertify(
 
 @technicians.command("list")
 @click.option("--on", "day", default=None, help="only those certified on this day")
-@click.option("--grade", default=None)
+@click.option("--grade", default=None, help="the certification grade")
 @click.option("--due-within", "window", type=int, default=None, help="days ahead to look")
 @pass_context
 def technician_list(
@@ -115,7 +115,7 @@ def technician_list(
 
 
 @technicians.command("lapsed")
-@click.option("--on", "day", required=True)
+@click.option("--on", "day", required=True, help="the day to work this out as at")
 @pass_context
 def technician_lapsed(context: Context, day: str) -> None:
     """Certifications that had run out on a day."""
@@ -131,8 +131,8 @@ def technician_lapsed(context: Context, day: str) -> None:
 @technicians.command("may")
 @click.argument("badge")
 @click.argument("meter_serial")
-@click.option("--kind", default="as_found", show_default=True)
-@click.option("--on", "day", required=True)
+@click.option("--kind", default="as_found", show_default=True, help="which kind this is")
+@click.option("--on", "day", required=True, help="the day to work this out as at")
 @pass_context
 def technician_may(context: Context, badge: str, meter_serial: str, kind: str, day: str) -> None:
     """Say whether somebody may sign that run on that day, before it is run."""

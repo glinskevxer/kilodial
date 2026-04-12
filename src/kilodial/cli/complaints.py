@@ -28,8 +28,10 @@ def complaints() -> None:
 @click.argument("point_code")
 @click.option("--on", "day", required=True, help="the day the customer asked")
 @click.option("--by", "requester", required=True, help="who asked")
-@click.option("--reason", default="other", show_default=True)
-@click.option("--note", default=None)
+@click.option(
+    "--reason", default="other", show_default=True, help="why the customer says the meter is wrong"
+)
+@click.option("--note", default=None, help="anything worth writing down")
 @pass_context
 def complaint_open(
     context: Context,
@@ -60,7 +62,9 @@ def complaint_open(
 @click.option("--run", "run_reference", required=True, help="the referee run")
 @click.option("--on", "day", required=True, help="the day the request is closed")
 @click.option("--fee", default=None, help="override the standard fee")
-@click.option("--pf", "power_factor", default="unity", show_default=True)
+@click.option(
+    "--pf", "power_factor", default="unity", show_default=True, help="the load angle to judge at"
+)
 @pass_context
 def complaint_answer(
     context: Context,
@@ -97,7 +101,7 @@ def complaint_answer(
 
 @complaints.command("list")
 @click.option("--all", "everything", is_flag=True, help="closed ones too")
-@click.option("--point", "point_code", default=None)
+@click.option("--point", "point_code", default=None, help="only this service point")
 @click.option("--overdue", "day", default=None, help="only ones past due on this day")
 @pass_context
 def complaint_list(
@@ -170,7 +174,7 @@ def complaint_reasons() -> None:
 
 
 @complaints.command("clock")
-@click.option("--on", "day", required=True)
+@click.option("--on", "day", required=True, help="the day to work this out as at")
 @pass_context
 def complaint_clock(context: Context, day: str) -> None:
     """How many days are left on each open request."""

@@ -34,9 +34,9 @@ def orders() -> None:
 @click.argument("kind")
 @click.argument("meter_serial")
 @click.option("--on", "day", required=True, help="the day it was raised")
-@click.option("--priority", default="normal", show_default=True)
-@click.option("--point", "point_code", default=None)
-@click.option("--note", default=None)
+@click.option("--priority", default="normal", show_default=True, help="how urgent it is")
+@click.option("--point", "point_code", default=None, help="only this service point")
+@click.option("--note", default=None, help="anything worth writing down")
 @pass_context
 def order_raise(
     context: Context,
@@ -78,7 +78,7 @@ def order_assign(context: Context, reference: str, technician: str) -> None:
 
 @orders.command("done")
 @click.argument("reference")
-@click.option("--on", "day", required=True)
+@click.option("--on", "day", required=True, help="the day to work this out as at")
 @click.option("--run", "run_reference", default=None, help="for a test order")
 @click.option("--disposition", default=None, help="for a repair order")
 @click.option("--repair", "repair_reference", default=None, help="the repair record")
@@ -117,7 +117,7 @@ def order_done(
 
 @orders.command("cancel")
 @click.argument("reference")
-@click.option("--on", "day", required=True)
+@click.option("--on", "day", required=True, help="the day to work this out as at")
 @click.option("--why", required=True, help="cancelling needs a reason")
 @pass_context
 def order_cancel(context: Context, reference: str, day: str, why: str) -> None:
@@ -130,8 +130,8 @@ def order_cancel(context: Context, reference: str, day: str, why: str) -> None:
 
 @orders.command("list")
 @click.option("--all", "everything", is_flag=True, help="closed ones too")
-@click.option("--meter", "meter_serial", default=None)
-@click.option("--kind", default=None)
+@click.option("--meter", "meter_serial", default=None, help="only this meter")
+@click.option("--kind", default=None, help="which kind this is")
 @click.option("--to", "technician", default=None, help="assigned to this technician")
 @click.option("--late", "day", default=None, help="only ones late on this day")
 @pass_context

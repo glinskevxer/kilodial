@@ -52,12 +52,12 @@ def runs() -> None:
 
 @runs.command("record")
 @click.argument("reference")
-@click.option("--meter", "meter_serial", required=True)
-@click.option("--bench", "bench_code", required=True)
+@click.option("--meter", "meter_serial", required=True, help="only this meter")
+@click.option("--bench", "bench_code", required=True, help="only this bench")
 @click.option("--standard", "standard_serial", default=None, help="override the bench standard")
-@click.option("--kind", default="as_found", show_default=True)
+@click.option("--kind", default="as_found", show_default=True, help="which kind this is")
 @click.option("--on", "tested_on", required=True, help="the day it was run")
-@click.option("--by", "technician", required=True)
+@click.option("--by", "technician", required=True, help="who did it")
 @click.option("--badge", default=None, help="the signing technician's badge")
 @click.option("--fl", default=None, help="full load registration")
 @click.option("--ll", default=None, help="light load registration")
@@ -68,7 +68,7 @@ def runs() -> None:
 @click.option("--creep", default=None, help="held or crept")
 @click.option("--volts", default=None, help="service voltage if not the nameplate")
 @click.option("--interval-seconds", default=None, help="measured demand window")
-@click.option("--note", default=None)
+@click.option("--note", default=None, help="anything worth writing down")
 @pass_context
 def run_record(
     context: Context,
@@ -185,11 +185,11 @@ def _header(run: BenchRun, verdict: Verdict) -> list[tuple[str, str]]:
 
 
 @runs.command("list")
-@click.option("--meter", "meter_serial", default=None)
-@click.option("--bench", "bench_code", default=None)
-@click.option("--kind", default=None)
-@click.option("--from", "first", default=None)
-@click.option("--to", "last", default=None)
+@click.option("--meter", "meter_serial", default=None, help="only this meter")
+@click.option("--bench", "bench_code", default=None, help="only this bench")
+@click.option("--kind", default=None, help="which kind this is")
+@click.option("--from", "first", default=None, help="start of the window")
+@click.option("--to", "last", default=None, help="end of the window")
 @pass_context
 def run_list(
     context: Context,

@@ -46,8 +46,8 @@ def estimate_gap(context: Context, point_code: str, day: str) -> None:
 @click.argument("point_code")
 @click.option("--on", "day", default=None, help="find the gap from the findings")
 @click.option("--from", "first", default=None, help="or give the period yourself")
-@click.option("--to", "last", default=None)
-@click.option("--note", default=None)
+@click.option("--to", "last", default=None, help="end of the window")
+@click.option("--note", default=None, help="anything worth writing down")
 @pass_context
 def estimate_list(
     context: Context,
@@ -78,12 +78,12 @@ def estimate_list(
 
 @estimates.command("load")
 @click.argument("point_code")
-@click.option("--from", "first", required=True)
-@click.option("--to", "last", required=True)
+@click.option("--from", "first", required=True, help="start of the window")
+@click.option("--to", "last", required=True, help="end of the window")
 @click.option("--kw", "kilowatts", required=True, help="connected load in kilowatts")
 @click.option("--duty", required=True, help="share of the day the load ran")
 @click.option("--rate", "rate_per_kwh", required=True, help="energy rate")
-@click.option("--note", default=None)
+@click.option("--note", default=None, help="anything worth writing down")
 @pass_context
 def estimate_load(
     context: Context,
@@ -125,10 +125,10 @@ def estimate_load(
 @click.option("--basis", required=True, help="which basis was chosen")
 @click.option("--on", "day", default=None, help="find the gap from the findings")
 @click.option("--from", "first", default=None, help="or give the period yourself")
-@click.option("--to", "last", default=None)
+@click.option("--to", "last", default=None, help="end of the window")
 @click.option("--settled-on", required=True, help="the day it was settled")
 @click.option("--by", "settler", required=True, help="who settled it")
-@click.option("--note", default=None)
+@click.option("--note", default=None, help="anything worth writing down")
 @pass_context
 def estimate_settle(
     context: Context,

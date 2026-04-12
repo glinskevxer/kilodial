@@ -25,11 +25,11 @@ def repairs() -> None:
 @click.argument("meter_serial")
 @click.argument("fault")
 @click.option("--on", "day", required=True, help="the day it was repaired")
-@click.option("--by", "technician", required=True)
+@click.option("--by", "technician", required=True, help="who did it")
 @click.option("--hours", required=True, help="time on the bench")
 @click.option("--parts", default="0", show_default=True, help="what the parts cost")
 @click.option("--replacement", required=True, help="what a new meter would cost")
-@click.option("--note", default=None)
+@click.option("--note", default=None, help="anything worth writing down")
 @pass_context
 def repair_record(
     context: Context,
@@ -62,10 +62,10 @@ def repair_record(
 
 
 @repairs.command("list")
-@click.option("--meter", "meter_serial", default=None)
-@click.option("--fault", default=None)
-@click.option("--from", "first", default=None)
-@click.option("--to", "last", default=None)
+@click.option("--meter", "meter_serial", default=None, help="only this meter")
+@click.option("--fault", default=None, help="only this fault code")
+@click.option("--from", "first", default=None, help="start of the window")
+@click.option("--to", "last", default=None, help="end of the window")
 @click.option("--wasteful", is_flag=True, help="only ones that cost more than a meter")
 @pass_context
 def repair_list(
@@ -155,8 +155,8 @@ def repair_faults(context: Context, device_key: str | None) -> None:
 
 
 @repairs.command("spend")
-@click.option("--from", "first", required=True)
-@click.option("--to", "last", required=True)
+@click.option("--from", "first", required=True, help="start of the window")
+@click.option("--to", "last", required=True, help="end of the window")
 @pass_context
 def repair_spend(context: Context, first: str, last: str) -> None:
     """What the shop spent on repairs over a window."""

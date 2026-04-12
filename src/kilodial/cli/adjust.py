@@ -46,8 +46,8 @@ def bill_add(
 
 @bills.command("list")
 @click.argument("point_code")
-@click.option("--from", "first", default=None)
-@click.option("--to", "last", default=None)
+@click.option("--from", "first", default=None, help="start of the window")
+@click.option("--to", "last", default=None, help="end of the window")
 @pass_context
 def bill_list(context: Context, point_code: str, first: str | None, last: str | None) -> None:
     """List a point's billed history."""
@@ -91,7 +91,9 @@ def adjustments() -> None:
 @adjustments.command("show")
 @click.argument("point_code")
 @click.option("--on", "day", required=True, help="the day the adjustment is worked out")
-@click.option("--pf", "power_factor", default="unity", show_default=True)
+@click.option(
+    "--pf", "power_factor", default="unity", show_default=True, help="the load angle to judge at"
+)
 @pass_context
 def adjust_show(context: Context, point_code: str, day: str, power_factor: str) -> None:
     """Work out an adjustment and print the month by month sheet."""
@@ -147,7 +149,9 @@ def _print_header(found: Adjustment) -> None:
 @adjustments.command("period")
 @click.argument("point_code")
 @click.option("--on", "day", required=True, help="the day to work the period out as at")
-@click.option("--pf", "power_factor", default="unity", show_default=True)
+@click.option(
+    "--pf", "power_factor", default="unity", show_default=True, help="the load angle to judge at"
+)
 @pass_context
 def adjust_period(context: Context, point_code: str, day: str, power_factor: str) -> None:
     """The period an adjustment would cover, and what bounds it."""

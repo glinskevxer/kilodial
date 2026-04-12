@@ -78,7 +78,7 @@ def tamper_confirm(context: Context, reference: str, day: str, since: str, evide
 
 @tamper.command("clear")
 @click.argument("reference")
-@click.option("--on", "day", required=True)
+@click.option("--on", "day", required=True, help="the day to work this out as at")
 @click.option("--why", required=True, help="clearing needs a reason")
 @pass_context
 def tamper_clear(context: Context, reference: str, day: str, why: str) -> None:
@@ -92,9 +92,9 @@ def tamper_clear(context: Context, reference: str, day: str, why: str) -> None:
 
 @tamper.command("list")
 @click.option("--all", "everything", is_flag=True, help="settled ones too")
-@click.option("--point", "point_code", default=None)
-@click.option("--from", "first", default=None)
-@click.option("--to", "last", default=None)
+@click.option("--point", "point_code", default=None, help="only this service point")
+@click.option("--from", "first", default=None, help="start of the window")
+@click.option("--to", "last", default=None, help="end of the window")
 @pass_context
 def tamper_list(
     context: Context,

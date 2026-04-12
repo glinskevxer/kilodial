@@ -12,7 +12,7 @@ Groups: adjust, bench, bill, book, complaint, device, due, estimate, group, impo
 The period an adjustment would cover, and what bounds it.
 
 - `--on` the day to work the period out as at (required)
-- `--pf`
+- `--pf` the load angle to judge at
 
 ## `adjust show`
 
@@ -21,7 +21,7 @@ The period an adjustment would cover, and what bounds it.
 Work out an adjustment and print the month by month sheet.
 
 - `--on` the day the adjustment is worked out (required)
-- `--pf`
+- `--pf` the load angle to judge at
 
 ## `adjust tariff`
 
@@ -35,12 +35,12 @@ The rules adjustments are worked out under.
 
 Put a bench on the book.
 
-- `--positions` (required)
-- `--standard` (required)
-- `--max-amps` (required)
-- `--max-volts` (required)
-- `--polyphase`
-- `--installed` (required)
+- `--positions` how many meters the bench holds (required)
+- `--standard` the reference standard behind it (required)
+- `--max-amps` the most current the bench can hold (required)
+- `--max-volts` the most voltage the bench can hold (required)
+- `--polyphase` the bench can hold polyphase meters
+- `--installed` the day it went into service (required)
 
 ## `bench capacity`
 
@@ -48,7 +48,7 @@ Put a bench on the book.
 
 How many positions the shop has on a day, and why any are missing.
 
-- `--on` (required)
+- `--on` the day to work this out as at (required)
 
 ## `bench day`
 
@@ -96,8 +96,8 @@ Record one billing period.
 
 List a point's billed history.
 
-- `--from`
-- `--to`
+- `--from` start of the window
+- `--to` end of the window
 
 ## `bill remove`
 
@@ -158,7 +158,7 @@ Close a request with the referee run that answered it.
 - `--run` the referee run (required)
 - `--on` the day the request is closed (required)
 - `--fee` override the standard fee
-- `--pf`
+- `--pf` the load angle to judge at
 
 ## `complaint clock`
 
@@ -166,7 +166,7 @@ Close a request with the referee run that answered it.
 
 How many days are left on each open request.
 
-- `--on` (required)
+- `--on` the day to work this out as at (required)
 
 ## `complaint list`
 
@@ -175,7 +175,7 @@ How many days are left on each open request.
 List customer requests, open by default.
 
 - `--all` closed ones too
-- `--point`
+- `--point` only this service point
 - `--overdue` only ones past due on this day
 
 ## `complaint open`
@@ -186,8 +186,8 @@ Log a customer request against a service point.
 
 - `--on` the day the customer asked (required)
 - `--by` who asked (required)
-- `--reason`
-- `--note`
+- `--reason` why the customer says the meter is wrong
+- `--note` anything worth writing down
 
 ## `complaint reasons`
 
@@ -257,7 +257,7 @@ Ask every question the shop should be able to answer.
 
 How many meters are current, due and overdue.
 
-- `--on` (required)
+- `--on` the day to work this out as at (required)
 
 ## `due list`
 
@@ -266,7 +266,7 @@ How many meters are current, due and overdue.
 Who is due, and how far past it.
 
 - `--on` the day to judge against (required)
-- `--group`
+- `--group` only this sampling group
 - `--overdue` only meters past their grace period
 - `--grace` grace period in days
 
@@ -292,8 +292,8 @@ Every basis the book supports for a gap, strongest first.
 
 - `--on` find the gap from the findings
 - `--from` or give the period yourself
-- `--to`
-- `--note`
+- `--to` end of the window
+- `--note` anything worth writing down
 
 ## `estimate load`
 
@@ -301,12 +301,12 @@ Every basis the book supports for a gap, strongest first.
 
 Estimate from nameplate load when there is no history to work from.
 
-- `--from` (required)
-- `--to` (required)
+- `--from` start of the window (required)
+- `--to` end of the window (required)
 - `--kw` connected load in kilowatts (required)
 - `--duty` share of the day the load ran (required)
 - `--rate` energy rate (required)
-- `--note`
+- `--note` anything worth writing down
 
 ## `estimate settle`
 
@@ -317,10 +317,10 @@ Write down which estimate was used, and who chose it.
 - `--basis` which basis was chosen (required)
 - `--on` find the gap from the findings
 - `--from` or give the period yourself
-- `--to`
+- `--to` end of the window
 - `--settled-on` the day it was settled (required)
 - `--by` who settled it (required)
-- `--note`
+- `--note` anything worth writing down
 
 ## `estimate settled`
 
@@ -335,11 +335,11 @@ Estimates already settled at a point.
 Put a sampling group on the book.
 
 - `--type` catalogue key, repeatable
-- `--class`
-- `--tech`
+- `--class` only this meter class
+- `--tech` only this technology
 - `--form` ANSI form, repeatable
-- `--acquired-from`
-- `--acquired-to`
+- `--acquired-from` earliest delivery day in the group
+- `--acquired-to` latest delivery day in the group
 
 ## `group list`
 
@@ -362,7 +362,7 @@ Judge a season's bench work and set the group's next interval.
 - `--from` start of the season (required)
 - `--to` end of the season (required)
 - `--on` the day the decision is taken (required)
-- `--note`
+- `--note` anything worth writing down
 
 ## `group show`
 
@@ -453,7 +453,7 @@ Everything on one meter, including its run history.
 What the installation at a point registers, and why.
 
 - `--on` the day the set was standing
-- `--pf`
+- `--pf` the load angle to judge at
 
 ## `point add`
 
@@ -461,12 +461,12 @@ What the installation at a point registers, and why.
 
 Put a service point on the book.
 
-- `--account` (required)
-- `--address` (required)
+- `--account` the customer account number (required)
+- `--address` where the service point is (required)
 - `--service` 1P2W, 1P3W, 3P3W, 3P4WY, 3P4WD or NET3W (required)
-- `--volts` (required)
-- `--rate` (required)
-- `--energised` (required)
+- `--volts` the service voltage (required)
+- `--rate` the rate code the point is billed on (required)
+- `--energised` the day the service was energised (required)
 
 ## `point disconnect`
 
@@ -474,7 +474,7 @@ Put a service point on the book.
 
 Close a service point off.
 
-- `--on` (required)
+- `--on` the day to work this out as at (required)
 
 ## `point history`
 
@@ -488,7 +488,7 @@ Every meter that has ever stood at a service point.
 
 List service points.
 
-- `--account`
+- `--account` the customer account number
 - `--on` only points live on this day
 
 ## `point pull`
@@ -497,7 +497,7 @@ List service points.
 
 Pull whatever meter is standing at a service point.
 
-- `--on` (required)
+- `--on` the day to work this out as at (required)
 
 ## `point set`
 
@@ -505,11 +505,11 @@ Pull whatever meter is standing at a service point.
 
 Set a meter at a service point.
 
-- `--ct`
-- `--vt`
-- `--register-multiplier`
+- `--ct` the current transformer serial
+- `--vt` the voltage transformer serial
+- `--register-multiplier` the multiplier stamped on the register
 - `--multiplier` as programmed (required)
-- `--on` (required)
+- `--on` the day to work this out as at (required)
 
 ## `read consumption`
 
@@ -544,8 +544,8 @@ Write a register reading down.
 
 - `--on` the day it was read (required)
 - `--dials` how many dials the register has (required)
-- `--kind`
-- `--note`
+- `--kind` which kind this is
+- `--note` anything worth writing down
 
 ## `repair faults`
 
@@ -561,10 +561,10 @@ Count what went wrong, which is the question a purchase order asks.
 
 List repairs.
 
-- `--meter`
-- `--fault`
-- `--from`
-- `--to`
+- `--meter` only this meter
+- `--fault` only this fault code
+- `--from` start of the window
+- `--to` end of the window
 - `--wasteful` only ones that cost more than a meter
 
 ## `repair record`
@@ -574,11 +574,11 @@ List repairs.
 Write a repair down.
 
 - `--on` the day it was repaired (required)
-- `--by` (required)
+- `--by` who did it (required)
 - `--hours` time on the bench (required)
 - `--parts` what the parts cost
 - `--replacement` what a new meter would cost (required)
-- `--note`
+- `--note` anything worth writing down
 
 ## `repair show`
 
@@ -592,8 +592,8 @@ One repair and what it came to.
 
 What the shop spent on repairs over a window.
 
-- `--from` (required)
-- `--to` (required)
+- `--from` start of the window (required)
+- `--to` end of the window (required)
 
 ## `report bench`
 
@@ -603,8 +603,8 @@ Who benched what, and what came of it.
 
 - `--from` start of the window (required)
 - `--to` end of the window (required)
-- `--format`
-- `--out`
+- `--format` the shape to write it in
+- `--out` write to a file rather than to standard output
 
 ## `report certificates`
 
@@ -614,8 +614,8 @@ Standards, technicians and transformers on one clock.
 
 - `--on` the day to report as at (required)
 - `--warning` days ahead to warn on
-- `--format`
-- `--out`
+- `--format` the shape to write it in
+- `--out` write to a file rather than to standard output
 
 ## `report commission`
 
@@ -625,8 +625,8 @@ The annual filing for the commission.
 
 - `--from` start of the reporting period (required)
 - `--to` end of the reporting period (required)
-- `--format`
-- `--out`
+- `--format` the shape to write it in
+- `--out` write to a file rather than to standard output
 
 ## `report faults`
 
@@ -636,8 +636,8 @@ What breaks, on which types, and what it costs to keep fixing.
 
 - `--from` start of the window (required)
 - `--to` end of the window (required)
-- `--format`
-- `--out`
+- `--format` the shape to write it in
+- `--out` write to a file rather than to standard output
 
 ## `report formats`
 
@@ -652,8 +652,8 @@ The shapes a report can be written in.
 Every point that owes money or is owed it.
 
 - `--on` the day to price the register at (required)
-- `--format`
-- `--out`
+- `--format` the shape to write it in
+- `--out` write to a file rather than to standard output
 
 ## `report shop`
 
@@ -662,8 +662,8 @@ Every point that owes money or is owed it.
 What the shop looks like on a day.
 
 - `--on` the day to report as at (required)
-- `--format`
-- `--out`
+- `--format` the shape to write it in
+- `--out` write to a file rather than to standard output
 
 ## `run delete`
 
@@ -691,11 +691,11 @@ Judge one run and say why.
 
 List runs.
 
-- `--meter`
-- `--bench`
-- `--kind`
-- `--from`
-- `--to`
+- `--meter` only this meter
+- `--bench` only this bench
+- `--kind` which kind this is
+- `--from` start of the window
+- `--to` end of the window
 
 ## `run record`
 
@@ -703,12 +703,12 @@ List runs.
 
 Write a bench run down.
 
-- `--meter` (required)
-- `--bench` (required)
+- `--meter` only this meter (required)
+- `--bench` only this bench (required)
 - `--standard` override the bench standard
-- `--kind`
+- `--kind` which kind this is
 - `--on` the day it was run (required)
-- `--by` (required)
+- `--by` who did it (required)
 - `--badge` the signing technician's badge
 - `--fl` full load registration
 - `--ll` light load registration
@@ -719,7 +719,7 @@ Write a bench run down.
 - `--creep` held or crept
 - `--volts` service voltage if not the nameplate
 - `--interval-seconds` measured demand window
-- `--note`
+- `--note` anything worth writing down
 
 ## `run show`
 
@@ -733,13 +733,13 @@ One run, its points and the verdict it earns today.
 
 Put a reference standard on the book.
 
-- `--maker` (required)
-- `--model` (required)
+- `--maker` who made it (required)
+- `--model` the model code (required)
 - `--certificate` the certificate number (required)
 - `--certified` the day the certificate was issued (required)
 - `--due` the day the certificate runs out (required)
 - `--uncertainty` stated uncertainty in percent (required)
-- `--traceable`
+- `--traceable` what the certificate traces to
 
 ## `standard expired`
 
@@ -775,7 +775,7 @@ Record a new certificate against a standard already on the book.
 
 Close a suspicion without confirming it.
 
-- `--on` (required)
+- `--on` the day to work this out as at (required)
 - `--why` clearing needs a reason (required)
 
 ## `tamper confirm`
@@ -801,9 +801,9 @@ The findings the shop records, and which stop the meter measuring.
 List tamper findings, open suspicions by default.
 
 - `--all` settled ones too
-- `--point`
-- `--from`
-- `--to`
+- `--point` only this service point
+- `--from` start of the window
+- `--to` end of the window
 
 ## `tamper log`
 
@@ -830,7 +830,7 @@ Put a technician on the register.
 - `--grade` bench, polyphase or supervisor (required)
 - `--certified` the day the certification was issued (required)
 - `--due` the day it runs out (required)
-- `--note`
+- `--note` anything worth writing down
 
 ## `tech grades`
 
@@ -844,7 +844,7 @@ The grades and what each one signs.
 
 Certifications that had run out on a day.
 
-- `--on` (required)
+- `--on` the day to work this out as at (required)
 
 ## `tech list`
 
@@ -853,7 +853,7 @@ Certifications that had run out on a day.
 List the register.
 
 - `--on` only those certified on this day
-- `--grade`
+- `--grade` the certification grade
 - `--due-within` days ahead to look
 
 ## `tech may`
@@ -862,8 +862,8 @@ List the register.
 
 Say whether somebody may sign that run on that day, before it is run.
 
-- `--kind`
-- `--on` (required)
+- `--kind` which kind this is
+- `--on` the day to work this out as at (required)
 
 ## `tech recertify`
 
@@ -871,8 +871,8 @@ Say whether somebody may sign that run on that day, before it is run.
 
 Record a new certification against somebody already on the register.
 
-- `--certified` (required)
-- `--due` (required)
+- `--certified` the day the certificate was issued (required)
+- `--due` the day the certificate runs out (required)
 - `--grade` promote at the same time
 
 ## `work assign`
@@ -887,7 +887,7 @@ Put a technician's name on an order.
 
 Close an order without doing it.
 
-- `--on` (required)
+- `--on` the day to work this out as at (required)
 - `--why` cancelling needs a reason (required)
 
 ## `work counts`
@@ -902,7 +902,7 @@ How many orders are in each state.
 
 Close an order with whatever evidence its kind wants.
 
-- `--on` (required)
+- `--on` the day to work this out as at (required)
 - `--run` for a test order
 - `--disposition` for a repair order
 - `--repair` the repair record
@@ -920,8 +920,8 @@ The kinds of order the shop raises, and what closes each.
 List work orders, live ones by default.
 
 - `--all` closed ones too
-- `--meter`
-- `--kind`
+- `--meter` only this meter
+- `--kind` which kind this is
 - `--to` assigned to this technician
 - `--late` only ones late on this day
 
@@ -942,9 +942,9 @@ Work out the test orders the due list calls for.
 Open one work order by hand.
 
 - `--on` the day it was raised (required)
-- `--priority`
-- `--point`
-- `--note`
+- `--priority` how urgent it is
+- `--point` only this service point
+- `--note` anything worth writing down
 
 ## `work show`
 
@@ -959,12 +959,12 @@ One order and everything on it.
 Put an instrument transformer on the book.
 
 - `--kind` current or voltage (required)
-- `--maker` (required)
+- `--maker` who made it (required)
 - `--ratio` marked ratio as a number (required)
 - `--accuracy` 0.3, 0.6 or 1.2 (required)
 - `--rcf` ratio correction factor (required)
-- `--minutes`
-- `--burden`
+- `--minutes` phase angle in minutes
+- `--burden` the burden it was tested at
 - `--tested` the day it was last tested (required)
 
 ## `xfmr check`
@@ -991,10 +991,10 @@ List instrument transformers.
 
 Record a new test against a transformer already on the book.
 
-- `--rcf` (required)
-- `--minutes` (required)
-- `--tested` (required)
-- `--burden`
+- `--rcf` ratio correction factor (required)
+- `--minutes` phase angle in minutes (required)
+- `--tested` the day it was tested (required)
+- `--burden` the burden it was tested at
 
 ## `xfmr where`
 

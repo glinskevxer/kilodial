@@ -24,13 +24,15 @@ def standards() -> None:
 
 @standards.command("add")
 @click.argument("serial")
-@click.option("--maker", required=True)
-@click.option("--model", "model_code", required=True)
+@click.option("--maker", required=True, help="who made it")
+@click.option("--model", "model_code", required=True, help="the model code")
 @click.option("--certificate", required=True, help="the certificate number")
 @click.option("--certified", required=True, help="the day the certificate was issued")
 @click.option("--due", required=True, help="the day the certificate runs out")
 @click.option("--uncertainty", required=True, help="stated uncertainty in percent")
-@click.option("--traceable", default="NIST", show_default=True)
+@click.option(
+    "--traceable", default="NIST", show_default=True, help="what the certificate traces to"
+)
 @pass_context
 def standard_add(
     context: Context,
@@ -143,12 +145,14 @@ def benches() -> None:
 @benches.command("add")
 @click.argument("code")
 @click.argument("name")
-@click.option("--positions", type=int, required=True)
-@click.option("--standard", "standard_serial", required=True)
-@click.option("--max-amps", required=True)
-@click.option("--max-volts", required=True)
-@click.option("--polyphase", is_flag=True)
-@click.option("--installed", required=True)
+@click.option("--positions", type=int, required=True, help="how many meters the bench holds")
+@click.option(
+    "--standard", "standard_serial", required=True, help="the reference standard behind it"
+)
+@click.option("--max-amps", required=True, help="the most current the bench can hold")
+@click.option("--max-volts", required=True, help="the most voltage the bench can hold")
+@click.option("--polyphase", is_flag=True, help="the bench can hold polyphase meters")
+@click.option("--installed", required=True, help="the day it went into service")
 @pass_context
 def bench_add(
     context: Context,
@@ -252,7 +256,7 @@ def bench_day(context: Context, day: str, code: str | None) -> None:
 
 
 @benches.command("capacity")
-@click.option("--on", "day", required=True)
+@click.option("--on", "day", required=True, help="the day to work this out as at")
 @pass_context
 def bench_capacity(context: Context, day: str) -> None:
     """How many positions the shop has on a day, and why any are missing."""

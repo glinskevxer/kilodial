@@ -37,12 +37,12 @@ def points() -> None:
 
 @points.command("add")
 @click.argument("code")
-@click.option("--account", required=True)
-@click.option("--address", required=True)
+@click.option("--account", required=True, help="the customer account number")
+@click.option("--address", required=True, help="where the service point is")
 @click.option("--service", required=True, help="1P2W, 1P3W, 3P3W, 3P4WY, 3P4WD or NET3W")
-@click.option("--volts", required=True)
-@click.option("--rate", "rate_code", required=True)
-@click.option("--energised", required=True)
+@click.option("--volts", required=True, help="the service voltage")
+@click.option("--rate", "rate_code", required=True, help="the rate code the point is billed on")
+@click.option("--energised", required=True, help="the day the service was energised")
 @pass_context
 def point_add(
     context: Context,
@@ -72,7 +72,7 @@ def point_add(
 
 @points.command("disconnect")
 @click.argument("code")
-@click.option("--on", "day", required=True)
+@click.option("--on", "day", required=True, help="the day to work this out as at")
 @pass_context
 def point_disconnect(context: Context, code: str, day: str) -> None:
     """Close a service point off."""
@@ -96,11 +96,16 @@ def point_disconnect(context: Context, code: str, day: str) -> None:
 @points.command("set")
 @click.argument("code")
 @click.argument("meter_serial")
-@click.option("--ct", "ct_serial", default=None)
-@click.option("--vt", "vt_serial", default=None)
-@click.option("--register-multiplier", default="1", show_default=True)
+@click.option("--ct", "ct_serial", default=None, help="the current transformer serial")
+@click.option("--vt", "vt_serial", default=None, help="the voltage transformer serial")
+@click.option(
+    "--register-multiplier",
+    default="1",
+    show_default=True,
+    help="the multiplier stamped on the register",
+)
 @click.option("--multiplier", "programmed_multiplier", required=True, help="as programmed")
-@click.option("--on", "set_on", required=True)
+@click.option("--on", "set_on", required=True, help="the day to work this out as at")
 @pass_context
 def point_set(
     context: Context,
@@ -135,7 +140,7 @@ def point_set(
 
 @points.command("pull")
 @click.argument("code")
-@click.option("--on", "day", required=True)
+@click.option("--on", "day", required=True, help="the day to work this out as at")
 @pass_context
 def point_pull(context: Context, code: str, day: str) -> None:
     """Pull whatever meter is standing at a service point."""
@@ -147,7 +152,7 @@ def point_pull(context: Context, code: str, day: str) -> None:
 
 
 @points.command("list")
-@click.option("--account", default=None)
+@click.option("--account", default=None, help="the customer account number")
 @click.option("--on", "day", default=None, help="only points live on this day")
 @pass_context
 def point_list(context: Context, account: str | None, day: str | None) -> None:
@@ -201,7 +206,9 @@ def point_history(context: Context, code: str) -> None:
 @points.command("accuracy")
 @click.argument("code")
 @click.option("--on", "day", default=None, help="the day the set was standing")
-@click.option("--pf", "power_factor", default="unity", show_default=True)
+@click.option(
+    "--pf", "power_factor", default="unity", show_default=True, help="the load angle to judge at"
+)
 @pass_context
 def point_accuracy(context: Context, code: str, day: str | None, power_factor: str) -> None:
     """What the installation at a point registers, and why."""

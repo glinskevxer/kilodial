@@ -28,8 +28,8 @@ def readings() -> None:
 @click.argument("value", type=int)
 @click.option("--on", "day", required=True, help="the day it was read")
 @click.option("--dials", type=int, required=True, help="how many dials the register has")
-@click.option("--kind", default="actual", show_default=True)
-@click.option("--note", default=None)
+@click.option("--kind", default="actual", show_default=True, help="which kind this is")
+@click.option("--note", default=None, help="anything worth writing down")
 @pass_context
 def reading_take(
     context: Context,

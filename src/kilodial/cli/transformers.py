@@ -52,12 +52,14 @@ def transformers() -> None:
 @transformers.command("add")
 @click.argument("serial")
 @click.option("--kind", required=True, help="current or voltage")
-@click.option("--maker", required=True)
+@click.option("--maker", required=True, help="who made it")
 @click.option("--ratio", "marked_ratio", required=True, help="marked ratio as a number")
 @click.option("--accuracy", required=True, help="0.3, 0.6 or 1.2")
 @click.option("--rcf", required=True, help="ratio correction factor")
-@click.option("--minutes", "phase_minutes", default="0", show_default=True)
-@click.option("--burden", default="B0.1", show_default=True)
+@click.option(
+    "--minutes", "phase_minutes", default="0", show_default=True, help="phase angle in minutes"
+)
+@click.option("--burden", default="B0.1", show_default=True, help="the burden it was tested at")
 @click.option("--tested", required=True, help="the day it was last tested")
 @pass_context
 def transformer_add(
@@ -92,10 +94,10 @@ def transformer_add(
 
 @transformers.command("retest")
 @click.argument("serial")
-@click.option("--rcf", required=True)
-@click.option("--minutes", "phase_minutes", required=True)
-@click.option("--tested", required=True)
-@click.option("--burden", default=None)
+@click.option("--rcf", required=True, help="ratio correction factor")
+@click.option("--minutes", "phase_minutes", required=True, help="phase angle in minutes")
+@click.option("--tested", required=True, help="the day it was tested")
+@click.option("--burden", default=None, help="the burden it was tested at")
 @pass_context
 def transformer_retest(
     context: Context,

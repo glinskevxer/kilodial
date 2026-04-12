@@ -30,11 +30,11 @@ def groups() -> None:
 @click.argument("code")
 @click.argument("name")
 @click.option("--type", "device_keys", multiple=True, help="catalogue key, repeatable")
-@click.option("--class", "class_code", default=None)
-@click.option("--tech", default=None)
+@click.option("--class", "class_code", default=None, help="only this meter class")
+@click.option("--tech", default=None, help="only this technology")
 @click.option("--form", "form_codes", multiple=True, help="ANSI form, repeatable")
-@click.option("--acquired-from", default=None)
-@click.option("--acquired-to", default=None)
+@click.option("--acquired-from", default=None, help="earliest delivery day in the group")
+@click.option("--acquired-to", default=None, help="latest delivery day in the group")
 @pass_context
 def group_add(
     context: Context,
@@ -146,7 +146,7 @@ def group_members(context: Context, code: str) -> None:
 @click.option("--from", "first", required=True, help="start of the season")
 @click.option("--to", "last", required=True, help="end of the season")
 @click.option("--on", "decided", required=True, help="the day the decision is taken")
-@click.option("--note", default=None)
+@click.option("--note", default=None, help="anything worth writing down")
 @pass_context
 def group_sample(
     context: Context, code: str, first: str, last: str, decided: str, note: str | None
@@ -174,7 +174,7 @@ def due() -> None:
 
 @due.command("list")
 @click.option("--on", "day", required=True, help="the day to judge against")
-@click.option("--group", "group_code", default=None)
+@click.option("--group", "group_code", default=None, help="only this sampling group")
 @click.option("--overdue", is_flag=True, help="only meters past their grace period")
 @click.option("--grace", type=int, default=None, help="grace period in days")
 @pass_context
@@ -209,7 +209,7 @@ def due_list(
 
 
 @due.command("counts")
-@click.option("--on", "day", required=True)
+@click.option("--on", "day", required=True, help="the day to work this out as at")
 @pass_context
 def due_counts(context: Context, day: str) -> None:
     """How many meters are current, due and overdue."""
