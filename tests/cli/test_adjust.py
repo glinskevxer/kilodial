@@ -185,7 +185,7 @@ def test_listing_a_window(wired: Invoke) -> None:
 
 def test_removing_a_billing_period(wired: Invoke) -> None:
     bill(wired, 1)
-    wired("bill", "remove", "SP-1042", "2025-01-01")
+    wired("bill", "remove", "SP-1042", "2025-01-01", "--yes")
     assert "$100.00" not in wired("bill", "list", "SP-1042").output
 
 

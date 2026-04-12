@@ -237,3 +237,37 @@ def test_due_counts(shop: Invoke) -> None:
     result = shop("due", "counts", "--on", "2025-01-01")
     assert "overdue" in result.output
     assert "ungrouped" in result.output
+
+
+def test_deleting_a_group(shop: Invoke) -> None:
+    result = shop("group", "delete", "G1", "--yes")
+    assert "G1 deleted with 0 decisions" in result.output
+    assert "G1" not in shop("group", "list").output
+
+
+def test_deleting_a_group_takes_its_decisions(shop: Invoke) -> None:
+    for n in range(5):
+        serial = f"84-11930{n}"
+        stock(shop, serial)
+        bench(shop, f"TR-{n}", serial, "2025-03-04")
+    shop(
+        "group", "sample", "G1", "--from", "2025-01-01", "--to", "2025-06-30", "--on", "2025-06-30"
+    )
+    result = shop("group", "delete", "G1", "--yes")
+    assert "1 decisions" in result.output
+
+
+def test_deleting_without_confirming(shop: Invoke) -> None:
+    result = shop("group", "delete", "G1", expect=1)
+    assert "G1" in shop("group", "list").output
+    assert result.exit_code == 1
+
+
+def test_deleting_a_group_nobody_has(shop: Invoke) -> None:
+    result = shop("group", "delete", "G9", "--yes", expect=2)
+    assert "no sampling group" in result.output
+
+
+def test_a_deleted_group_leaves_a_line_in_the_log(shop: Invoke) -> None:
+    shop("group", "delete", "G1", "--yes")
+    assert "deleted" in shop("book", "history").output

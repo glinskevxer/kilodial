@@ -66,6 +66,7 @@ class ShopGroup(click.Group):
     "book_path",
     default=DEFAULT_BOOK,
     show_default=True,
+    envvar="KILODIAL_BOOK",
     type=click.Path(dir_okay=False, path_type=Path),
     help="the sqlite book to work on",
 )
@@ -161,6 +162,7 @@ def book_export(context: Context, out: Path | None) -> None:
 
 @book.command("restore")
 @click.argument("path", type=click.Path(exists=True, dir_okay=False, path_type=Path))
+@click.confirmation_option(prompt="load a dump into this book?")
 @pass_context
 def book_restore(context: Context, path: Path) -> None:
     """Load a json dump into an empty book."""

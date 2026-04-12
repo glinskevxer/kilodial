@@ -74,6 +74,7 @@ def bill_list(context: Context, point_code: str, first: str | None, last: str | 
 @bills.command("remove")
 @click.argument("point_code")
 @click.argument("first_day")
+@click.confirmation_option(prompt="take that billing period off the book?")
 @pass_context
 def bill_remove(context: Context, point_code: str, first_day: str) -> None:
     """Take one billing period back off the book."""

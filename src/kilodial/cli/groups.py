@@ -127,6 +127,21 @@ def group_show(context: Context, code: str) -> None:
         click.echo(line)
 
 
+@groups.command("delete")
+@click.argument("code")
+@click.confirmation_option(prompt="delete the group and every sample decision on it?")
+@pass_context
+def group_delete(context: Context, code: str) -> None:
+    """Take a sampling group and its decisions off the book."""
+    shop = context.open()
+    group = shop.groups.get(code)
+    decisions = len(shop.plans.history(group.code))
+    with shop.transaction():
+        shop.groups.delete(group.code)
+        context.log("deleted", f"group {group.code}", f"{decisions} decisions")
+    context.say(f"{group.code} deleted with {decisions} decisions")
+
+
 @groups.command("members")
 @click.argument("code")
 @pass_context

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
 from click.testing import CliRunner
 
 from kilodial import __version__
@@ -63,3 +64,22 @@ def test_book_audit_on_a_fresh_book(started: Invoke) -> None:
 def test_quiet_says_nothing(invoke: Invoke) -> None:
     result = invoke("--quiet", "init")
     assert result.output == ""
+
+
+def test_the_book_can_come_from_the_environment(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    book = tmp_path / "fromenv.sqlite3"
+    monkeypatch.setenv("KILODIAL_BOOK", str(book))
+    result = CliRunner().invoke(cli, ["init"])
+    assert result.exit_code == 0
+    assert book.exists()
+
+
+def test_the_flag_beats_the_environment(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("KILODIAL_BOOK", str(tmp_path / "env.sqlite3"))
+    named = tmp_path / "named.sqlite3"
+    result = CliRunner().invoke(cli, ["--book", str(named), "init"])
+    assert result.exit_code == 0
+    assert named.exists()
+    assert not (tmp_path / "env.sqlite3").exists()

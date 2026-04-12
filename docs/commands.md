@@ -105,6 +105,8 @@ List a point's billed history.
 
 Take one billing period back off the book.
 
+- `--yes` Confirm the action without prompting.
+
 ## `book audit`
 
     kilodial book audit
@@ -142,6 +144,8 @@ What has been done to the book, oldest first.
     kilodial book restore PATH
 
 Load a json dump into an empty book.
+
+- `--yes` Confirm the action without prompting.
 
 ## `book summary`
 
@@ -340,6 +344,14 @@ Put a sampling group on the book.
 - `--form` ANSI form, repeatable
 - `--acquired-from` earliest delivery day in the group
 - `--acquired-to` latest delivery day in the group
+
+## `group delete`
+
+    kilodial group delete CODE
+
+Take a sampling group and its decisions off the book.
+
+- `--yes` Confirm the action without prompting.
 
 ## `group list`
 
