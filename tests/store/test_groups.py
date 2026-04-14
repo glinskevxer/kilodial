@@ -207,3 +207,10 @@ def test_deleting_a_group_takes_its_decisions(
     plans.record(decide("G1", tight_sample(), on="2025-06-30", current_months=48))  # type: ignore[arg-type]
     groups.delete("G1")
     assert plans.count() == 0
+
+
+def test_a_grace_period_survives_a_round_trip(groups: GroupRepository) -> None:
+    groups.add(Group.build("G1", "commercial", grace_days=14))
+    assert groups.get("G1").grace_days == 14
+    groups.save(Group.build("G1", "commercial", grace_days=None))
+    assert groups.get("G1").grace_days is None

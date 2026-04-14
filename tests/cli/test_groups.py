@@ -271,3 +271,9 @@ def test_deleting_a_group_nobody_has(shop: Invoke) -> None:
 def test_a_deleted_group_leaves_a_line_in_the_log(shop: Invoke) -> None:
     shop("group", "delete", "G1", "--yes")
     assert "deleted" in shop("book", "history").output
+
+
+def test_a_group_can_be_given_its_own_grace_period(shop: Invoke) -> None:
+    shop("group", "add", "G2", "commercial", "--grace", "14")
+    assert "14 days" in shop("group", "show", "G2").output
+    assert "the programme's" in shop("group", "show", "G1").output

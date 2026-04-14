@@ -344,6 +344,7 @@ Put a sampling group on the book.
 - `--form` ANSI form, repeatable
 - `--acquired-from` earliest delivery day in the group
 - `--acquired-to` latest delivery day in the group
+- `--grace` days past due before this group's meters are overdue
 
 ## `group delete`
 

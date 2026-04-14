@@ -35,6 +35,13 @@ def groups() -> None:
 @click.option("--form", "form_codes", multiple=True, help="ANSI form, repeatable")
 @click.option("--acquired-from", default=None, help="earliest delivery day in the group")
 @click.option("--acquired-to", default=None, help="latest delivery day in the group")
+@click.option(
+    "--grace",
+    "grace_days",
+    type=int,
+    default=None,
+    help="days past due before this group's meters are overdue",
+)
 @pass_context
 def group_add(
     context: Context,
@@ -46,6 +53,7 @@ def group_add(
     form_codes: tuple[str, ...],
     acquired_from: str | None,
     acquired_to: str | None,
+    grace_days: int | None,
 ) -> None:
     """Put a sampling group on the book."""
     shop = context.open()
@@ -58,6 +66,7 @@ def group_add(
         form_codes=list(form_codes),
         acquired_from=acquired_from,
         acquired_to=acquired_to,
+        grace_days=grace_days,
     )
     with shop.transaction():
         shop.groups.add(group)
@@ -101,6 +110,7 @@ def group_show(context: Context, code: str) -> None:
         ("population", str(population)),
         ("sample needed", str(required(population))),
         ("interval", f"{shop.plans.interval(group.code)} months"),
+        ("grace", "the programme's" if group.grace_days is None else f"{group.grace_days} days"),
         ("next due", or_dash(shop.plans.next_due(group.code))),
     ]
     for line in pairs(detail):

@@ -351,6 +351,7 @@ def group_row(group: Group) -> Row:
         " ".join(group.form_codes),
         _maybe_date(group.acquired_from),
         _maybe_date(group.acquired_to),
+        group.grace_days,
     )
 
 
@@ -365,6 +366,7 @@ def read_group(row: Row) -> Group:
         form_codes=tuple(str(row[5]).split()),
         acquired_from=None if row[6] is None else parse_date(str(row[6])),
         acquired_to=None if row[7] is None else parse_date(str(row[7])),
+        grace_days=None if len(row) < 9 or row[8] is None else int(str(row[8])),
     )
 
 

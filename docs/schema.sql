@@ -1,6 +1,6 @@
 -- kilodial schema, built from the migrations. Do not edit by hand.
 -- Rebuild with: python -m kilodial.tools.schema_dump
--- Migrations applied: 16 (latest 16)
+-- Migrations applied: 17 (latest 17)
 
 CREATE TABLE bench (
             code             TEXT PRIMARY KEY,
@@ -180,7 +180,7 @@ CREATE TABLE sample_group (
             form_codes     TEXT NOT NULL DEFAULT '',
             acquired_from  TEXT,
             acquired_to    TEXT
-        );
+        , grace_days INTEGER);
 
 CREATE TABLE schema_migration (
     number      INTEGER PRIMARY KEY,

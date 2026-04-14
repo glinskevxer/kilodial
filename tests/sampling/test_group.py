@@ -142,3 +142,15 @@ def test_bad_group_names(bad: object) -> None:
 def test_str_names_the_group() -> None:
     assert str(Group.build("g1", "Halvern R4S")) == "G1 Halvern R4S"
     assert Group.build("G2", "x", class_code=MeterClass.CL200).meter_class is MeterClass.CL200
+
+
+def test_a_group_can_carry_its_own_grace_period() -> None:
+    assert Group.build("G1", "x").grace_days is None
+    assert Group.build("G1", "x", grace_days=30).grace_days == 30
+    assert Group.build("G1", "x", grace_days=0).grace_days == 0
+
+
+@pytest.mark.parametrize("bad", ["30", 30.0, True, -1, 400])
+def test_a_grace_period_that_is_not_one(bad: object) -> None:
+    with pytest.raises((BadInputError, RuleError)):
+        Group.build("G1", "x", grace_days=bad)

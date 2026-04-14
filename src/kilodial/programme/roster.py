@@ -13,6 +13,10 @@ falling into two groups is a criteria problem for the group report to raise, not
 something to be resolved silently here by picking the tighter interval, because
 picking one quietly means nobody ever fixes the overlap.
 
+A group can carry its own grace period and it wins over the roster's. The
+roster's number is the shop's default; a group's is a decision about that
+population, and a decision beats a default.
+
 A meter in no group at all is still on the list. It goes on at the bottom
 interval, which is the shortest, so an ungrouped meter is tested too often
 rather than never. That is the right way round to be wrong.
@@ -93,6 +97,20 @@ def group_of(shop: Shop, meter: Meter) -> str:
     return found[0].code if found else UNGROUPED
 
 
+def grace_for(shop: Shop, code: str, fallback: int) -> int:
+    """The grace period a group runs on, or the programme's own.
+
+    A group can name its own, and when it does it wins over the number passed
+    into the roster. That is the right way round: the caller's number is the
+    shop's default and the group's is a decision somebody made about that
+    population.
+    """
+    if code == UNGROUPED:
+        return fallback
+    group = shop.groups.get(code)
+    return fallback if group.grace_days is None else group.grace_days
+
+
 def build(shop: Shop, *, on: object, grace_days: int = GRACE_DAYS) -> Roster:
     """Assemble the due list as it stands on a day."""
     lines: list[DueMeter] = []
@@ -109,11 +127,19 @@ def build(shop: Shop, *, on: object, grace_days: int = GRACE_DAYS) -> Roster:
                 acquired=meter.acquired,
                 last_run=clock_start(shop, meter.serial),
                 on=on,
-                grace_days=grace_days,
+                grace_days=grace_for(shop, code, grace_days),
             )
         )
     lines.sort(key=lambda line: (line.due, line.serial))
     return Roster(tuple(lines))
 
 
-__all__ = ["OUT_OF_PROGRAMME", "UNGROUPED", "Roster", "build", "clock_start", "group_of"]
+__all__ = [
+    "OUT_OF_PROGRAMME",
+    "UNGROUPED",
+    "Roster",
+    "build",
+    "clock_start",
+    "grace_for",
+    "group_of",
+]

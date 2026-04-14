@@ -393,6 +393,11 @@ MIGRATIONS: tuple[Migration, ...] = (
         """,
         "CREATE INDEX estimate_by_point ON estimate (point_code, first_day)",
     ),
+    _m(
+        17,
+        "a grace period per group",
+        "ALTER TABLE sample_group ADD COLUMN grace_days INTEGER",
+    ),
 )
 
 

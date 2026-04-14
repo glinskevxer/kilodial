@@ -45,6 +45,7 @@ class Group:
     form_codes: tuple[str, ...]
     acquired_from: date | None
     acquired_to: date | None
+    grace_days: int | None
 
     @classmethod
     def build(
@@ -58,6 +59,7 @@ class Group:
         form_codes: list[str] | None = None,
         acquired_from: object = None,
         acquired_to: object = None,
+        grace_days: object = None,
     ) -> Group:
         first = None if acquired_from is None else parse_date(acquired_from)
         last = None if acquired_to is None else parse_date(acquired_to)
@@ -74,6 +76,7 @@ class Group:
             form_codes=tuple(sorted({f.strip().upper() for f in form_codes or [] if f.strip()})),
             acquired_from=first,
             acquired_to=last,
+            grace_days=_grace(grace_days),
         )
 
     @property
@@ -142,6 +145,26 @@ class Group:
 
     def __str__(self) -> str:
         return f"{self.code} {self.name}"
+
+
+def _grace(value: object) -> int | None:
+    """How long past due this group's meters may run before they are overdue.
+
+    Left out on most groups, which then take the programme's own grace period.
+    Named on the ones where it matters: a group of large commercial services is
+    a group where a month of running past due is a month of a large bill nobody
+    can defend, and the shop chases those on a shorter clock than it chases
+    residential meters.
+    """
+    if value is None:
+        return None
+    if not isinstance(value, int) or isinstance(value, bool):
+        raise BadInputError("a grace period is a whole number of days")
+    if value < 0:
+        raise BadInputError("a grace period cannot be negative")
+    if value > 365:
+        raise RuleError("a grace period of over a year is not a grace period")
+    return value
 
 
 __all__ = ["OUT_OF_POPULATION", "Group"]

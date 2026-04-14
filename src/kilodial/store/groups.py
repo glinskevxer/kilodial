@@ -27,7 +27,8 @@ from kilodial.store.meters import MeterRepository
 from kilodial.units.span import parse_date
 
 GROUP_COLUMNS = (
-    "code, name, device_keys, class_code, technology, form_codes, acquired_from, acquired_to"
+    "code, name, device_keys, class_code, technology, form_codes, acquired_from, "
+    "acquired_to, grace_days"
 )
 PLAN_COLUMNS = (
     "group_code, decided_on, interval_months, population, tested, mean, deviation, "
@@ -47,7 +48,7 @@ class GroupRepository:
         if self.exists(group.code):
             raise DuplicateError("sampling group", group.code)
         self._conn.execute(
-            f"INSERT INTO sample_group ({GROUP_COLUMNS}) VALUES ({', '.join('?' * 8)})",
+            f"INSERT INTO sample_group ({GROUP_COLUMNS}) VALUES ({', '.join('?' * 9)})",
             group_row(group),
         )
         return group
@@ -58,8 +59,8 @@ class GroupRepository:
         row = group_row(group)
         self._conn.execute(
             "UPDATE sample_group SET name = ?, device_keys = ?, class_code = ?, "
-            "technology = ?, form_codes = ?, acquired_from = ?, acquired_to = ? "
-            "WHERE code = ?",
+            "technology = ?, form_codes = ?, acquired_from = ?, acquired_to = ?, "
+            "grace_days = ? WHERE code = ?",
             (*row[1:], row[0]),
         )
         return group

@@ -10,6 +10,7 @@ from kilodial.model.device import DeviceType
 from kilodial.model.form import Technology
 from kilodial.model.meter import Meter, MeterState
 from kilodial.model.run import BenchPoint, BenchRun, RunKind
+from kilodial.programme import roster
 from kilodial.programme.roster import UNGROUPED, build, clock_start, group_of
 from kilodial.programme.schedule import DueState
 from kilodial.sampling.decision import decide
@@ -181,3 +182,26 @@ def test_the_grace_period_moves_the_boundary(shop: Shop) -> None:
     record(shop, "TR-1", "84-119302", "2021-01-01")
     assert build(shop, on="2025-02-01").due()
     assert build(shop, on="2025-02-01", grace_days=0).overdue()
+
+
+def test_a_group_grace_period_beats_the_rosters(shop: Shop) -> None:
+    shop.groups.add(Group.build("G1", "Halvern", device_keys=["Halvern/R4S"], grace_days=0))
+    stock(shop, "84-119302")
+    record(shop, "TR-1", "84-119302", "2021-01-15")
+    assert roster.grace_for(shop, "G1", 90) == 0
+    assert build(shop, on="2025-02-01").overdue()
+    assert build(shop, on="2025-02-01", grace_days=200).overdue()
+
+
+def test_a_group_with_no_grace_period_takes_the_rosters(shop: Shop) -> None:
+    shop.groups.add(Group.build("G1", "Halvern", device_keys=["Halvern/R4S"]))
+    stock(shop, "84-119302")
+    record(shop, "TR-1", "84-119302", "2021-01-15")
+    assert roster.grace_for(shop, "G1", 90) == 90
+    assert build(shop, on="2025-02-01").due()
+    assert build(shop, on="2025-02-01", grace_days=0).overdue()
+
+
+def test_an_ungrouped_meter_takes_the_rosters(shop: Shop) -> None:
+    stock(shop, "84-119302")
+    assert roster.grace_for(shop, UNGROUPED, 90) == 90
