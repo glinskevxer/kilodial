@@ -119,6 +119,14 @@ Report every record that points at something that is not there.
 
 Report anything structurally wrong with the book.
 
+## `book compact`
+
+    kilodial book compact
+
+Rewrite the book without its free pages.
+
+- `--yes` Confirm the action without prompting.
+
 ## `book export`
 
     kilodial book export
@@ -146,6 +154,12 @@ What has been done to the book, oldest first.
 Load a json dump into an empty book.
 
 - `--yes` Confirm the action without prompting.
+
+## `book size`
+
+    kilodial book size
+
+How big the book is and how much of it is free space.
 
 ## `book summary`
 

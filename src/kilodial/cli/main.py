@@ -139,6 +139,25 @@ def book_audit(context: Context) -> None:
     raise SystemExit(1)
 
 
+@book.command("size")
+@pass_context
+def book_size(context: Context) -> None:
+    """How big the book is and how much of it is free space."""
+    shop = context.open()
+    for name, value in shop.book.size().items():
+        click.echo(f"{name:<12}{value:>12}")
+
+
+@book.command("compact")
+@click.confirmation_option(prompt="rewrite the book without its free pages?")
+@pass_context
+def book_compact(context: Context) -> None:
+    """Rewrite the book without its free pages."""
+    shop = context.open()
+    found = shop.book.compact()
+    context.say(f"{found['before']} bytes to {found['after']}, saved {found['saved']}")
+
+
 @book.command("export")
 @click.option(
     "--out",

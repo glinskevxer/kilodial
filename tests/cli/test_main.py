@@ -83,3 +83,18 @@ def test_the_flag_beats_the_environment(tmp_path: Path, monkeypatch: pytest.Monk
     assert result.exit_code == 0
     assert named.exists()
     assert not (tmp_path / "env.sqlite3").exists()
+
+
+def test_the_size_command(started: Invoke) -> None:
+    result = started("book", "size")
+    assert "pages" in result.output
+    assert "page size" in result.output
+
+
+def test_the_compact_command(started: Invoke) -> None:
+    result = started("book", "compact", "--yes")
+    assert "bytes to" in result.output
+
+
+def test_compacting_without_confirming(started: Invoke) -> None:
+    started("book", "compact", expect=1)

@@ -131,3 +131,43 @@ def test_a_transaction_rolls_back_when_the_commit_itself_fails(book: Book) -> No
         load_out_of_order()
     assert book.connection.execute("SELECT COUNT(*) FROM bench_point").fetchone()[0] == 0
     assert book.connection.execute("SELECT COUNT(*) FROM meter").fetchone()[0] == 0
+
+
+def test_the_size_of_a_book(book: Book) -> None:
+    found = book.size()
+    assert found["pages"] > 0
+    assert found["page size"] > 0
+    assert found["bytes"] == found["pages"] * found["page size"]
+    assert found["wasted"] == found["free pages"] * found["page size"]
+
+
+def test_compacting_a_book_with_nothing_to_reclaim(book: Book) -> None:
+    found = book.compact()
+    assert found["saved"] >= 0
+    assert found["after"] > 0
+
+
+def test_compacting_reclaims_what_deletions_left(book: Book) -> None:
+    rows = [(f"84-{index:06d}", "a/b", "stock", "2015-01-01", "utility") for index in range(4000)]
+    book.connection.executemany(
+        "INSERT INTO meter (serial, device_key, state, acquired, owner) VALUES (?, ?, ?, ?, ?)",
+        rows,
+    )
+    book.connection.execute("DELETE FROM meter")
+    assert book.size()["free pages"] > 0
+    found = book.compact()
+    assert found["saved"] > 0
+    assert book.size()["free pages"] == 0
+
+
+def test_compacting_inside_a_transaction_is_refused(book: Book) -> None:
+    def compact_mid_write() -> None:
+        with book.transaction() as conn:
+            conn.execute(
+                "INSERT INTO meter (serial, device_key, state, acquired, owner) "
+                "VALUES ('84-119302', 'a/b', 'stock', '2025-01-01', 'utility')"
+            )
+            book.compact()
+
+    with pytest.raises(ConfigError, match="transaction open"):
+        compact_mid_write()

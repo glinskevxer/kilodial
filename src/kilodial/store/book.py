@@ -128,6 +128,44 @@ class Book:
             ran.append(migration.number)
         return ran
 
+    def size(self) -> dict[str, int]:
+        """How big the book is, in the numbers that decide whether to compact it.
+
+        ``free`` is the pages sqlite is holding onto after deletions. A book
+        with a lot of them is not broken and is not getting slower in any way a
+        person would notice; it is just larger on disk than it needs to be,
+        which matters when it is being emailed to a regulator.
+        """
+        pages = int(self._connection.execute("PRAGMA page_count").fetchone()[0])
+        free = int(self._connection.execute("PRAGMA freelist_count").fetchone()[0])
+        page = int(self._connection.execute("PRAGMA page_size").fetchone()[0])
+        return {
+            "pages": pages,
+            "free pages": free,
+            "page size": page,
+            "bytes": pages * page,
+            "wasted": free * page,
+        }
+
+    def compact(self) -> dict[str, int]:
+        """Rewrite the file without its free pages, returning what it saved.
+
+        VACUUM cannot run inside a transaction, and this package holds one open
+        for almost every write, so this closes nothing and simply refuses when
+        one is in flight rather than producing sqlite's own error, which does
+        not say what to do about it.
+        """
+        if self._connection.in_transaction:
+            raise ConfigError("a book cannot be compacted with a transaction open")
+        before = self.size()
+        self._connection.execute("VACUUM")
+        after = self.size()
+        return {
+            "before": before["bytes"],
+            "after": after["bytes"],
+            "saved": before["bytes"] - after["bytes"],
+        }
+
     def check(self) -> list[str]:
         """Everything wrong with the book as it stands."""
         faults: list[str] = []
