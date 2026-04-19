@@ -153,3 +153,10 @@ def test_the_bench_report(stocked: Invoke) -> None:
     result = stocked("report", "bench", "--from", "2025-01-01", "--to", "2025-12-31")
     assert "Bench report" in result.output
     assert "By run kind" in result.output
+
+
+def test_the_report_list(stocked: Invoke) -> None:
+    result = stocked("report", "list")
+    assert "commission" in result.output
+    assert "answers" in result.output
+    assert "take --from and --to" in result.output

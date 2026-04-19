@@ -672,6 +672,12 @@ What breaks, on which types, and what it costs to keep fixing.
 
 The shapes a report can be written in.
 
+## `report list`
+
+    kilodial report list
+
+Every report there is and what question it answers.
+
 ## `report register`
 
     kilodial report register

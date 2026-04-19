@@ -16,9 +16,10 @@ from typing import Any, TypeVar
 import click
 
 from kilodial.cli.context import Context, pass_context
-from kilodial.report import bench, certifications, commission, faults, register
+from kilodial.report import bench, catalogue, certifications, commission, faults, register
 from kilodial.report import shop as shop_report
 from kilodial.report.document import Document
+from kilodial.report.layout import table
 
 FORMATS = ("text", "json", "csv")
 
@@ -165,6 +166,17 @@ def report_certificates(
         else certifications.build(shop, on=day, warning=warning)
     )
     emit(context, doc, shape, out)
+
+
+@reports.command("list")
+def report_list() -> None:
+    """Every report there is and what question it answers."""
+    rows = [entry.row() for entry in catalogue.CATALOGUE]
+    for line in table(["report", "takes", "answers"], rows):
+        click.echo(line)
+    over, at = catalogue.by_period()
+    click.echo("")
+    click.echo(f"{len(over)} take --from and --to, {len(at)} take --on")
 
 
 @reports.command("formats")
