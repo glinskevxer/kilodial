@@ -1,0 +1,51 @@
+{
+  "sections": [
+    {
+      "facts": {
+        "current": "3",
+        "due": "0",
+        "lapsed": "0",
+        "tracked": "3",
+        "warning window": "90 days"
+      },
+      "notes": [],
+      "rows": [
+        {
+          "days left": "1631",
+          "detail": "R Ellis, supervisor",
+          "expires": "2030-01-01",
+          "kind": "technician",
+          "reference": "T-441",
+          "standing": "current"
+        },
+        {
+          "days left": "1751",
+          "detail": "current, class 0.3",
+          "expires": "2030-05-01",
+          "kind": "transformer",
+          "reference": "CT-8841",
+          "standing": "current"
+        },
+        {
+          "days left": "3457",
+          "detail": "Radian RD-23, NVLAP-88214",
+          "expires": "2035-01-01",
+          "kind": "standard",
+          "reference": "RS-5511",
+          "standing": "current"
+        }
+      ],
+      "title": "Certificates"
+    },
+    {
+      "facts": {
+        "test interval": "96 months"
+      },
+      "notes": [
+        "a transformer test does not expire on a date, so its due day is worked out from the shop's own interval"
+      ],
+      "title": "Transformer policy"
+    }
+  ],
+  "title": "Certification report as at 2025-07-15"
+}

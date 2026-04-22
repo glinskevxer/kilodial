@@ -1,0 +1,64 @@
+{
+  "sections": [
+    {
+      "facts": {
+        "meters": "1",
+        "not worth doing": "0",
+        "repairs": "1",
+        "spent": "$80.40",
+        "types": "1"
+      },
+      "notes": [
+        "Halvern/R4S is the worst at 100.0 repairs per hundred meters, mostly bearing"
+      ],
+      "rows": [
+        {
+          "a meter": "$80.40",
+          "commonest fault": "bearing",
+          "meters": "1",
+          "not worth it": "0",
+          "per hundred": "100.0",
+          "repairs": "1",
+          "spent": "$80.40",
+          "type": "Halvern/R4S"
+        }
+      ],
+      "title": "By type"
+    },
+    {
+      "facts": {},
+      "notes": [
+        "a type whose failures are mostly electronic is a different purchasing decision from one whose failures are mostly bearings"
+      ],
+      "rows": [
+        {
+          "family": "electrical",
+          "percent": "0.0",
+          "repairs": "0"
+        },
+        {
+          "family": "electronic",
+          "percent": "0.0",
+          "repairs": "0"
+        },
+        {
+          "family": "enclosure",
+          "percent": "0.0",
+          "repairs": "0"
+        },
+        {
+          "family": "mechanical",
+          "percent": "100.0",
+          "repairs": "1"
+        },
+        {
+          "family": "none",
+          "percent": "0.0",
+          "repairs": "0"
+        }
+      ],
+      "title": "By family"
+    }
+  ],
+  "title": "Fault report, 2025-01-01 to 2025-12-31"
+}

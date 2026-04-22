@@ -1,0 +1,154 @@
+{
+  "sections": [
+    {
+      "facts": {
+        "benches": "1",
+        "billed months": "12",
+        "complaints": "0",
+        "device types": "1",
+        "estimates": "0",
+        "events": "0",
+        "groups": "1",
+        "meter sets": "1",
+        "meters": "1",
+        "readings": "0",
+        "repairs": "1",
+        "runs": "1",
+        "sample decisions": "0",
+        "service points": "1",
+        "standards": "1",
+        "tamper findings": "0",
+        "technicians": "1",
+        "transformers": "1",
+        "work orders": "0"
+      },
+      "notes": [],
+      "title": "Overview"
+    },
+    {
+      "facts": {},
+      "notes": [],
+      "rows": [
+        {
+          "meters": "1",
+          "state": "received"
+        },
+        {
+          "meters": "0",
+          "state": "stock"
+        },
+        {
+          "meters": "0",
+          "state": "set"
+        },
+        {
+          "meters": "0",
+          "state": "pulled"
+        },
+        {
+          "meters": "0",
+          "state": "repair"
+        },
+        {
+          "meters": "0",
+          "state": "scrap"
+        },
+        {
+          "meters": "0",
+          "state": "lost"
+        }
+      ],
+      "title": "Fleet"
+    },
+    {
+      "facts": {
+        "unusable": "0"
+      },
+      "notes": [],
+      "rows": [
+        {
+          "failed": "0",
+          "kind": "acceptance",
+          "passed": "0",
+          "suspect": "0",
+          "void": "0"
+        },
+        {
+          "failed": "1",
+          "kind": "as found",
+          "passed": "0",
+          "suspect": "0",
+          "void": "0"
+        },
+        {
+          "failed": "0",
+          "kind": "as left",
+          "passed": "0",
+          "suspect": "0",
+          "void": "0"
+        },
+        {
+          "failed": "0",
+          "kind": "referee",
+          "passed": "0",
+          "suspect": "0",
+          "void": "0"
+        }
+      ],
+      "title": "Bench runs"
+    },
+    {
+      "facts": {
+        "expired": "0"
+      },
+      "notes": [],
+      "rows": [
+        {
+          "certificate": "NVLAP-88214",
+          "days left": "3457",
+          "due": "2035-01-01",
+          "standard": "RS-5511",
+          "state": "current"
+        }
+      ],
+      "title": "Reference standards"
+    },
+    {
+      "facts": {
+        "current": "1",
+        "due": "0",
+        "overdue": "0",
+        "ungrouped": "0"
+      },
+      "notes": [],
+      "title": "Periodic programme"
+    },
+    {
+      "facts": {
+        "assigned": "0",
+        "cancelled": "0",
+        "done": "0",
+        "late": "0",
+        "open": "0"
+      },
+      "notes": [],
+      "title": "Work orders"
+    },
+    {
+      "facts": {
+        "open": "0",
+        "past their deadline": "0"
+      },
+      "notes": [],
+      "title": "Customer requests"
+    },
+    {
+      "facts": {
+        "faults": "0"
+      },
+      "notes": [],
+      "title": "Book"
+    }
+  ],
+  "title": "Meter shop report as at 2025-07-15"
+}

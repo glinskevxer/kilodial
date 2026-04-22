@@ -1,0 +1,22 @@
+Bench report, 2025-01-01 to 2025-12-31
+======================================
+
+By technician
+=============
+technicians    1
+runs           1
+void           0
+unsigned runs  0
+
+technician  badge  runs  passed  failed  void  suspect  void rate
+----------  -----  ----  ------  ------  ----  -------  ---------
+R Ellis     T-441     1       0       1     0        0        0.0
+
+By run kind
+===========
+kind        runs
+----------  ----
+acceptance     0
+as found       1
+as left        0
+referee        0

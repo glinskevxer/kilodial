@@ -1,0 +1,26 @@
+Commission meter test report, 2025-01-01 to 2025-12-31
+======================================================
+
+Groups
+======
+groups                        1
+meters in groups              1
+meters tested                 1
+outside tolerance             1
+groups short of their sample  0
+
+group  name         in service  sample needed  tested  percent tested  inside  fast  slow  interval  sample met
+-----  -----------  ----------  -------------  ------  --------------  ------  ----  ----  --------  ----------
+G1     Halvern R4S           1              1       1          100.00       0     1     0        48  yes
+
+Outside every group
+===================
+meters  0
+
+Customer requested tests
+========================
+requested                       0
+answered                        0
+meters found outside tolerance  0
+answered past the deadline      0
+still open from the period      0

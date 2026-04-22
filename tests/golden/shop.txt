@@ -1,0 +1,79 @@
+Meter shop report as at 2025-07-15
+==================================
+
+Overview
+========
+device types      1
+meters            1
+standards         1
+benches           1
+runs              1
+transformers      1
+service points    1
+meter sets        1
+groups            1
+sample decisions  0
+billed months     12
+complaints        0
+work orders       0
+technicians       1
+tamper findings   0
+repairs           1
+events            0
+readings          0
+estimates         0
+
+Fleet
+=====
+state     meters
+--------  ------
+received       1
+stock          0
+set            0
+pulled         0
+repair         0
+scrap          0
+lost           0
+
+Bench runs
+==========
+unusable  0
+
+kind        passed  failed  void  suspect
+----------  ------  ------  ----  -------
+acceptance       0       0     0        0
+as found         0       1     0        0
+as left          0       0     0        0
+referee          0       0     0        0
+
+Reference standards
+===================
+expired  0
+
+standard  certificate  due         days left  state
+--------  -----------  ----------  ---------  -------
+RS-5511   NVLAP-88214  2035-01-01       3457  current
+
+Periodic programme
+==================
+current    1
+due        0
+overdue    0
+ungrouped  0
+
+Work orders
+===========
+open       0
+assigned   0
+done       0
+cancelled  0
+late       0
+
+Customer requests
+=================
+open                 0
+past their deadline  0
+
+Book
+====
+faults  0

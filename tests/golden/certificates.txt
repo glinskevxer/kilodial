@@ -1,0 +1,22 @@
+Certification report as at 2025-07-15
+=====================================
+
+Certificates
+============
+tracked         3
+current         3
+due             0
+lapsed          0
+warning window  90 days
+
+kind         reference  detail                     expires     days left  standing
+-----------  ---------  -------------------------  ----------  ---------  --------
+technician   T-441      R Ellis, supervisor        2030-01-01       1631  current
+transformer  CT-8841    current, class 0.3         2030-05-01       1751  current
+standard     RS-5511    Radian RD-23, NVLAP-88214  2035-01-01       3457  current
+
+Transformer policy
+==================
+test interval  96 months
+
+a transformer test does not expire on a date, so its due day is worked out from the shop's own interval

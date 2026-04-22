@@ -1,0 +1,26 @@
+Adjustment register as at 2025-07-15
+====================================
+
+Priced
+======
+adjustments          1
+refunds              1
+back bills           0
+owed to customers    $17.97
+owed to the utility  $0.00
+net                  $17.97
+
+point    meter      direction  period                    days   billed   moved  interest   total
+-------  ---------  ---------  ------------------------  ----  -------  ------  --------  ------
+SP-1042  84-119302  refund     2020-06-30 to 2025-06-30  1827  $600.00  $17.70     $0.27  $17.97
+
+Passed over
+===========
+points  0
+
+Tariff
+======
+name                state tariff 14.7
+tolerance           +/-2.0 percent
+refund lookback     60 months
+back bill lookback  12 months

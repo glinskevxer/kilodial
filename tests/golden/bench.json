@@ -1,0 +1,50 @@
+{
+  "sections": [
+    {
+      "facts": {
+        "runs": "1",
+        "technicians": "1",
+        "unsigned runs": "0",
+        "void": "0"
+      },
+      "notes": [],
+      "rows": [
+        {
+          "badge": "T-441",
+          "failed": "1",
+          "passed": "0",
+          "runs": "1",
+          "suspect": "0",
+          "technician": "R Ellis",
+          "void": "0",
+          "void rate": "0.0"
+        }
+      ],
+      "title": "By technician"
+    },
+    {
+      "facts": {},
+      "notes": [],
+      "rows": [
+        {
+          "kind": "acceptance",
+          "runs": "0"
+        },
+        {
+          "kind": "as found",
+          "runs": "1"
+        },
+        {
+          "kind": "as left",
+          "runs": "0"
+        },
+        {
+          "kind": "referee",
+          "runs": "0"
+        }
+      ],
+      "title": "By run kind"
+    }
+  ],
+  "title": "Bench report, 2025-01-01 to 2025-12-31"
+}

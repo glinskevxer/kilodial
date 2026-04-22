@@ -1,0 +1,28 @@
+Fault report, 2025-01-01 to 2025-12-31
+======================================
+
+By type
+=======
+types            1
+meters           1
+repairs          1
+spent            $80.40
+not worth doing  0
+
+type         meters  repairs  per hundred   spent  a meter  not worth it  commonest fault
+-----------  ------  -------  -----------  ------  -------  ------------  ---------------
+Halvern/R4S       1        1        100.0  $80.40   $80.40             0  bearing
+
+Halvern/R4S is the worst at 100.0 repairs per hundred meters, mostly bearing
+
+By family
+=========
+family      repairs  percent
+----------  -------  -------
+electrical        0      0.0
+electronic        0      0.0
+enclosure         0      0.0
+mechanical        1    100.0
+none              0      0.0
+
+a type whose failures are mostly electronic is a different purchasing decision from one whose failures are mostly bearings

@@ -1,0 +1,48 @@
+{
+  "sections": [
+    {
+      "facts": {
+        "adjustments": "1",
+        "back bills": "0",
+        "net": "$17.97",
+        "owed to customers": "$17.97",
+        "owed to the utility": "$0.00",
+        "refunds": "1"
+      },
+      "notes": [],
+      "rows": [
+        {
+          "billed": "$600.00",
+          "days": "1827",
+          "direction": "refund",
+          "interest": "$0.27",
+          "meter": "84-119302",
+          "moved": "$17.70",
+          "period": "2020-06-30 to 2025-06-30",
+          "point": "SP-1042",
+          "total": "$17.97"
+        }
+      ],
+      "title": "Priced"
+    },
+    {
+      "facts": {
+        "points": "0"
+      },
+      "notes": [],
+      "rows": [],
+      "title": "Passed over"
+    },
+    {
+      "facts": {
+        "back bill lookback": "12 months",
+        "name": "state tariff 14.7",
+        "refund lookback": "60 months",
+        "tolerance": "+/-2.0 percent"
+      },
+      "notes": [],
+      "title": "Tariff"
+    }
+  ],
+  "title": "Adjustment register as at 2025-07-15"
+}

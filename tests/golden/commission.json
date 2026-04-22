@@ -1,0 +1,49 @@
+{
+  "sections": [
+    {
+      "facts": {
+        "groups": "1",
+        "groups short of their sample": "0",
+        "meters in groups": "1",
+        "meters tested": "1",
+        "outside tolerance": "1"
+      },
+      "notes": [],
+      "rows": [
+        {
+          "fast": "1",
+          "group": "G1",
+          "in service": "1",
+          "inside": "0",
+          "interval": "48",
+          "name": "Halvern R4S",
+          "percent tested": "100.00",
+          "sample met": "yes",
+          "sample needed": "1",
+          "slow": "0",
+          "tested": "1"
+        }
+      ],
+      "title": "Groups"
+    },
+    {
+      "facts": {
+        "meters": "0"
+      },
+      "notes": [],
+      "title": "Outside every group"
+    },
+    {
+      "facts": {
+        "answered": "0",
+        "answered past the deadline": "0",
+        "meters found outside tolerance": "0",
+        "requested": "0",
+        "still open from the period": "0"
+      },
+      "notes": [],
+      "title": "Customer requested tests"
+    }
+  ],
+  "title": "Commission meter test report, 2025-01-01 to 2025-12-31"
+}
