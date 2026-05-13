@@ -48,6 +48,7 @@ def estimate_gap(context: Context, point_code: str, day: str) -> None:
 @click.option("--from", "first", default=None, help="or give the period yourself")
 @click.option("--to", "last", default=None, help="end of the window")
 @click.option("--note", default=None, help="anything worth writing down")
+@click.option("--rate", "rate_per_kwh", default=None, help="energy rate, for the metered basis")
 @pass_context
 def estimate_list(
     context: Context,
@@ -56,14 +57,15 @@ def estimate_list(
     first: str | None,
     last: str | None,
     note: str | None,
+    rate_per_kwh: str | None,
 ) -> None:
     """Every basis the book supports for a gap, strongest first."""
     shop = context.open()
     window = span_of(first, last)
     if window is not None:
-        found = options_for(shop, point_code, window, note=note)
+        found = options_for(shop, point_code, window, note=note, rate_per_kwh=rate_per_kwh)
     elif day is not None:
-        found = estimate_point(shop, point_code, on=day, note=note)
+        found = estimate_point(shop, point_code, on=day, note=note, rate_per_kwh=rate_per_kwh)
     else:
         raise click.BadParameter("give either --on or both --from and --to")
     rows = [[str(e.basis), str(e.amount), str(e.daily), e.working] for e in found.offered]

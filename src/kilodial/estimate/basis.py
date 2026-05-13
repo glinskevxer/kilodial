@@ -10,7 +10,15 @@ it. A customer arguing about an estimate is arguing about the basis, and an
 estimate that arrives as a bare total gives them nothing to argue with, which
 looks like confidence and reads like evasion.
 
-  same period last year   the strongest, because it carries the season with it.
+  metered either side     the strongest of all where it is available, because it
+                          is not an inference about money at all: it is the
+                          energy the register actually counted on the days
+                          around the gap, priced at the tariff rate. It needs
+                          real readings either side, which a service whose meter
+                          was missing does not have.
+
+  same period last year   the next strongest, because it carries the season with
+                          it.
                           Useless on a service that changed hands or changed
                           load, and there is no way to tell from here that it
                           did, so it is offered rather than assumed.
@@ -47,6 +55,7 @@ class Basis(enum.Enum):
 
     LAST_YEAR = ("same period last year", 3)
     NEIGHBOURS = ("neighbouring periods", 2)
+    METERED = ("metered either side", 4)
     CONNECTED_LOAD = ("connected load", 1)
     DECLARED = ("declared by the customer", 1)
 
@@ -182,6 +191,39 @@ def from_connected_load(
     )
 
 
+def from_metered(
+    point_code: str,
+    daily_kwh: object,
+    span: DateSpan,
+    *,
+    rate_per_kwh: object,
+    note: object = None,
+) -> Estimate:
+    """Estimate a gap from the energy the register counted around it.
+
+    ``daily_kwh`` is what the meter actually recorded per day either side of the
+    gap, which the caller works out from the readings. It is passed in rather
+    than derived here because pairing readings across a meter change is a
+    question this module has no business answering.
+    """
+    if span.end is None:
+        raise RuleError("an estimate needs a period with an end on it")
+    daily = positive(daily_kwh, "daily energy")
+    rate = positive(rate_per_kwh, "energy rate")
+    kwh = daily * Decimal(span.days)
+    return Estimate(
+        point_code=point_code.strip().upper(),
+        span=span,
+        basis=Basis.METERED,
+        amount=Money(kwh * rate),
+        working=(
+            f"{daily.normalize():f} kWh a day metered either side over "
+            f"{span.days} days is {kwh.normalize():f} kWh at {rate.normalize():f}"
+        ),
+        note=optional(note, "estimate note", 240),
+    )
+
+
 def declared(point_code: str, span: DateSpan, amount: object, *, note: object = None) -> Estimate:
     """Take a figure somebody has agreed, and record that it was agreed."""
     settled = Money(amount)
@@ -212,6 +254,7 @@ __all__ = [
     "declared",
     "from_connected_load",
     "from_last_year",
+    "from_metered",
     "from_neighbours",
     "strongest",
 ]

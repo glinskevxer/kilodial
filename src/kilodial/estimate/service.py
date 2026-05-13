@@ -14,9 +14,17 @@ package does not price.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from decimal import Decimal
 
 from kilodial.errors import RuleError, ShopError
-from kilodial.estimate.basis import Basis, Estimate, from_last_year, from_neighbours
+from kilodial.estimate.basis import (
+    Basis,
+    Estimate,
+    from_last_year,
+    from_metered,
+    from_neighbours,
+)
+from kilodial.model.reading import consumption
 from kilodial.store.shop import Shop
 from kilodial.units.money import Money
 from kilodial.units.span import DateSpan
@@ -85,12 +93,64 @@ def gap_for(shop: Shop, point_code: str, *, on: object) -> DateSpan:
     return DateSpan(min(s.start for s in live), whole.end)
 
 
-def options_for(shop: Shop, point_code: str, span: DateSpan, *, note: object = None) -> Options:
-    """Every estimate the billed history can support for a gap."""
+def daily_metered(shop: Shop, point_code: str, span: DateSpan) -> Decimal:
+    """What the register counted per day on the readings around a gap.
+
+    Both readings have to be on the same meter, which is what makes this the
+    strongest basis when it is available and unavailable at all when it is not:
+    a service whose meter was taken away has no pair to work from.
+    """
+    code = point_code.strip().upper()
+    readings = [r for r in shop.readings.for_point(code) if not span.contains(r.read_on)]
+    if len(readings) < 2:
+        raise RuleError(
+            f"{code} has {len(readings)} readings outside {span}, which is not "
+            "enough to meter either side of it"
+        )
+    first, last = readings[0], readings[-1]
+    if first.meter_serial != last.meter_serial:
+        raise RuleError(f"the readings around {span} are off different meters, so they do not pair")
+    found = consumption(first, last)
+    if found.days <= 0:
+        raise RuleError(f"the readings around {span} are on the same day")
+    return (found.billed_units / found.days).quantize(Decimal("0.001"))
+
+
+def options_for(
+    shop: Shop,
+    point_code: str,
+    span: DateSpan,
+    *,
+    note: object = None,
+    rate_per_kwh: object = None,
+) -> Options:
+    """Every estimate the book can support for a gap.
+
+    ``rate_per_kwh`` unlocks the metered basis. Without it the register readings
+    cannot be turned into money and the basis is refused by name rather than
+    silently left off the list.
+    """
     code = point_code.strip().upper()
     billed = shop.billing.for_point(code)
     offered: list[Estimate] = []
     refused: list[tuple[Basis, str]] = []
+    if rate_per_kwh is None:
+        refused.append(
+            (Basis.METERED, "no energy rate was given, so the readings cannot be priced")
+        )
+    else:
+        try:
+            offered.append(
+                from_metered(
+                    code,
+                    daily_metered(shop, code, span),
+                    span,
+                    rate_per_kwh=rate_per_kwh,
+                    note=note,
+                )
+            )
+        except ShopError as exc:
+            refused.append((Basis.METERED, str(exc)))
     for basis, build in (
         (Basis.LAST_YEAR, from_last_year),
         (Basis.NEIGHBOURS, from_neighbours),
@@ -103,10 +163,17 @@ def options_for(shop: Shop, point_code: str, span: DateSpan, *, note: object = N
     return Options(code, span, tuple(offered), tuple(refused))
 
 
-def estimate_point(shop: Shop, point_code: str, *, on: object, note: object = None) -> Options:
+def estimate_point(
+    shop: Shop,
+    point_code: str,
+    *,
+    on: object,
+    note: object = None,
+    rate_per_kwh: object = None,
+) -> Options:
     """Find the gap at a point and work out what can be said about it."""
     span = gap_for(shop, point_code, on=on)
-    return options_for(shop, point_code, span, note=note)
+    return options_for(shop, point_code, span, note=note, rate_per_kwh=rate_per_kwh)
 
 
-__all__ = ["Options", "estimate_point", "gap_for", "options_for"]
+__all__ = ["Options", "daily_metered", "estimate_point", "gap_for", "options_for"]

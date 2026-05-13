@@ -71,7 +71,7 @@ def test_listing_the_bases_for_a_found_gap(stocked: Invoke) -> None:
 
 def test_listing_the_bases_for_a_period_given_by_hand(stocked: Invoke) -> None:
     result = stocked("estimate", "list", "SP-1042", "--from", "2025-03-01", "--to", "2025-05-31")
-    assert "2 bases, 0 refused" in result.output
+    assert "2 bases, 1 refused" in result.output
 
 
 def test_a_basis_the_history_cannot_support_is_named(stocked: Invoke, book: Path) -> None:
@@ -89,7 +89,7 @@ def test_a_basis_the_history_cannot_support_is_named(stocked: Invoke, book: Path
         expect=1,
     )
     assert "no same period last year" in result.output
-    assert "0 bases, 2 refused" in result.output
+    assert "0 bases, 3 refused" in result.output
 
 
 def test_the_list_needs_a_period_from_somewhere(stocked: Invoke) -> None:
@@ -162,7 +162,7 @@ def test_estimating_a_point_nobody_has(stocked: Invoke) -> None:
 
 def test_the_bases_command(stocked: Invoke) -> None:
     result = stocked("estimate", "bases")
-    assert result.output.splitlines()[2].startswith("same period last year")
+    assert result.output.splitlines()[2].startswith("metered either side")
     assert "connected load" in result.output
 
 

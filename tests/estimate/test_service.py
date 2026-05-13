@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Iterator
+from decimal import Decimal
 from pathlib import Path
 
 import pytest
@@ -8,7 +9,12 @@ import pytest
 from kilodial.adjust.compute import BilledMonth
 from kilodial.errors import RuleError
 from kilodial.estimate.basis import Basis
-from kilodial.estimate.service import estimate_point, gap_for, options_for
+from kilodial.estimate.service import (
+    daily_metered,
+    estimate_point,
+    gap_for,
+    options_for,
+)
 from kilodial.store.shop import Shop, open_shop
 from kilodial.tamper.event import Finding
 from kilodial.tools.smoke import LAST_DAY, stand_up
@@ -76,8 +82,8 @@ def test_both_bases_are_offered_when_the_history_supports_them(shop: Shop) -> No
     found = options_for(shop, "SP-1042", GAP)
     assert found.has_any
     assert [e.basis for e in found.offered] == [Basis.LAST_YEAR, Basis.NEIGHBOURS]
-    assert found.refused == ()
-    assert "2 bases, 0 refused" in found.show()
+    assert [basis for basis, _ in found.refused] == [Basis.METERED]
+    assert "2 bases, 1 refused" in found.show()
 
 
 def test_the_strongest_basis_comes_first(shop: Shop) -> None:
@@ -89,8 +95,9 @@ def test_the_strongest_basis_comes_first(shop: Shop) -> None:
 
 def test_a_basis_the_history_cannot_support_is_refused(shop: Shop) -> None:
     found = options_for(shop, "SP-1042", GAP)
-    assert [basis for basis, _ in found.refused] == [Basis.LAST_YEAR]
-    assert "last year is no basis" in found.refused[0][1]
+    reasons = dict(found.refused)
+    assert set(reasons) == {Basis.METERED, Basis.LAST_YEAR}
+    assert "last year is no basis" in reasons[Basis.LAST_YEAR]
 
 
 def test_nothing_at_all_refuses_rather_than_inventing(shop: Shop) -> None:
@@ -98,7 +105,7 @@ def test_nothing_at_all_refuses_rather_than_inventing(shop: Shop) -> None:
         shop.billing.delete("SP-1042", month.span.start)
     found = options_for(shop, "SP-1042", GAP)
     assert not found.has_any
-    assert len(found.refused) == 2
+    assert len(found.refused) == 3
     with pytest.raises(RuleError, match="nothing on the book supports"):
         found.best()
 
@@ -117,3 +124,57 @@ def test_estimating_a_point_end_to_end(shop: Shop) -> None:
     assert found.has_any
     assert found.best().note == "pulled 2025-05-31"
     assert found.span.start.isoformat() == "2025-03-01"
+
+
+def take(shop: Shop, value: int, on: str, serial: str = "84-119302") -> None:
+    from kilodial.model.reading import Reading
+
+    shop.readings.add(Reading.build("SP-1042", serial, read_on=on, dials=5, value=value))
+
+
+def test_the_metered_basis_needs_a_rate(shop: Shop) -> None:
+    found = options_for(shop, "SP-1042", GAP)
+    reasons = dict(found.refused)
+    assert "no energy rate was given" in reasons[Basis.METERED]
+
+
+def test_the_metered_basis_needs_readings_either_side(shop: Shop) -> None:
+    found = options_for(shop, "SP-1042", GAP, rate_per_kwh="0.12")
+    assert any("not enough to meter either side" in why for _, why in found.refused)
+
+
+def test_the_metered_basis_when_the_book_supports_it(shop: Shop) -> None:
+    take(shop, 41_200, "2025-01-01")
+    take(shop, 41_800, "2025-06-30")
+    found = options_for(shop, "SP-1042", GAP, rate_per_kwh="0.12")
+    assert found.best().basis is Basis.METERED
+    assert found.best().amount.cents > 0
+
+
+def test_the_daily_metered_figure(shop: Shop) -> None:
+    take(shop, 41_200, "2025-01-01")
+    take(shop, 41_380, "2025-01-31")
+    assert daily_metered(shop, "SP-1042", GAP) == Decimal("6.000")
+
+
+def test_readings_off_two_meters_do_not_pair(shop: Shop) -> None:
+    take(shop, 41_200, "2025-01-01")
+    shop.meters.add(
+        __import__("kilodial.model.meter", fromlist=["Meter"]).Meter.receive(
+            "84-119303", "Halvern/R4S", acquired="2015-01-01"
+        )
+    )
+    take(shop, 100, "2025-06-30", "84-119303")
+    with pytest.raises(RuleError, match="off different meters"):
+        daily_metered(shop, "SP-1042", GAP)
+
+
+def test_readings_on_the_same_day(shop: Shop) -> None:
+    take(shop, 41_200, "2025-01-01")
+    shop.meters.add(
+        __import__("kilodial.model.meter", fromlist=["Meter"]).Meter.receive(
+            "84-119303", "Halvern/R4S", acquired="2015-01-01"
+        )
+    )
+    with pytest.raises(RuleError, match="not enough to meter either side"):
+        daily_metered(shop, "SP-1042", GAP)

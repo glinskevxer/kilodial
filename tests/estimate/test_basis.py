@@ -12,6 +12,7 @@ from kilodial.estimate.basis import (
     declared,
     from_connected_load,
     from_last_year,
+    from_metered,
     from_neighbours,
     strongest,
 )
@@ -145,3 +146,30 @@ def test_a_tie_is_broken_by_the_larger_figure() -> None:
     large = declared("SP-1042", GAP, "200.00")
     assert strongest([small, large]) is large
     assert large.amount.dollars == Decimal("200.00")
+
+
+def test_a_metered_estimate_prices_what_the_register_counted() -> None:
+    found = from_metered("SP-1042", "40", DateSpan("2025-01-01", "2025-01-10"), rate_per_kwh="0.12")
+    assert found.basis is Basis.METERED
+    assert found.amount == Money("48.00")
+    assert "40 kWh a day metered either side" in found.working
+
+
+def test_the_metered_basis_is_the_strongest() -> None:
+    assert Basis.METERED.strength > Basis.LAST_YEAR.strength
+    metered = from_metered("SP-1042", "40", GAP, rate_per_kwh="0.12")
+    last_year = from_last_year("SP-1042", months(2024, 1, 12), GAP)
+    assert strongest([last_year, metered]) is metered
+
+
+@pytest.mark.parametrize(("field", "value"), [("daily_kwh", "0"), ("rate_per_kwh", "-1")])
+def test_a_metered_estimate_wants_real_numbers(field: str, value: str) -> None:
+    args: dict[str, object] = {"daily_kwh": "40", "rate_per_kwh": "0.12"}
+    args[field] = value
+    with pytest.raises(Exception, match="above zero"):
+        from_metered("SP-1042", args.pop("daily_kwh"), GAP, **args)
+
+
+def test_a_metered_estimate_of_an_open_gap() -> None:
+    with pytest.raises(RuleError, match="a period with an end"):
+        from_metered("SP-1042", "40", DateSpan("2025-01-01"), rate_per_kwh="0.12")

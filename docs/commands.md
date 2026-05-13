@@ -312,6 +312,7 @@ Every basis the book supports for a gap, strongest first.
 - `--from` or give the period yourself
 - `--to` end of the window
 - `--note` anything worth writing down
+- `--rate` energy rate, for the metered basis
 
 ## `estimate load`
 
