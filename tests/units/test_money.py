@@ -100,3 +100,17 @@ def test_ordering_and_hashing() -> None:
     assert sorted([Money("3"), Money("-1"), Money("2")])[0] == Money("-1")
     assert len({Money("1"), Money("1.00"), Money("2")}) == 2
     assert Money("1") != "1"
+
+
+def test_money_reads_money() -> None:
+    assert Money(Money("12.34")) == Money("12.34")
+
+
+def test_subtracting_another_type() -> None:
+    with pytest.raises(TypeError):
+        _ = Money("1") - 1
+
+
+def test_ordering_against_another_type() -> None:
+    with pytest.raises(TypeError):
+        _ = Money("1") < 1

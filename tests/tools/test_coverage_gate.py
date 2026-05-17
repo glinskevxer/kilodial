@@ -15,7 +15,13 @@ def report_file(tmp_path: Path, total: float, files: dict[str, float]) -> Path:
             {
                 "totals": {"percent_covered": total},
                 "files": {
-                    name: {"summary": {"percent_covered": percent, "missing_lines": 3}}
+                    name: {
+                        "summary": {
+                            "percent_covered": percent,
+                            "missing_lines": 3,
+                            "covered_lines": 10,
+                        }
+                    }
                     for name, percent in files.items()
                 },
             }
@@ -93,3 +99,69 @@ def test_faults_reports_the_total_first(tmp_path: Path) -> None:
     problems = gate.faults(gate.read(path), floor=90.0, file_floor=70.0)
     assert "total coverage" in problems[0]
     assert len(problems) == 2
+
+
+def report_with(tmp_path: Path, files: dict[str, tuple[float, int, int]]) -> Path:
+    path = tmp_path / "coverage.json"
+    path.write_text(
+        json.dumps(
+            {
+                "totals": {"percent_covered": 99.0},
+                "files": {
+                    name: {
+                        "summary": {
+                            "percent_covered": percent,
+                            "missing_lines": missing,
+                            "covered_lines": covered,
+                        }
+                    }
+                    for name, (percent, missing, covered) in files.items()
+                },
+            }
+        )
+    )
+    return path
+
+
+def test_a_package_is_weighted_by_lines(tmp_path: Path) -> None:
+    path = report_with(
+        tmp_path,
+        {
+            "src/kilodial/units/a.py": (100.0, 0, 2),
+            "src/kilodial/units/b.py": (60.0, 120, 180),
+        },
+    )
+    report = gate.read(path)
+    assert report.package("src/kilodial/units") < 62.0
+
+
+def test_a_package_with_no_files_is_whole(tmp_path: Path) -> None:
+    path = report_with(tmp_path, {"src/kilodial/store/a.py": (100.0, 0, 10)})
+    assert gate.read(path).package("src/kilodial/units") == 100.0
+
+
+def test_a_package_with_no_lines_is_whole(tmp_path: Path) -> None:
+    path = report_with(tmp_path, {"src/kilodial/units/a.py": (100.0, 0, 0)})
+    assert gate.read(path).package("src/kilodial/units") == 100.0
+
+
+def test_a_package_below_its_own_floor_is_caught(tmp_path: Path) -> None:
+    path = report_with(
+        tmp_path,
+        {"src/kilodial/units/a.py": (80.0, 20, 80), "src/kilodial/store/b.py": (99.0, 1, 99)},
+    )
+    problems = gate.faults(gate.read(path), floor=90.0, file_floor=70.0)
+    assert any("src/kilodial/units is at 80.00%" in p for p in problems)
+
+
+def test_the_package_floors_cover_the_domain() -> None:
+    assert "src/kilodial/units" in gate.PACKAGE_FLOORS
+    assert "src/kilodial/model" in gate.PACKAGE_FLOORS
+    assert all(floor >= 95.0 for floor in gate.PACKAGE_FLOORS.values())
+
+
+def test_the_run_prints_each_package(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    path = report_with(tmp_path, {"src/kilodial/units/a.py": (100.0, 0, 10)})
+    assert gate.main(["--report", str(path)]) == 0
+    printed = capsys.readouterr().out
+    assert "src/kilodial/units 100.00%" in printed

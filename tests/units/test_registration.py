@@ -126,3 +126,12 @@ def test_ordering() -> None:
 
 def test_equality_against_another_type() -> None:
     assert Registration("100") != "100"
+
+
+def test_an_integer_percentage() -> None:
+    assert Registration(100).percent == Decimal("100.0000")
+
+
+def test_ordering_against_another_type() -> None:
+    with pytest.raises(TypeError):
+        _ = Registration("100") < "100"

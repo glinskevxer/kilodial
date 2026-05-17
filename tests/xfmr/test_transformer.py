@@ -125,3 +125,11 @@ def test_a_voltage_transformer_works_the_same_way() -> None:
     vt = ct(serial="VT-2201", kind=TransformerKind.VOLTAGE, marked_ratio="20", rcf="0.9990")
     assert vt.kind is TransformerKind.VOLTAGE
     assert vt.contribution(UNITY).is_fast
+
+
+def test_a_transformer_whose_correction_factor_collapses() -> None:
+    dead = ct(rcf="0.9000", phase_minutes="240")
+    lagging = PowerFactor.lagging("0.01")
+    assert dead.tcf(lagging) < 0
+    with pytest.raises(RuleError, match="correction factor of"):
+        dead.contribution(lagging)

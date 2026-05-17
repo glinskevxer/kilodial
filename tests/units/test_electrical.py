@@ -98,3 +98,8 @@ def test_watthours_add() -> None:
 def test_negative_energy_is_refused() -> None:
     with pytest.raises(BadInputError, match="cannot be negative"):
         WattHours("-1")
+
+
+def test_a_float_current_is_pinned_through_repr() -> None:
+    assert Amperes(2.5).value == Decimal("2.500")
+    assert Volts(239.95).value == Decimal("239.95")

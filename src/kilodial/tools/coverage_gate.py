@@ -33,6 +33,20 @@ EXCUSED: dict[str, str] = {
     "src/kilodial/cli/main.py": "the console script entry point is exercised by CI, not by pytest",
 }
 
+# Floors per package, for the ones that carry rules rather than plumbing. The
+# domain packages are held higher than the total because an uncovered branch
+# there is an unstated rule, where an uncovered branch in the command layer is
+# usually an error path a person will see the first time it fires.
+PACKAGE_FLOORS: dict[str, float] = {
+    "src/kilodial/units": 99.0,
+    "src/kilodial/model": 98.0,
+    "src/kilodial/testing": 98.0,
+    "src/kilodial/adjust": 95.0,
+    "src/kilodial/install": 98.0,
+    "src/kilodial/sampling": 98.0,
+    "src/kilodial/xfmr": 99.0,
+}
+
 
 @dataclass(frozen=True)
 class FileCoverage:
@@ -41,6 +55,7 @@ class FileCoverage:
     path: str
     percent: float
     missing: int
+    covered: int
 
     def __str__(self) -> str:
         return f"{self.path} {self.percent:.1f}% ({self.missing} lines uncovered)"
@@ -62,6 +77,21 @@ class Report:
         """The least covered files, for the run's own output."""
         return sorted(self.files, key=lambda f: f.percent)[:count]
 
+    def package(self, prefix: str) -> float:
+        """One package's coverage, weighted by how many lines each file has.
+
+        Averaging the file percentages would let a two line module with full
+        coverage cancel out a three hundred line one at sixty percent, which is
+        the arithmetic that makes a package number worth nothing.
+        """
+        files = [f for f in self.files if f.path.startswith(f"{prefix}/")]
+        if not files:
+            return 100.0
+        missing = sum(f.missing for f in files)
+        covered = sum(f.covered for f in files)
+        total = covered + missing
+        return 100.0 if total == 0 else covered / total * 100
+
 
 def read(path: Path = DEFAULT_REPORT) -> Report:
     """Parse a coverage json report off disk."""
@@ -73,6 +103,7 @@ def read(path: Path = DEFAULT_REPORT) -> Report:
             path=name.replace("\\", "/"),
             percent=float(entry["summary"]["percent_covered"]),
             missing=int(entry["summary"]["missing_lines"]),
+            covered=int(entry["summary"].get("covered_lines", 0)),
         )
         for name, entry in sorted(data.get("files", {}).items())
     )
@@ -80,10 +111,14 @@ def read(path: Path = DEFAULT_REPORT) -> Report:
 
 
 def faults(report: Report, *, floor: float, file_floor: float) -> list[str]:
-    """Everything below a floor, total first."""
+    """Everything below a floor: the total, then each package, then each file."""
     found: list[str] = []
     if report.total < floor:
         found.append(f"total coverage is {report.total:.2f}% against a floor of {floor}%")
+    for prefix, package_floor in sorted(PACKAGE_FLOORS.items()):
+        got = report.package(prefix)
+        if got < package_floor:
+            found.append(f"{prefix} is at {got:.2f}% against its own floor of {package_floor}%")
     for file in report.under(file_floor):
         found.append(f"{file} is under the {file_floor}% per file floor")
     return found
@@ -105,6 +140,8 @@ def main(argv: list[str] | None = None) -> int:
     if problems:
         return FAILED
     print(f"coverage {report.total:.2f}% over {len(report.files)} files")
+    for prefix in sorted(PACKAGE_FLOORS):
+        print(f"  {prefix} {report.package(prefix):.2f}%")
     for file in report.worst():
         print(f"  lowest: {file}")
     return OK
@@ -119,6 +156,7 @@ __all__ = [
     "DEFAULT_FLOOR",
     "DEFAULT_REPORT",
     "EXCUSED",
+    "PACKAGE_FLOORS",
     "FileCoverage",
     "Report",
     "faults",
