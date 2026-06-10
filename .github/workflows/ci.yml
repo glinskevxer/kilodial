@@ -38,6 +38,7 @@ jobs:
       - run: python -m kilodial.tools.check_clock
       - run: python -m kilodial.tools.schema_dump --check
       - run: python -m kilodial.tools.build_docs --check
+      - run: python -m kilodial.tools.build_glossary --check
 
   tests:
     runs-on: ubuntu-latest

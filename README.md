@@ -42,8 +42,9 @@ the customer's free test.
 
 Every command lives under a group and the full reference is in
 [docs/commands.md](docs/commands.md), which is generated from the command tree.
-The schema is in [docs/schema.sql](docs/schema.sql), generated from the
-migrations.
+The schema is in [docs/schema.sql](docs/schema.sql), the vocabulary is in
+[docs/glossary.md](docs/glossary.md), and the layering is in
+[docs/layers.md](docs/layers.md). All four are generated from the code.
 
 ## The book
 
