@@ -58,6 +58,7 @@ over.
     pip install -e ".[dev]"
     pytest -q
     ruff check . && ruff format --check . && mypy
+    python -m kilodial.tools.gates
 
 CI runs those on 3.12 and 3.13, plus a set of gates the repository runs on
 itself: the migrations build the tables the code expects, every module declares

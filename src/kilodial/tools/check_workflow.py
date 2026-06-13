@@ -27,9 +27,10 @@ from kilodial.tools import FAILED, OK
 WORKFLOW = Path(".github/workflows/ci.yml")
 PYPROJECT = Path("pyproject.toml")
 
-# Gates that are run with arguments or from another job, and are checked by name
-# rather than as a bare module invocation.
-RUN_ELSEWHERE = frozenset({"coverage_gate", "smoke"})
+# Modules in the tools package that CI does not run as a step of their own.
+# ``gates`` runs the others and is for a person about to push; ``coverage_gate``
+# runs in the coverage job after pytest has written its report.
+RUN_ELSEWHERE = frozenset({"gates"})
 
 
 def gate_names() -> list[str]:
@@ -57,6 +58,8 @@ def faults(workflow: Path = WORKFLOW, pyproject: Path = PYPROJECT) -> list[str]:
     text = workflow.read_text()
     found: list[str] = []
     for name in gate_names():
+        if name in RUN_ELSEWHERE:
+            continue
         wanted = f"kilodial.tools.{name}"
         if wanted not in text:
             found.append(f"the workflow never runs {wanted}")
