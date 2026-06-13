@@ -28,6 +28,7 @@ from kilodial.store.benches import BenchRepository, StandardRepository
 from kilodial.store.billing import BillingRepository
 from kilodial.store.book import Book, open_migrated
 from kilodial.store.complaints import ComplaintRepository
+from kilodial.store.counts import counts as table_counts
 from kilodial.store.devices import DeviceRepository
 from kilodial.store.estimates import EstimateRepository
 from kilodial.store.events import EventRepository
@@ -215,27 +216,7 @@ class Shop:
 
     def summary(self) -> dict[str, int]:
         """Row counts, for the doctor and for a smoke test."""
-        return {
-            "device types": self.devices.count(),
-            "meters": self.meters.count(),
-            "standards": self.standards.count(),
-            "benches": self.benches.count(),
-            "runs": self.runs.count(),
-            "transformers": self.transformers.count(),
-            "service points": self.points.count(),
-            "meter sets": self.installs.count(),
-            "groups": self.groups.count(),
-            "sample decisions": self.plans.count(),
-            "billed months": self.billing.count(),
-            "complaints": self.complaints.count(),
-            "work orders": self.orders.count(),
-            "technicians": self.technicians.count(),
-            "tamper findings": self.tamper.count(),
-            "repairs": self.repairs.count(),
-            "events": self.events.count(),
-            "readings": self.readings.count(),
-            "estimates": self.estimates.count(),
-        }
+        return table_counts(self.book.connection)
 
     def audit(self) -> list[str]:
         """Everything inconsistent about the book, in one pass."""
