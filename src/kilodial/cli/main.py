@@ -11,6 +11,7 @@ the person at the keyboard.
 from __future__ import annotations
 
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -30,7 +31,7 @@ from kilodial.cli.installs import points
 from kilodial.cli.meters import meters
 from kilodial.cli.orders import orders
 from kilodial.cli.readings import readings
-from kilodial.cli.render import table
+from kilodial.cli.render import pairs, table
 from kilodial.cli.repairs import repairs
 from kilodial.cli.reports import reports
 from kilodial.cli.runs import runs
@@ -40,8 +41,12 @@ from kilodial.cli.transformers import transformers
 from kilodial.errors import ConfigError, ShopError
 from kilodial.store import dump
 from kilodial.store.events import DEFAULT_ACTOR
+from kilodial.store.schema import latest_number
 
 EXIT_SHOP_ERROR = 2
+
+
+TRACEBACK = "KILODIAL_TRACEBACK"
 
 
 class ShopGroup(click.Group):
@@ -50,12 +55,17 @@ class ShopGroup(click.Group):
     Putting it here rather than in the console script entry point means the
     exit code is the same whether the tool is run from a shell or driven
     straight through click's test runner, which is how it is mostly exercised.
+
+    Setting KILODIAL_TRACEBACK lets the exception through instead, which is
+    what somebody debugging wants and what nobody at a shop counter does.
     """
 
     def invoke(self, ctx: click.Context) -> object:
         try:
             return super().invoke(ctx)
         except ShopError as exc:
+            if os.environ.get(TRACEBACK):
+                raise
             click.echo(str(exc), err=True)
             raise SystemExit(EXIT_SHOP_ERROR) from exc
 
@@ -104,6 +114,29 @@ def init(context: Context, force: bool) -> None:
         context.say(f"ran migration {ran[0]} through {ran[-1]} on {context.book_path}")
     else:
         context.say(f"{context.book_path} was already up to date")
+
+
+@cli.command("about")
+@pass_context
+def about(context: Context) -> None:
+    """What this is, what version, and where everything lives."""
+    from kilodial.report.catalogue import CATALOGUE
+
+    lines = [
+        ("kilodial", __version__),
+        ("book", str(context.book_path)),
+        ("book exists", "yes" if context.book_path.exists() else "no"),
+        ("actor", context.actor),
+        ("commands", str(len(cli.commands))),
+        ("reports", str(len(CATALOGUE))),
+        ("migrations", str(latest_number())),
+        ("command reference", "docs/commands.md"),
+        ("schema", "docs/schema.sql"),
+        ("glossary", "docs/glossary.md"),
+        ("layers", "docs/layers.md"),
+    ]
+    for line in pairs(lines):
+        click.echo(line)
 
 
 @cli.group()
@@ -275,4 +308,4 @@ if __name__ == "__main__":  # pragma: no cover
     run()
 
 
-__all__ = ["EXIT_SHOP_ERROR", "ShopGroup", "book", "cli", "run"]
+__all__ = ["EXIT_SHOP_ERROR", "TRACEBACK", "ShopGroup", "book", "cli", "run"]

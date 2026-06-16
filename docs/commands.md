@@ -5,6 +5,12 @@ Rebuild with: python -m kilodial.tools.build_docs
 
 Groups: adjust, bench, bill, book, complaint, device, due, estimate, group, import, meter, point, read, repair, report, run, standard, tamper, tech, work, xfmr
 
+## `about`
+
+    kilodial about
+
+What this is, what version, and where everything lives.
+
 ## `adjust period`
 
     kilodial adjust period POINT_CODE

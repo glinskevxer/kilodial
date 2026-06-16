@@ -98,3 +98,48 @@ def test_the_compact_command(started: Invoke) -> None:
 
 def test_compacting_without_confirming(started: Invoke) -> None:
     started("book", "compact", expect=1)
+
+
+def test_the_about_command(started: Invoke) -> None:
+    result = started("about")
+    assert __version__ in result.output
+    assert "docs/commands.md" in result.output
+    assert "book exists" in result.output
+    assert "yes" in result.output
+
+
+def test_about_on_a_book_that_is_not_there(invoke: Invoke) -> None:
+    result = invoke("about")
+    assert "book exists" in result.output
+    assert "no" in result.output
+
+
+def test_about_names_the_actor(started: Invoke) -> None:
+    assert "shop" in started("about").output
+
+
+def test_about_counts_what_there_is(started: Invoke) -> None:
+    from kilodial.report.catalogue import CATALOGUE
+    from kilodial.store.schema import latest_number
+
+    result = started("about").output
+    assert f"reports            {len(CATALOGUE)}" in result
+    assert f"migrations         {latest_number()}" in result
+
+
+def test_an_error_prints_one_line_by_default(invoke: Invoke) -> None:
+    result = invoke("book", "check", expect=2)
+    assert "run 'kilodial init' first" in result.output
+    assert "Traceback" not in result.output
+
+
+def test_the_traceback_escape_lets_it_through(
+    invoke: Invoke, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from kilodial.cli.main import TRACEBACK
+    from kilodial.errors import ConfigError
+
+    monkeypatch.setenv(TRACEBACK, "1")
+    runner = CliRunner()
+    result = runner.invoke(cli, ["--book", "nowhere.sqlite3", "book", "check"])
+    assert isinstance(result.exception, ConfigError)
