@@ -118,6 +118,42 @@ QUERIES: tuple[Query, ...] = (
         True,
     ),
     Query(
+        "runs of one kind",
+        "SELECT reference FROM bench_run WHERE kind = ? ORDER BY tested_on",
+        ("as found",),
+        True,
+    ),
+    Query(
+        "standards coming due",
+        "SELECT serial FROM reference_standard WHERE certificate_due <= ?",
+        ("2026-01-01",),
+        True,
+    ),
+    Query(
+        "technicians coming due",
+        "SELECT badge FROM technician WHERE certificate_due <= ?",
+        ("2026-01-01",),
+        True,
+    ),
+    Query(
+        "transformers overdue for a test",
+        "SELECT serial FROM instrument_transformer WHERE tested_on < ?",
+        ("2020-01-01",),
+        True,
+    ),
+    Query(
+        "repairs in a window",
+        "SELECT reference FROM repair WHERE repaired_on BETWEEN ? AND ?",
+        ("2025-01-01", "2025-12-31"),
+        True,
+    ),
+    Query(
+        "estimates settled in a window",
+        "SELECT reference FROM estimate WHERE settled_on BETWEEN ? AND ?",
+        ("2025-01-01", "2025-12-31"),
+        True,
+    ),
+    Query(
         "every meter",
         "SELECT COUNT(*) FROM meter",
         (),

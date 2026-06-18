@@ -398,6 +398,17 @@ MIGRATIONS: tuple[Migration, ...] = (
         "a grace period per group",
         "ALTER TABLE sample_group ADD COLUMN grace_days INTEGER",
     ),
+    _m(
+        18,
+        "indexes for the queries the reports run",
+        "CREATE INDEX run_by_kind ON bench_run (kind, tested_on)",
+        "CREATE INDEX meter_by_state_and_device ON meter (state, device_key)",
+        "CREATE INDEX standard_by_due ON reference_standard (certificate_due)",
+        "CREATE INDEX technician_by_due ON technician (certificate_due)",
+        "CREATE INDEX transformer_by_tested ON instrument_transformer (tested_on)",
+        "CREATE INDEX repair_by_day ON repair (repaired_on)",
+        "CREATE INDEX estimate_by_settled ON estimate (settled_on)",
+    ),
 )
 
 

@@ -125,3 +125,31 @@ def test_the_sixteenth_migration_adds_settled_estimates() -> None:
 def test_the_seventeenth_migration_adds_a_group_grace_period() -> None:
     joined = " ".join(MIGRATIONS[16].statements)
     assert "ALTER TABLE sample_group ADD COLUMN grace_days" in joined
+
+
+def test_the_eighteenth_migration_adds_report_indexes() -> None:
+    joined = " ".join(MIGRATIONS[17].statements)
+    assert "CREATE INDEX run_by_kind" in joined
+    assert "CREATE INDEX standard_by_due" in joined
+    assert "CREATE TABLE" not in joined
+
+
+def test_every_index_is_named_after_what_it_serves() -> None:
+    for migration in MIGRATIONS:
+        for statement in migration.statements:
+            if "CREATE INDEX" not in statement and "CREATE UNIQUE INDEX" not in statement:
+                continue
+            name = statement.split("INDEX")[1].split("ON")[0].strip()
+            table = statement.split(" ON ")[1].split("(")[0].strip()
+            assert name
+            assert table
+            assert not name.startswith("sqlite")
+
+
+def test_no_index_is_created_twice() -> None:
+    names = []
+    for migration in MIGRATIONS:
+        for statement in migration.statements:
+            if "INDEX" in statement and "CREATE" in statement:
+                names.append(statement.split("INDEX")[1].split("ON")[0].strip())
+    assert len(names) == len(set(names))

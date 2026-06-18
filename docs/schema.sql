@@ -1,6 +1,6 @@
 -- kilodial schema, built from the migrations. Do not edit by hand.
 -- Rebuild with: python -m kilodial.tools.schema_dump
--- Migrations applied: 17 (latest 17)
+-- Migrations applied: 18 (latest 18)
 
 CREATE TABLE bench (
             code             TEXT PRIMARY KEY,
@@ -263,6 +263,8 @@ CREATE INDEX device_by_demand ON device_type (demand_capable);
 
 CREATE INDEX estimate_by_point ON estimate (point_code, first_day);
 
+CREATE INDEX estimate_by_settled ON estimate (settled_on);
+
 CREATE INDEX event_by_action ON event (action, sequence);
 
 CREATE INDEX event_by_subject ON event (subject, sequence);
@@ -270,6 +272,8 @@ CREATE INDEX event_by_subject ON event (subject, sequence);
 CREATE INDEX meter_by_device ON meter (device_key);
 
 CREATE INDEX meter_by_state ON meter (state);
+
+CREATE INDEX meter_by_state_and_device ON meter (state, device_key);
 
 CREATE INDEX order_by_meter ON work_order (meter_serial, raised_on);
 
@@ -287,6 +291,8 @@ CREATE INDEX reading_by_meter ON reading (meter_serial, read_on);
 
 CREATE INDEX reading_by_point ON reading (point_code, read_on);
 
+CREATE INDEX repair_by_day ON repair (repaired_on);
+
 CREATE INDEX repair_by_fault ON repair (fault);
 
 CREATE INDEX repair_by_meter ON repair (meter_serial, repaired_on);
@@ -295,14 +301,22 @@ CREATE INDEX run_by_badge ON bench_run (badge);
 
 CREATE INDEX run_by_day ON bench_run (tested_on);
 
+CREATE INDEX run_by_kind ON bench_run (kind, tested_on);
+
 CREATE INDEX run_by_meter ON bench_run (meter_serial, tested_on);
 
 CREATE INDEX set_by_meter ON meter_set (meter_serial, set_on);
+
+CREATE INDEX standard_by_due ON reference_standard (certificate_due);
 
 CREATE INDEX tamper_by_point ON tamper_finding (point_code, found_on);
 
 CREATE INDEX tamper_open ON tamper_finding (standing);
 
+CREATE INDEX technician_by_due ON technician (certificate_due);
+
 CREATE INDEX technician_by_grade ON technician (grade);
 
 CREATE INDEX transformer_by_kind ON instrument_transformer (kind);
+
+CREATE INDEX transformer_by_tested ON instrument_transformer (tested_on);

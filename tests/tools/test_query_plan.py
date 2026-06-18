@@ -60,3 +60,19 @@ def test_every_query_names_a_real_table() -> None:
     for query in gate.QUERIES:
         assert " FROM " in query.sql
         assert query.name
+
+
+def test_the_report_queries_are_covered() -> None:
+    names = {q.name for q in gate.QUERIES}
+    assert "runs of one kind" in names
+    assert "standards coming due" in names
+    assert "repairs in a window" in names
+    assert "estimates settled in a window" in names
+
+
+def test_every_indexed_query_really_searches() -> None:
+    plans = gate.plans()
+    for query in gate.QUERIES:
+        if not query.wants_index:
+            continue
+        assert any(step.startswith("SEARCH") for step in plans[query.name]), query.name
