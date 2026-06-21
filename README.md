@@ -55,10 +55,14 @@ over.
 
 ## Working on it
 
-    pip install -e ".[dev]"
+    pip install -e ".[dev]" -c constraints.txt
     pytest -q
     ruff check . && ruff format --check . && mypy
     python -m kilodial.tools.gates
+
+Every dependency is pinned exactly, and `constraints.txt` is the closure of
+those pins including everything they pull in, so a build in six months installs
+what a build today installs.
 
 CI runs those on 3.12 and 3.13, plus a set of gates the repository runs on
 itself: the migrations build the tables the code expects, every module declares

@@ -50,7 +50,7 @@ def test_a_failing_gate_is_reported_and_the_rest_still_run(
     printed = capsys.readouterr().out
     assert "FAIL migrations" in printed
     assert "ok   smoke" in printed
-    assert "1 of 15 gates failed" in printed
+    assert f"1 of {len(gates.GATES)} gates failed" in printed
 
 
 def test_a_failing_gate_prints_even_when_quiet(
