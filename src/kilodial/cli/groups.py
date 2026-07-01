@@ -16,6 +16,7 @@ from kilodial.cli.devices import _technology
 from kilodial.cli.render import or_dash, pairs, table
 from kilodial.programme import roster
 from kilodial.programme.season import run_sample
+from kilodial.sampling.attribute import plan_for
 from kilodial.sampling.group import Group
 from kilodial.sampling.plan import required
 from kilodial.units.span import DateSpan
@@ -109,6 +110,7 @@ def group_show(context: Context, code: str) -> None:
         ("criteria", "; ".join(group.criteria())),
         ("population", str(population)),
         ("sample needed", str(required(population))),
+        ("attributes plan", str(plan_for(population))),
         ("interval", f"{shop.plans.interval(group.code)} months"),
         ("grace", "the programme's" if group.grace_days is None else f"{group.grace_days} days"),
         ("next due", or_dash(shop.plans.next_due(group.code))),

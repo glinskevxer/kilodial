@@ -277,3 +277,21 @@ def test_a_group_can_be_given_its_own_grace_period(shop: Invoke) -> None:
     shop("group", "add", "G2", "commercial", "--grace", "14")
     assert "14 days" in shop("group", "show", "G2").output
     assert "the programme's" in shop("group", "show", "G1").output
+
+
+def test_showing_a_group_names_both_plans(shop: Invoke) -> None:
+    for n in range(3):
+        stock(shop, f"84-11930{n}")
+    result = shop("group", "show", "G1")
+    assert "sample needed" in result.output
+    assert "attributes plan" in result.output
+    assert "accept on 0" in result.output
+
+
+def test_the_attributes_plan_follows_the_population(shop: Invoke) -> None:
+    small = shop("group", "show", "G1").output
+    assert "lot 0" in small
+    for n in range(9):
+        stock(shop, f"84-11930{n}")
+    bigger = shop("group", "show", "G1").output
+    assert "lot 9" in bigger

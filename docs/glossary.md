@@ -399,6 +399,18 @@ A homogeneous population, defined by what is in it rather than by who.
 
 Defined in `kilodial.sampling.group`.
 
+### Outcome
+
+What an attributes sample decided.
+
+Defined in `kilodial.sampling.attribute`.
+
+### Plan
+
+One row of the table: how many to test and how many bad ones are allowed.
+
+Defined in `kilodial.sampling.attribute`.
+
 ### SampleOutcome
 
 What a group's sample decided, and the working behind it.
