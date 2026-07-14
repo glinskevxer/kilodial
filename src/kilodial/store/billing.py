@@ -88,10 +88,7 @@ class BillingRepository:
 
     def total_for(self, point_code: str, span: DateSpan) -> Money:
         """What the customer paid over a window, prorated at the edges."""
-        total = Money.zero()
-        for month in self.covering(point_code, span):
-            total = total + month.share_over(span)
-        return total
+        return Money.total(month.share_over(span) for month in self.covering(point_code, span))
 
     def kwh_for(self, point_code: str, first_day: object) -> str | None:
         code = point_code.strip().upper()

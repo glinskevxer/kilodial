@@ -9,6 +9,7 @@ largest remainder method.
 
 from __future__ import annotations
 
+from collections.abc import Iterable
 from dataclasses import dataclass
 from decimal import ROUND_HALF_UP, Decimal, InvalidOperation
 from functools import total_ordering
@@ -61,6 +62,21 @@ class Money:
     @classmethod
     def zero(cls) -> Money:
         return cls(0)
+
+    @classmethod
+    def total(cls, amounts: Iterable[Money]) -> Money:
+        """Add a lot of amounts up.
+
+        Written out five times in five modules before this existed, once with a
+        starting value of ``Money(0)`` and four times with ``Money.zero()``,
+        which are the same thing and looked like they might not be.
+        """
+        found = 0
+        for amount in amounts:
+            if not isinstance(amount, Money):
+                raise BadInputError(f"cannot total a {type(amount).__name__}")
+            found += amount.cents
+        return cls.from_cents(found)
 
     @classmethod
     def from_cents(cls, cents: int) -> Money:

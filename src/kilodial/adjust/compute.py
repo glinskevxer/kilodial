@@ -92,15 +92,15 @@ class Adjustment:
 
     @property
     def billed(self) -> Money:
-        return _sum(line.billed for line in self.lines)
+        return Money.total(line.billed for line in self.lines)
 
     @property
     def moved(self) -> Money:
-        return _sum(line.moved for line in self.lines)
+        return Money.total(line.moved for line in self.lines)
 
     @property
     def interest(self) -> Money:
-        return _sum(line.interest for line in self.lines)
+        return Money.total(line.interest for line in self.lines)
 
     @property
     def total(self) -> Money:
@@ -115,13 +115,6 @@ class Adjustment:
 
     def __str__(self) -> str:
         return self.explain()
-
-
-def _sum(amounts: object) -> Money:
-    total = Money.zero()
-    for amount in amounts:  # type: ignore[attr-defined]
-        total = total + amount
-    return total
 
 
 def compute(
@@ -144,7 +137,7 @@ def compute(
     computed = parse_date(on)
     pieces = period.months
     attributed = [_billed_over(billed, piece) for piece in pieces]
-    total_billed = _sum(attributed)
+    total_billed = Money.total(attributed)
     if total_billed.is_zero:
         raise RuleError(f"nothing was billed on {point_code} over {period.span}, so nothing moves")
     moved_total = total_billed.scaled(share)
@@ -173,7 +166,7 @@ def compute(
 
 
 def _billed_over(billed: list[BilledMonth], window: DateSpan) -> Money:
-    return _sum(month.share_over(window) for month in billed)
+    return Money.total(month.share_over(window) for month in billed)
 
 
 def _interest(

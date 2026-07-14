@@ -140,7 +140,7 @@ def build(shop: Shop, *, first: object, last: object) -> Document:
     section.fact("types", len(rows))
     section.fact("meters", sum(r.meters for r in rows))
     section.fact("repairs", sum(r.repairs for r in rows))
-    section.fact("spent", _total(rows))
+    section.fact("spent", Money.total(r.spent for r in rows))
     section.fact("not worth doing", sum(r.wasteful for r in rows))
     worst = sorted(rows, key=lambda r: -r.per_hundred)
     if worst and worst[0].repairs:
@@ -155,13 +155,6 @@ def build(shop: Shop, *, first: object, last: object) -> Document:
         "decision from one whose failures are mostly bearings"
     )
     return doc
-
-
-def _total(rows: list[TypeFaults]) -> Money:
-    total = Money.zero()
-    for row in rows:
-        total = total + row.spent
-    return total
 
 
 __all__ = ["HEADINGS", "TypeFaults", "build", "family_grid", "for_type", "grid"]

@@ -108,10 +108,7 @@ class RepairRepository:
 
     def spent_between(self, first: object, last: object) -> Money:
         """What the shop spent on repairs over a window."""
-        total = Money.zero()
-        for repair in self.between(first, last):
-            total = total + repair.cost
-        return total
+        return Money.total(r.cost for r in self.between(first, last))
 
     def not_worth_it(self) -> list[Repair]:
         """Repairs that cost more than the tariff share of a new meter."""

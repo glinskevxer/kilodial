@@ -141,10 +141,7 @@ class EstimateRepository:
         return [s for s in self.for_point(point_code) if s.estimate.span.overlaps(span)]
 
     def total_for(self, point_code: str) -> Money:
-        total = Money.zero()
-        for settled in self.for_point(point_code):
-            total = total + settled.amount
-        return total
+        return Money.total(s.amount for s in self.for_point(point_code))
 
     def count(self) -> int:
         return int(self._conn.execute("SELECT COUNT(*) FROM estimate").fetchone()[0])

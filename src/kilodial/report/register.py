@@ -54,10 +54,10 @@ class Register:
         return [a for a in self.priced if a.direction is Direction.BACK_BILL]
 
     def owed_to_customers(self) -> Money:
-        return _sum(a.total for a in self.refunds)
+        return Money.total(a.total for a in self.refunds)
 
     def owed_to_utility(self) -> Money:
-        return _sum(a.total for a in self.back_bills)
+        return Money.total(a.total for a in self.back_bills)
 
     def net(self) -> Money:
         """Positive means the utility owes money on the whole run."""
@@ -68,13 +68,6 @@ class Register:
 
     def __str__(self) -> str:
         return self.show()
-
-
-def _sum(amounts: object) -> Money:
-    total = Money.zero()
-    for amount in amounts:  # type: ignore[attr-defined]
-        total = total + amount
-    return total
 
 
 def gather(shop: Shop, *, on: object, tariff: Tariff = STATE_TARIFF) -> Register:

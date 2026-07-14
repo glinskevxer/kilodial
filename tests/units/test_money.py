@@ -114,3 +114,21 @@ def test_subtracting_another_type() -> None:
 def test_ordering_against_another_type() -> None:
     with pytest.raises(TypeError):
         _ = Money("1") < 1
+
+
+def test_totalling_a_list() -> None:
+    assert Money.total([Money("1.50"), Money("2.50")]) == Money("4.00")
+    assert Money.total([]) == Money.zero()
+
+
+def test_totalling_a_generator() -> None:
+    assert Money.total(Money("1.00") for _ in range(3)) == Money("3.00")
+
+
+def test_totalling_keeps_the_signs() -> None:
+    assert Money.total([Money("10.00"), Money("-4.00")]) == Money("6.00")
+
+
+def test_totalling_something_that_is_not_money() -> None:
+    with pytest.raises(BadInputError, match="cannot total a str"):
+        Money.total(["1.00"])  # type: ignore[list-item]

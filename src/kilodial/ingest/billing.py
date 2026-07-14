@@ -74,10 +74,7 @@ def load_file(shop: Shop, path: str | Path) -> Outcome:
 
 def total_loaded(shop: Shop, point_code: str) -> Money:
     """What a point's whole billed history adds to, for a sanity check."""
-    total = Money.zero()
-    for month in shop.billing.for_point(point_code):
-        total = total + month.amount
-    return total
+    return Money.total(m.amount for m in shop.billing.for_point(point_code))
 
 
 __all__ = ["REQUIRED", "load", "load_file", "load_text", "month_from", "total_loaded"]
