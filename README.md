@@ -34,11 +34,45 @@ meter error and is corrected in full whichever way it points.
 waived when the meter turns out to be bad, when the shop was late, or when it is
 the customer's free test.
 
-## Using it
+## A worked example
+
+Stand a shop up, bench a meter, and find out what the customer is owed.
 
     pip install kilodial
-    kilodial --book shop.sqlite3 init
-    kilodial --book shop.sqlite3 doctor --on 2026-01-01
+    export KILODIAL_BOOK=shop.sqlite3
+
+    kilodial init
+    kilodial device add Halvern R4S --form 2S --class 200 --volts 240 \
+        --kh 7.2 --ratio 100 --introduced 2004-05-01
+    kilodial meter receive 84-119302 --type Halvern/R4S --acquired 2015-01-01
+    kilodial standard add RS-5511 --maker Radian --model RD-23 \
+        --certificate NVLAP-88214 --certified 2015-01-01 --due 2035-01-01 \
+        --uncertainty 0.02
+    kilodial bench add B2 "north wall" --positions 8 --standard RS-5511 \
+        --max-amps 100 --max-volts 480 --installed 2010-01-01
+    kilodial point add SP-1042 --account 44-9021 --address "18 Fenwick Row" \
+        --service 1P3W --volts 240 --rate R1 --energised 2011-06-14
+    kilodial point set SP-1042 84-119302 --multiplier 1 --on 2019-05-02
+
+The meter comes off the service and goes on the bench. It is three percent fast,
+so it fails, and the shop can say why.
+
+    kilodial run record TR-1 --meter 84-119302 --bench B2 --on 2025-06-30 \
+        --by "R Ellis" --fl 103.20 --ll 102.40
+    kilodial run show TR-1
+
+Load what the customer was billed, and the adjustment falls out of it.
+
+    kilodial bill add SP-1042 --from 2025-01-01 --to 2025-01-31 --amount 104.22
+    kilodial adjust show SP-1042 --on 2025-07-15
+
+Then the questions somebody asks on a Monday.
+
+    kilodial doctor --on 2026-01-01
+    kilodial report shop --on 2026-01-01
+    kilodial about
+
+## Using it
 
 Every command lives under a group and the full reference is in
 [docs/commands.md](docs/commands.md), which is generated from the command tree.
