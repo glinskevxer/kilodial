@@ -38,9 +38,15 @@ def test_a_summary_that_reads_like_a_note() -> None:
     assert any("start with a capital" in p for p in problems)
 
 
-def test_a_summary_with_no_full_stop() -> None:
+def test_a_summary_that_does_not_end_a_sentence() -> None:
     fragment = click.Command("thing", help="Does a thing")
-    assert any("full stop" in p for p in gate.faults_for(["thing"], fragment))
+    assert any("end a sentence" in p for p in gate.faults_for(["thing"], fragment))
+
+
+def test_a_question_ends_a_sentence() -> None:
+    asked = click.Command("thing", help="Does it do a thing?")
+    assert gate.faults_for(["thing"], asked) == []
+    assert "?" in gate.ENDINGS
 
 
 def test_a_summary_that_runs_on() -> None:

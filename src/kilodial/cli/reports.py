@@ -1,10 +1,18 @@
-"""Report commands.
+"""Report commands, built from the catalogue rather than written six times.
 
-Every report takes the same three format options and there is no default beyond
-text, because the person running it in a terminal wants to read it and the
-script running it in a pipeline wants json. Writing to a file rather than to
-standard output is a flag rather than a redirect, so that a report that fails
-halfway does not leave a half written file somebody then emails.
+The six commands were six copies of the same eleven lines: the same format
+option, the same output path option, and either an ``--on`` or a ``--from`` and
+``--to`` pair depending on whether the report covers a period. Two of the copies
+had already drifted, one carrying a ``--warning`` option the others did not and
+one whose help said "as at" where the report was over a window.
+
+So they are generated from the catalogue, which already had to list every report
+and say which shape it takes. A report added to the catalogue with a builder
+gets its command for nothing, and one added without either fails the catalogue's
+own test.
+
+The one report with an option of its own is handled by an extras table rather
+than by an exception in the loop, so it is visible next to the others.
 """
 
 from __future__ import annotations
@@ -24,6 +32,29 @@ from kilodial.report.layout import table
 FORMATS = ("text", "json", "csv")
 
 _F = TypeVar("_F", bound=Callable[..., Any])
+
+# The function that builds each report, against the name the catalogue lists it
+# under.
+BUILDERS: dict[str, Callable[..., Document]] = {
+    "shop": shop_report.build,
+    "commission": commission.build,
+    "register": register.build,
+    "certificates": certifications.build,
+    "faults": faults.build,
+    "bench": bench.build,
+}
+
+# Options a single report takes and the others do not.
+EXTRAS: dict[str, list[Callable[[_F], _F]]] = {
+    "certificates": [
+        click.option(
+            "--warning",
+            type=int,
+            default=None,
+            help="days ahead to warn on",
+        )
+    ],
+}
 
 
 def render(doc: Document, shape: str) -> str:
@@ -47,7 +78,7 @@ def emit(context: Context, doc: Document, shape: str, out: Path | None) -> None:
 
 
 def format_option() -> Callable[[_F], _F]:
-    """The shared format flag, so the three reports cannot drift apart."""
+    """The shared format flag, so the reports cannot drift apart."""
     return click.option(
         "--format",
         "shape",
@@ -58,114 +89,48 @@ def format_option() -> Callable[[_F], _F]:
     )
 
 
+def out_option() -> Callable[[_F], _F]:
+    """The shared output path flag."""
+    return click.option(
+        "--out",
+        type=click.Path(dir_okay=False, path_type=Path),
+        default=None,
+        help="write to a file rather than to standard output",
+    )
+
+
 @click.group("report")
 def reports() -> None:
     """Reports the shop and the commission ask for."""
 
 
-@reports.command("shop")
-@click.option("--on", "day", required=True, help="the day to report as at")
-@format_option()
-@click.option(
-    "--out",
-    type=click.Path(dir_okay=False, path_type=Path),
-    default=None,
-    help="write to a file rather than to standard output",
-)
-@pass_context
-def report_shop(context: Context, day: str, shape: str, out: Path | None) -> None:
-    """What the shop looks like on a day."""
-    emit(context, shop_report.build(context.open(), on=day), shape, out)
+def _register(entry: catalogue.Entry) -> None:
+    """Wire one catalogue entry up as a command."""
+    build = BUILDERS[entry.name]
+
+    @pass_context
+    def command(context: Context, /, shape: str, out: Path | None, **rest: object) -> None:
+        doc = build(context.open(), **{k: v for k, v in rest.items() if v is not None})
+        emit(context, doc, shape, out)
+
+    command.__doc__ = entry.question
+    made = click.command(entry.name)(command)
+    for extra in reversed(EXTRAS.get(entry.name, [])):
+        made = extra(made)
+    made = out_option()(made)
+    made = format_option()(made)
+    if entry.period:
+        made = click.option("--to", "last", required=True, help="end of the reporting period")(made)
+        made = click.option("--from", "first", required=True, help="start of the reporting period")(
+            made
+        )
+    else:
+        made = click.option("--on", "on", required=True, help="the day to report as at")(made)
+    reports.add_command(made)
 
 
-@reports.command("commission")
-@click.option("--from", "first", required=True, help="start of the reporting period")
-@click.option("--to", "last", required=True, help="end of the reporting period")
-@format_option()
-@click.option(
-    "--out",
-    type=click.Path(dir_okay=False, path_type=Path),
-    default=None,
-    help="write to a file rather than to standard output",
-)
-@pass_context
-def report_commission(
-    context: Context, first: str, last: str, shape: str, out: Path | None
-) -> None:
-    """The annual filing for the commission."""
-    doc = commission.build(context.open(), first=first, last=last)
-    emit(context, doc, shape, out)
-
-
-@reports.command("register")
-@click.option("--on", "day", required=True, help="the day to price the register at")
-@format_option()
-@click.option(
-    "--out",
-    type=click.Path(dir_okay=False, path_type=Path),
-    default=None,
-    help="write to a file rather than to standard output",
-)
-@pass_context
-def report_register(context: Context, day: str, shape: str, out: Path | None) -> None:
-    """Every point that owes money or is owed it."""
-    emit(context, register.build(context.open(), on=day), shape, out)
-
-
-@reports.command("bench")
-@click.option("--from", "first", required=True, help="start of the window")
-@click.option("--to", "last", required=True, help="end of the window")
-@format_option()
-@click.option(
-    "--out",
-    type=click.Path(dir_okay=False, path_type=Path),
-    default=None,
-    help="write to a file rather than to standard output",
-)
-@pass_context
-def report_bench(context: Context, first: str, last: str, shape: str, out: Path | None) -> None:
-    """Who benched what, and what came of it."""
-    emit(context, bench.build(context.open(), first=first, last=last), shape, out)
-
-
-@reports.command("faults")
-@click.option("--from", "first", required=True, help="start of the window")
-@click.option("--to", "last", required=True, help="end of the window")
-@format_option()
-@click.option(
-    "--out",
-    type=click.Path(dir_okay=False, path_type=Path),
-    default=None,
-    help="write to a file rather than to standard output",
-)
-@pass_context
-def report_faults(context: Context, first: str, last: str, shape: str, out: Path | None) -> None:
-    """What breaks, on which types, and what it costs to keep fixing."""
-    emit(context, faults.build(context.open(), first=first, last=last), shape, out)
-
-
-@reports.command("certificates")
-@click.option("--on", "day", required=True, help="the day to report as at")
-@click.option("--warning", type=int, default=None, help="days ahead to warn on")
-@format_option()
-@click.option(
-    "--out",
-    type=click.Path(dir_okay=False, path_type=Path),
-    default=None,
-    help="write to a file rather than to standard output",
-)
-@pass_context
-def report_certificates(
-    context: Context, day: str, warning: int | None, shape: str, out: Path | None
-) -> None:
-    """Standards, technicians and transformers on one clock."""
-    shop = context.open()
-    doc = (
-        certifications.build(shop, on=day)
-        if warning is None
-        else certifications.build(shop, on=day, warning=warning)
-    )
-    emit(context, doc, shape, out)
+for _entry in catalogue.CATALOGUE:
+    _register(_entry)
 
 
 @reports.command("list")
@@ -186,4 +151,13 @@ def report_formats() -> None:
         click.echo(shape)
 
 
-__all__ = ["FORMATS", "emit", "format_option", "render", "reports"]
+__all__ = [
+    "BUILDERS",
+    "EXTRAS",
+    "FORMATS",
+    "emit",
+    "format_option",
+    "out_option",
+    "render",
+    "reports",
+]

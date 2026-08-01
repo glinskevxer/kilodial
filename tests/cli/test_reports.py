@@ -160,3 +160,52 @@ def test_the_report_list(stocked: Invoke) -> None:
     assert "commission" in result.output
     assert "answers" in result.output
     assert "take --from and --to" in result.output
+
+
+def test_every_catalogued_report_has_a_command() -> None:
+    from kilodial.cli.main import cli
+    from kilodial.cli.reports import BUILDERS
+    from kilodial.report.catalogue import CATALOGUE
+
+    group = cli.commands["report"]
+    for entry in CATALOGUE:
+        assert entry.name in group.commands  # type: ignore[attr-defined]
+        assert entry.name in BUILDERS
+
+
+def test_the_generated_commands_take_the_shape_the_catalogue_says() -> None:
+    from kilodial.cli.main import cli
+    from kilodial.report.catalogue import CATALOGUE
+
+    group = cli.commands["report"]
+    for entry in CATALOGUE:
+        command = group.commands[entry.name]  # type: ignore[attr-defined]
+        names = {opt for param in command.params for opt in param.opts}
+        assert "--format" in names
+        assert "--out" in names
+        if entry.period:
+            assert {"--from", "--to"} <= names
+        else:
+            assert "--on" in names
+
+
+def test_only_the_certificate_report_carries_a_warning_option() -> None:
+    from kilodial.cli.main import cli
+    from kilodial.cli.reports import EXTRAS
+
+    group = cli.commands["report"]
+    assert set(EXTRAS) == {"certificates"}
+    for name in ("shop", "register", "bench"):
+        command = group.commands[name]  # type: ignore[attr-defined]
+        names = {opt for param in command.params for opt in param.opts}
+        assert "--warning" not in names
+
+
+def test_each_command_takes_its_help_from_the_catalogue() -> None:
+    from kilodial.cli.main import cli
+    from kilodial.report.catalogue import CATALOGUE
+
+    group = cli.commands["report"]
+    for entry in CATALOGUE:
+        command = group.commands[entry.name]  # type: ignore[attr-defined]
+        assert (command.help or "").strip() == entry.question

@@ -15,7 +15,10 @@ own explanation and which appear on a dozen commands.
 
 Every command's summary is a sentence, not a fragment. A summary that starts
 lower case or runs past a line is one that was written as a note to the author
-rather than as a line in a help screen.
+rather than as a line in a help screen. It has to end in something that ends a
+sentence, and a question mark counts: the report commands take their help from
+the catalogue, where each report is described by the question it answers, and
+that reads better than the statement it would have to become.
 """
 
 from __future__ import annotations
@@ -33,6 +36,9 @@ from kilodial.tools.build_docs import walk
 OBVIOUS = frozenset({"--help", "--version", "--yes"})
 
 LONGEST_SUMMARY = 78
+
+# What a sentence is allowed to end in.
+ENDINGS = (".", "?", "!")
 
 
 def summary_of(command: click.Command) -> str:
@@ -55,8 +61,8 @@ def faults_for(path: list[str], command: click.Command) -> list[str]:
             found.append(
                 f"{where}: the summary runs to {len(summary)} characters, over {LONGEST_SUMMARY}"
             )
-        if not summary.endswith("."):
-            found.append(f"{where}: the summary does not end in a full stop")
+        if not summary.endswith(ENDINGS):
+            found.append(f"{where}: the summary does not end a sentence")
     for param in command.params:
         if not isinstance(param, click.Option):
             continue
@@ -102,6 +108,7 @@ if __name__ == "__main__":  # pragma: no cover
 
 
 __all__ = [
+    "ENDINGS",
     "LONGEST_SUMMARY",
     "OBVIOUS",
     "counts",

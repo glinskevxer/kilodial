@@ -633,45 +633,45 @@ What the shop spent on repairs over a window.
 
     kilodial report bench
 
-Who benched what, and what came of it.
+Who benched what, and how much of it came back unusable?
 
-- `--from` start of the window (required)
-- `--to` end of the window (required)
-- `--format` the shape to write it in
 - `--out` write to a file rather than to standard output
+- `--format` the shape to write it in
+- `--to` end of the reporting period (required)
+- `--from` start of the reporting period (required)
 
 ## `report certificates`
 
     kilodial report certificates
 
-Standards, technicians and transformers on one clock.
+What has a certificate on it and how long has each one left?
 
-- `--on` the day to report as at (required)
 - `--warning` days ahead to warn on
-- `--format` the shape to write it in
 - `--out` write to a file rather than to standard output
+- `--format` the shape to write it in
+- `--on` the day to report as at (required)
 
 ## `report commission`
 
     kilodial report commission
 
-The annual filing for the commission.
+What do we have to tell the commission we tested this year?
 
-- `--from` start of the reporting period (required)
-- `--to` end of the reporting period (required)
-- `--format` the shape to write it in
 - `--out` write to a file rather than to standard output
+- `--format` the shape to write it in
+- `--to` end of the reporting period (required)
+- `--from` start of the reporting period (required)
 
 ## `report faults`
 
     kilodial report faults
 
-What breaks, on which types, and what it costs to keep fixing.
+What breaks, on which types, and what does keeping them going cost?
 
-- `--from` start of the window (required)
-- `--to` end of the window (required)
-- `--format` the shape to write it in
 - `--out` write to a file rather than to standard output
+- `--format` the shape to write it in
+- `--to` end of the reporting period (required)
+- `--from` start of the reporting period (required)
 
 ## `report formats`
 
@@ -689,21 +689,21 @@ Every report there is and what question it answers.
 
     kilodial report register
 
-Every point that owes money or is owed it.
+Which service points owe money or are owed it, and how much?
 
-- `--on` the day to price the register at (required)
-- `--format` the shape to write it in
 - `--out` write to a file rather than to standard output
+- `--format` the shape to write it in
+- `--on` the day to report as at (required)
 
 ## `report shop`
 
     kilodial report shop
 
-What the shop looks like on a day.
+What does the shop look like today, and is anything about to lapse?
 
-- `--on` the day to report as at (required)
-- `--format` the shape to write it in
 - `--out` write to a file rather than to standard output
+- `--format` the shape to write it in
+- `--on` the day to report as at (required)
 
 ## `run delete`
 
