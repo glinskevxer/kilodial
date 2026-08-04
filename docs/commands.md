@@ -375,6 +375,14 @@ Take a sampling group and its decisions off the book.
 
 - `--yes` Confirm the action without prompting.
 
+## `group ladder`
+
+    kilodial group ladder
+
+Where every group sits on the interval ladder.
+
+- `--on` the day to work the due dates from
+
 ## `group list`
 
     kilodial group list

@@ -18,7 +18,7 @@ from kilodial.programme import roster
 from kilodial.programme.season import run_sample
 from kilodial.sampling.attribute import plan_for
 from kilodial.sampling.group import Group
-from kilodial.sampling.plan import required
+from kilodial.sampling.plan import INTERVAL_LADDER, required
 from kilodial.units.span import DateSpan
 
 
@@ -166,6 +166,37 @@ def group_members(context: Context, code: str) -> None:
     ]
     for line in table(["serial", "type", "state", "acquired"], rows):
         click.echo(line)
+
+
+@groups.command("ladder")
+@click.option("--on", "day", default=None, help="the day to work the due dates from")
+@pass_context
+def group_ladder(context: Context, day: str | None) -> None:
+    """Where every group sits on the interval ladder."""
+    shop = context.open()
+    standing = {g.code: shop.plans.interval(g.code) for g in shop.groups.all()}
+    rows = []
+    for months in INTERVAL_LADDER:
+        here = sorted(code for code, at in standing.items() if at == months)
+        rows.append(
+            [
+                str(months),
+                f"{months // 12} years",
+                str(len(here)),
+                ", ".join(here) or "-",
+            ]
+        )
+    for line in table(["months", "which is", "groups", "codes"], rows):
+        click.echo(line)
+    if day is not None:
+        click.echo("")
+        due = shop.plans.due_by(day)
+        click.echo(f"{len(due)} groups due by {day}: {', '.join(due) or 'none'}")
+    click.echo("")
+    click.echo(
+        f"{len(standing)} groups, a passing sample moves one step up and a failing "
+        f"one moves one step down"
+    )
 
 
 @groups.command("sample")

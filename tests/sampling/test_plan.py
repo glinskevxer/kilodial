@@ -147,3 +147,21 @@ def test_the_working_is_printable() -> None:
     assert "mean 100.5000" in outcome.show()
     assert outcome.required == 30
     assert outcome.tested == 30
+
+
+def test_the_ladder_is_in_years_a_commission_recognises() -> None:
+    years = [months // 12 for months in INTERVAL_LADDER]
+    assert years == [4, 6, 8, 10, 12, 16, 20, 25]
+    assert all(months % 12 == 0 for months in INTERVAL_LADDER)
+
+
+def test_the_ladder_only_climbs() -> None:
+    assert list(INTERVAL_LADDER) == sorted(INTERVAL_LADDER)
+    assert len(set(INTERVAL_LADDER)) == len(INTERVAL_LADDER)
+
+
+def test_every_step_can_be_stepped_from() -> None:
+    for months in INTERVAL_LADDER:
+        assert step_interval(months, passed=True) in INTERVAL_LADDER
+        down = step_interval(months, passed=False)
+        assert down is None or down in INTERVAL_LADDER

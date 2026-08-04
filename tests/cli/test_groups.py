@@ -295,3 +295,42 @@ def test_the_attributes_plan_follows_the_population(shop: Invoke) -> None:
         stock(shop, f"84-11930{n}")
     bigger = shop("group", "show", "G1").output
     assert "lot 9" in bigger
+
+
+def test_the_ladder_shows_every_step(shop: Invoke) -> None:
+    result = shop("group", "ladder")
+    assert "48" in result.output
+    assert "300" in result.output
+    assert "25 years" in result.output
+    assert "1 groups" in result.output
+
+
+def test_a_new_group_sits_at_the_bottom(shop: Invoke) -> None:
+    lines = shop("group", "ladder").output.splitlines()
+    bottom = next(line for line in lines if line.strip().startswith("48"))
+    assert "G1" in bottom
+
+
+def test_the_ladder_follows_a_sample(shop: Invoke) -> None:
+    for n in range(5):
+        serial = f"84-11930{n}"
+        stock(shop, serial)
+        bench(shop, f"TR-{n}", serial, "2025-03-04")
+    shop(
+        "group", "sample", "G1", "--from", "2025-01-01", "--to", "2025-06-30", "--on", "2025-06-30"
+    )
+    lines = shop("group", "ladder").output.splitlines()
+    moved = next(line for line in lines if line.strip().startswith("72"))
+    assert "G1" in moved
+
+
+def test_the_ladder_can_say_what_is_due(shop: Invoke) -> None:
+    result = shop("group", "ladder", "--on", "2030-01-01")
+    assert "groups due by 2030-01-01" in result.output
+    assert "G1" in result.output
+
+
+def test_a_step_with_no_groups_on_it(shop: Invoke) -> None:
+    lines = shop("group", "ladder").output.splitlines()
+    empty = next(line for line in lines if line.strip().startswith("300"))
+    assert empty.rstrip().endswith("-")
