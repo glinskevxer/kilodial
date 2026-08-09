@@ -83,3 +83,21 @@ def test_the_gate_fails_loudly(
     monkeypatch.setattr(gate, "faults", lambda: ["something"])
     assert gate.main([]) == 1
     assert "no longer describe this package" in capsys.readouterr().out
+
+
+def test_the_readme_names_this_version_only() -> None:
+    found = gate.versions()
+    assert found == [] or set(found) == {__version__}
+
+
+def test_the_readme_points_at_every_generated_doc() -> None:
+    found = set(gate.links())
+    assert {"docs/commands.md", "docs/schema.sql", "docs/glossary.md", "docs/layers.md"} <= found
+
+
+def test_the_worked_example_stands_a_shop_up_in_order() -> None:
+    found = gate.commands()
+    order = [line.split()[0] for line in found]
+    assert order.index("device") < order.index("meter")
+    assert order.index("standard") < order.index("bench")
+    assert order.index("point") < order.index("run")

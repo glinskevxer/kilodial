@@ -1050,4 +1050,4 @@ Record a new test against a transformer already on the book.
 
 Which service points a transformer has been installed at.
 
-Generated for kilodial 0.2.0.
+Generated for kilodial 1.0.0.

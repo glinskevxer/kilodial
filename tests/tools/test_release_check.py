@@ -37,7 +37,7 @@ def test_the_three_versions_agree() -> None:
 def test_the_changelog_says_something_about_this_version() -> None:
     body = gate.changelog_body(kilodial.__version__)
     assert body
-    assert body.startswith("-")
+    assert gate.notes_in(kilodial.__version__)
 
 
 def test_a_version_that_disagrees(tmp_path: Path) -> None:
@@ -111,3 +111,41 @@ def test_a_marker_in_a_module_is_found(tmp_path: Path, monkeypatch: pytest.Monke
     planted.write_text(original + "\n# TODO: finish this\n")
     monkeypatch.setattr(demand, "__file__", str(planted))
     assert any("carries a TODO" in p for p in gate.markers_in_source())
+
+
+def test_the_entry_for_this_version_says_enough() -> None:
+    notes = gate.notes_in(gate.declared_version())
+    assert len(notes) >= gate.FEWEST_NOTES
+    assert all(note.startswith("- ") for note in notes)
+
+
+def test_a_thin_entry_is_caught(tmp_path: Path) -> None:
+    version = gate.declared_version()
+    path = changelog(tmp_path, f"# Changelog\n\n## {version}\n\n- one thing\n")
+    problems = gate.faults(gate.PYPROJECT, path)
+    assert any("which is not an entry" in p for p in problems)
+
+
+def test_the_versions_are_read_as_numbers() -> None:
+    assert gate.as_numbers("1.2.3") == (1, 2, 3)
+    assert gate.as_numbers("10.0.0") > gate.as_numbers("9.9.9")
+
+
+def test_a_changelog_out_of_order_is_caught(tmp_path: Path) -> None:
+    version = gate.declared_version()
+    path = changelog(
+        tmp_path,
+        f"# Changelog\n\n## {version}\n\n- a\n- b\n- c\n\n"
+        "## 0.9.0\n\n- x\n- y\n- z\n\n## 0.10.0\n\n- p\n- q\n- r\n",
+    )
+    assert any("rather than" in p for p in gate.faults(gate.PYPROJECT, path))
+
+
+def test_this_changelog_descends() -> None:
+    found = gate.changelog_versions()
+    assert found == sorted(found, key=gate.as_numbers, reverse=True)
+
+
+def test_the_version_is_one_point_oh() -> None:
+    assert gate.declared_version() == "1.0.0"
+    assert kilodial.__version__ == "1.0.0"

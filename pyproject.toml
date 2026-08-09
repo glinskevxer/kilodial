@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "kilodial"
-version = "0.2.0"
+version = "1.0.0"
 description = "Meter shop register, accuracy testing and billing adjustment"
 requires-python = ">=3.12"
 dependencies = ["click==8.1.8"]
