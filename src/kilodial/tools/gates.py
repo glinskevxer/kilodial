@@ -27,6 +27,7 @@ from kilodial.tools import (
     OK,
     build_docs,
     build_glossary,
+    build_index,
     check_clock,
     check_docstrings,
     check_exports,
@@ -65,6 +66,7 @@ GATES: tuple[tuple[str, object, list[str]], ...] = (
     ("schema", schema_dump, ["--check"]),
     ("commands", build_docs, ["--check"]),
     ("glossary", build_glossary, ["--check"]),
+    ("docs index", build_index, ["--check"]),
     ("smoke", smoke, ["--quiet"]),
 )
 

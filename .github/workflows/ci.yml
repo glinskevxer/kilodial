@@ -42,6 +42,7 @@ jobs:
       - run: python -m kilodial.tools.schema_dump --check
       - run: python -m kilodial.tools.build_docs --check
       - run: python -m kilodial.tools.build_glossary --check
+      - run: python -m kilodial.tools.build_index --check
 
   tests:
     runs-on: ubuntu-latest

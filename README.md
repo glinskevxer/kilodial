@@ -78,7 +78,8 @@ Every command lives under a group and the full reference is in
 [docs/commands.md](docs/commands.md), which is generated from the command tree.
 The schema is in [docs/schema.sql](docs/schema.sql), the vocabulary is in
 [docs/glossary.md](docs/glossary.md), and the layering is in
-[docs/layers.md](docs/layers.md). All four are generated from the code.
+[docs/layers.md](docs/layers.md). All four are generated from the code and
+[docs/README.md](docs/README.md) indexes them.
 
 ## The book
 
